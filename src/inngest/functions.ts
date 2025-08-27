@@ -147,7 +147,7 @@ export const codeAgentFunction = inngest.createFunction(
     // apiKey: process.env.OPENROUTER_API_KEY!,
     model: "gpt-5-mini-2025-08-07",
     // defaultParameters:{
-    //   temperature:1,
+    //   temperature:0.3,
     // },
       }),   
       tools: [terminalTool, createOrUpdateFilesTool, readFilesTool],
@@ -167,7 +167,7 @@ export const codeAgentFunction = inngest.createFunction(
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
-      maxIter: 15,
+      maxIter: 8,
       defaultState:state,
       router: async ({ network }) => {
         const summary = network.state.data.summary;
