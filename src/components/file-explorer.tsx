@@ -1,4 +1,4 @@
-import { CopyCheckIcon, CopyIcon } from "lucide-react";
+import { CopyCheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { useState, useMemo, useCallback, Fragment } from "react";
 
 import { Hint } from "@/components/ui/hint";
@@ -105,6 +105,7 @@ export const FileExplorer=({
     files,
 }:FileExplorerProps) => {
     const [copied, setCopied] = useState(false);
+    const [isZipping, setIsZipping] = useState(false);
     const [selectedFile,setSelectedFile]=useState<string|null>(()=>{
         const fileKeys=Object.keys(files);
         return fileKeys.length>0? fileKeys[0]:null;
@@ -130,6 +131,34 @@ export const FileExplorer=({
         }
     }, [selectedFile, files]);
 
+    const handleDownloadZip = useCallback(async () => {
+        try {
+            setIsZipping(true);
+            const JSZip = (await import("jszip")).default;
+            const zip = new JSZip();
+
+
+            Object.entries(files).forEach(([filePath, content]) => {
+                const normalizedPath = filePath.replace(/^\.\/+/, "");
+                zip.file(normalizedPath, content ?? "");
+            });
+
+            const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "project-code.zip";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error("ZIP download failed", e);
+        } finally {
+            setIsZipping(false);
+        }
+    }, [files]);
+
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={30} minSize={30} className="bg-sidebar">
@@ -146,17 +175,26 @@ export const FileExplorer=({
                     <div className="h-full w-full flex flex-col">
                         <div className="border-b bg-sidebar px-4 py-2 flex justify-between items-center gap-x-2">
                             <FileBreadcrumb filePath={selectedFile}/>
-                            
-                            <Hint text="Copy to clipboard" side="bottom">
-                                <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    className="ml-auto" 
-                                    onClick={handleCopy} 
-                                    disabled={copied}>
-                                    {copied? <CopyCheckIcon/> : <CopyIcon/>}
+                            <div className="ml-auto flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleDownloadZip}
+                                    disabled={isZipping || Object.keys(files).length === 0}
+                                >
+                                    <span>Download ZIP</span>
+                                    <DownloadIcon className="ml-2 h-4 w-4" />
                                 </Button>
-                            </Hint>
+                                <Hint text="Copy to clipboard" side="bottom">
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon" 
+                                        onClick={handleCopy} 
+                                        disabled={copied}>
+                                        {copied? <CopyCheckIcon/> : <CopyIcon/>}
+                                    </Button>
+                                </Hint>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-auto">
                             <CodeView
