@@ -117,6 +117,21 @@ const Page = () => {
                 Launch 🚀
               </Button>
             </div>
+            {value && (
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-left">
+                <span className="text-xs sm:text-sm text-white/80 font-[Orbitron]">Need help crafting this? Get a concise, better prompt.</span>
+                <Button
+                  variant="outline"
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 px-4 py-2 transition font-[Orbitron]"
+                  onClick={() => {
+                    const qs = new URLSearchParams({ idea: value }).toString();
+                    router.push(`/prompt-generator?${qs}`);
+                  }}
+                >
+                  Enhance this prompt
+                </Button>
+              </div>
+            )}
             {/* Demo Prompts */}
             <div className="flex flex-wrap justify-center gap-3 text-sm">
               {["Create Netflix Clone","Build Admin Dashboard","create Kanban Board","create Calculator","Build E-commerce Site","Build Sudoku Solver",].map((prompt) => (

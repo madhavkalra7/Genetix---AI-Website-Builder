@@ -1,6 +1,6 @@
 "use client";
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -27,11 +27,18 @@ function toFiveCompleteSentences(text: string) {
 
 export default function PromptGeneratorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [idea, setIdea] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
 
   const canGenerate = useMemo(() => idea.trim().length > 0 && !loading, [idea, loading]);
+
+  // Prefill idea from ?idea=
+  useEffect(() => {
+    const i = searchParams?.get("idea");
+    if (i) setIdea(i);
+  }, [searchParams]);
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
