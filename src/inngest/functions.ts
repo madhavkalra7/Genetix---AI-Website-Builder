@@ -137,18 +137,18 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
-    // ✅ OpenRouter-powered Agent
-    const codeAgent = createAgent<AgentState>({
+  // ✅ OpenRouter-powered Agent
+  const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
       model: openai({
-        // baseUrl: "https://openrouter.ai/api/v1",
-        // apiKey: process.env.OPENROUTER_API_KEY!,
-        model: "gpt-5-mini-2025-08-07",
-        // defaultParameters:{
-        //   temperature:1,
-        // },
+    // baseUrl: "https://openrouter.ai/api/v1",
+    // apiKey: process.env.OPENROUTER_API_KEY!,
+    model: "gpt-5-mini-2025-08-07",
+    // defaultParameters:{
+    //   temperature:1,
+    // },
       }),   
       tools: [terminalTool, createOrUpdateFilesTool, readFilesTool],
       lifecycle: {
@@ -178,21 +178,21 @@ export const codeAgentFunction = inngest.createFunction(
 
     const result = await network.run(event.data.value,{ state });
 
-    const fragmentTitleGenerator=createAgent({
+  const fragmentTitleGenerator=createAgent({
       name: "fragment-title-generator",
       description: "A fragment title generator",
       system: FRAGMENT_TITLE_PROMPT,
       model: openai({
-        model: "gpt-5-nano-2025-08-07",
+    model: "gpt-5-nano-2025-08-07",
       }),
     });
 
-    const responseGenerator=createAgent({
+  const responseGenerator=createAgent({
       name: "response-generator",
       description: "A response generator",
       system: RESPONSE_PROMPT,
       model: openai({
-        model: "gpt-5-nano-2025-08-07",
+    model: "gpt-5-nano-2025-08-07",
       }),
     });
 

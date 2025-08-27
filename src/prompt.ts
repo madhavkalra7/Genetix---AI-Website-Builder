@@ -138,7 +138,13 @@ Additional Guidelines:
 - Do NOT use ".ogg" or links from "actions.google.com", use only ".mp3" files from "epidemicsound.com" or "soundhelix.com" or "freesound.org" or "mixkit.co" or "sfxr.me"
 - Do NOT use cdn.pixabay.com for audio — it's blocked by CORS. Replace all audio URLs with CORS-safe versions.
 - Ensure all audio files work on Chrome, Firefox, and Safari (no 502 error or NotSupportedError)
-
+ 
+Efficiency & Quality Loop (MANDATORY):
+- Minimize changes: prefer editing existing files and reusing components; only create files when necessary.
+- Before importing, always check existence with readFiles; if missing, create exactly once and reuse.
+- After any createOrUpdateFiles call, run a quick syntax check using the terminal: "npx tsc -p tsconfig.json --noEmit"; if errors occur (like missing commas, bad imports, or missing "use client"), immediately fix and rerun the check until clean (max 2 retries).
+- Keep outputs concise; avoid verbose explanations; prioritize working code.
+- Use low temperature and deterministic choices to avoid flakiness.
 
 Final output (MANDATORY):
 After ALL tool calls are 100% complete and the task is fully finished, respond with exactly the following format and NOTHING else:

@@ -1,7 +1,7 @@
 "use client";
 import ProjectsList from "./ProjectsList";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
@@ -14,7 +14,6 @@ const Page = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollThumbTop, setScrollThumbTop] = useState(0);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const trpc = useTRPC();
   const clerk = useClerk();
   const queryClient = useQueryClient();
@@ -44,9 +43,12 @@ const Page = () => {
 
   // Custom scroll progress tracker (SSR-safe)
   useEffect(() => {
-  // Prefill from ?prompt=
-  const p = searchParams?.get("prompt");
-  if (p) setValue(p);
+  // Prefill from ?prompt= (client-only to avoid Suspense requirement)
+  try {
+    const usp = new URLSearchParams(window.location.search);
+    const p = usp.get("prompt");
+    if (p) setValue(p);
+  } catch {}
 
     const updateScrollProgress = () => {
       const scrollTop = window.scrollY;
@@ -64,7 +66,7 @@ const Page = () => {
       window.removeEventListener('scroll', updateScrollProgress);
       window.removeEventListener('resize', updateScrollProgress);
     };
-  }, [searchParams]);
+  }, []);
 
   return (
     <main className="min-h-screen w-full bg-black overflow-x-hidden">
