@@ -1,6 +1,6 @@
 "use client";
 import ProjectsList from "./ProjectsList";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
@@ -39,6 +39,8 @@ function TypingTitle() {
 
 const Page = () => {
   const [value, setValue] = useState("");
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollThumbTop, setScrollThumbTop] = useState(0);
   const router = useRouter();
@@ -153,12 +155,54 @@ const Page = () => {
           {/* Input + Prompts Section */}
           <div className="backdrop-blur-md bg-black/40 border border-gray-700 shadow-2xl px-8 py-8 w-full text-center space-y-6 mt-1">
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Input
-                className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black"
-                placeholder="🌑 e.g. Build a crypto dashboard"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-              />
+              <div className="relative flex-1 flex items-center">
+                <Input
+                  className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black"
+                  placeholder="🌑 e.g. Build a crypto dashboard"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                />
+                <button
+                  type="button"
+                  aria-label={listening ? "Listening..." : "Speak"}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-0 m-0 bg-transparent border-none outline-none flex items-center justify-center transition ${listening ? "animate-pulse" : ""}`}
+                  style={{height: '32px', width: '32px'}} // matches input height
+                  onClick={() => {
+                    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                      alert('Speech recognition not supported in this browser.');
+                      return;
+                    }
+                    if (listening) {
+                      recognitionRef.current?.stop();
+                      setListening(false);
+                      return;
+                    }
+                    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'en-US';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+                    recognition.onresult = (event: any) => {
+                      const transcript = event.results[0][0].transcript;
+                      setValue(prev => prev ? prev + ' ' + transcript : transcript);
+                      setListening(false);
+                    };
+                    recognition.onerror = () => {
+                      setListening(false);
+                    };
+                    recognition.onend = () => {
+                      setListening(false);
+                    };
+                    recognitionRef.current = recognition;
+                    recognition.start();
+                    setListening(true);
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="#fff" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3m0 0h-3m3 0h3m-3-3a6 6 0 006-6V9a6 6 0 10-12 0v3a6 6 0 006 6z" />
+                  </svg>
+                </button>
+              </div>
               <Button
                 disabled={createProject.isPending || !value}
                 onClick={() => createProject.mutate({ value })}

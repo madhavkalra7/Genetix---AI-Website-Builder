@@ -25,6 +25,17 @@ export async function POST(req: NextRequest) {
     // If only query is sent, treat as Gemini chatbot
     if (body.query && !body.files) {
       const prompt = body.query;
+
+      // Input validation: check query length
+      if (typeof prompt !== "string" || prompt.length < 3 || prompt.length > 1000) {
+        return NextResponse.json({ error: "Query must be between 3 and 1000 characters." }, { status: 400 });
+      }
+
+      // Basic content filtering (example: block certain words)
+      const forbiddenWords = ["hack", "attack", "malware"];
+      if (forbiddenWords.some(word => prompt.toLowerCase().includes(word))) {
+        return NextResponse.json({ error: "Query contains forbidden content." }, { status: 400 });
+      }
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
