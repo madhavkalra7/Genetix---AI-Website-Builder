@@ -1,5 +1,6 @@
 import { CopyCheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { useState, useMemo, useCallback, Fragment } from "react";
+import { useRouter } from "next/navigation";
 
 import { Hint } from "@/components/ui/hint";
 import { Button } from "@/components/ui/button";
@@ -159,6 +160,35 @@ export const FileExplorer=({
         }
     }, [files]);
 
+    const [explaining, setExplaining] = useState(false);
+    const router = useRouter();
+
+    // Get projectId from file paths (assuming all files start with projectId or pass as prop)
+    // You may want to pass projectId as a prop for reliability
+    const projectId = Object.keys(files)[0]?.split("/")[0] || "";
+
+    const handleExplain = async () => {
+        setExplaining(true);
+        try {
+            // Default model for OpenRouter (can be changed by user)
+            const model = "meta-llama/llama-3.3-70b-instruct:free";
+            const res = await fetch("/api/explain-project", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ files, model }),
+            });
+            const data = await res.json();
+            if (data.explanation) {
+                localStorage.setItem(`genetix_explanation_${projectId}`, data.explanation);
+                router.push(`/project/${projectId}/explanation`);
+            }
+        } catch (e) {
+            // Optionally show error
+        } finally {
+            setExplaining(false);
+        }
+    };
+
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={30} minSize={30} className="bg-sidebar">
@@ -167,12 +197,11 @@ export const FileExplorer=({
                     value={selectedFile}
                     onSelect={handleFileSelect}
                 />
-
             </ResizablePanel>
             <ResizableHandle className="hover:bg-primary transition-colors"/>
             <ResizablePanel defaultSize={70} minSize={50}>
                 {selectedFile && files[selectedFile] ?(
-                    <div className="h-full w-full flex flex-col">
+                    <div className="h-full w-full flex flex-col relative">
                         <div className="border-b bg-sidebar px-4 py-2 flex justify-between items-center gap-x-2">
                             <FileBreadcrumb filePath={selectedFile}/>
                             <div className="ml-auto flex items-center gap-2">
@@ -200,10 +229,20 @@ export const FileExplorer=({
                             <CodeView
                                 code={files[selectedFile]}
                                 lang={getLanguageFromExtension(selectedFile)}
-                            >
-
-                            </CodeView>
+                            />
+                            {/* Explanation is now shown on a new page */}
                         </div>
+                        {/* Floating Explain Button - always visible in code panel */}
+                        <button
+                            onClick={handleExplain}
+                            disabled={explaining}
+                            className="absolute bottom-8 right-8 z-50 animate-bounce bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 py-3 shadow-lg border-2 border-orange-300 transition-all duration-300"
+                            style={{
+                                boxShadow: "0 4px 24px 0 rgba(255,140,0,0.25)",
+                            }}
+                        >
+                            {explaining ? "Explaining..." : "Explain"}
+                        </button>
                     </div>
                 ):(
                     <div className="flex h-full items-center justify-center text-muted-foreground">
