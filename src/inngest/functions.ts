@@ -16,6 +16,9 @@ export const codeAgentFunction = inngest.createFunction(
   { id: "code-agent" },
   { event: "code-agent/run" },
   async ({ event, step }) => {
+
+ 
+
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("htrjn0k08ekwyjfwkcpo");
       await sandbox.setTimeout(SANDBOX_TIMEOUT);
@@ -137,6 +140,48 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
+    // Bootstrap essential UI files so the agent doesn't fail on missing components
+    await step.run("bootstrap-ui", async () => {
+      try {
+        const sandbox = await getSandbox(sandboxId);
+        const ensure = async (path: string, content: string) => {
+          try {
+            await sandbox.files.read(path);
+          } catch {
+            await sandbox.files.write(path, content);
+          }
+        };
+
+        await ensure("lib/utils.ts", `export function cn(...inputs: Array<string | undefined | null | false>) {\n  return inputs.filter(Boolean).join(" ");\n}\n`);
+
+        await ensure("components/ui/button.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {\n  asChild?: boolean;\n}\nexport const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(\n  ({ className, ...props }, ref) => {\n    return (\n      <button ref={ref} className={cn("inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none border border-white/20 bg-white/10 hover:bg-white/20", className)} {...props} />\n    );\n  }\n);\nButton.displayName = "Button";\n`);
+
+        await ensure("components/ui/input.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}\nexport const Input = React.forwardRef<HTMLInputElement, InputProps>(\n  ({ className, ...props }, ref) => {\n    return <input ref={ref} className={cn("flex h-10 w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30", className)} {...props} />;\n  }\n);\nInput.displayName = "Input";\n`);
+
+        await ensure("components/ui/avatar.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport const Avatar = ({ className, children }: { className?: string; children?: React.ReactNode }) => (\n  <div className={cn("inline-flex h-9 w-9 overflow-hidden rounded-full bg-white/10", className)}>{children}</div>\n);\nexport const AvatarImage = ({ src, alt, className }: { src?: string; alt?: string; className?: string }) => (\n  // eslint-disable-next-line @next/next/no-img-element\n  <img src={src} alt={alt} className={cn("h-full w-full object-cover", className)} />\n);\nexport const AvatarFallback = ({ children, className }: { children?: React.ReactNode; className?: string }) => (\n  <div className={cn("flex h-full w-full items-center justify-center text-xs", className)}>{children}</div>\n);\n`);
+
+        await ensure("components/ui/dialog.tsx", `import * as React from "react";\nexport const Dialog = ({ children }: { children?: React.ReactNode }) => <>{children}</>;\nexport const DialogTrigger = ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) => (\n  <span onClick={onClick} role="button">{children}</span>\n);\nexport const DialogContent = ({ children }: { children?: React.ReactNode }) => (\n  <div>{children}</div>\n);\n`);
+
+        await ensure("components/ui/card.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport const Card = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (\n  <div className={cn("rounded-xl border border-white/15 bg-white/5", className)} {...props} />\n);\nexport const CardHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (\n  <div className={cn("p-4 border-b border-white/10", className)} {...props} />\n);\nexport const CardTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (\n  <h3 className={cn("text-lg font-semibold", className)} {...props} />\n);\nexport const CardDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (\n  <p className={cn("text-sm text-white/70", className)} {...props} />\n);\nexport const CardContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (\n  <div className={cn("p-4", className)} {...props} />\n);\n`);
+
+        await ensure("components/ui/scroll-area.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport const ScrollArea = ({ className, children }: { className?: string; children?: React.ReactNode }) => (\n  <div className={cn("relative overflow-auto", className)}>{children}</div>\n);\nexport const ScrollBar = () => null;\n`);
+
+        await ensure("components/ui/label.tsx", `import * as React from "react";\nimport { cn } from "@/lib/utils";\nexport interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {}\nexport const Label = React.forwardRef<HTMLLabelElement, LabelProps>(\n  ({ className, ...props }, ref) => {\n    return <label ref={ref} className={cn("text-sm font-medium", className)} {...props} />;\n  }\n);\nLabel.displayName = "Label";\n`);
+      } catch {
+        // best-effort bootstrap
+      }
+    });
+
+    // Ensure common icon packages are available to avoid module-not-found
+    await step.run("bootstrap-deps", async () => {
+      try {
+        const sandbox = await getSandbox(sandboxId);
+        await sandbox.commands.run("npm install @radix-ui/react-icons lucide-react --yes");
+      } catch {
+        // best-effort install
+      }
+    });
+
   // ✅ OpenRouter-powered Agent
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
@@ -167,7 +212,7 @@ export const codeAgentFunction = inngest.createFunction(
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
-      maxIter: 8,
+      maxIter: 10,
       defaultState:state,
       router: async ({ network }) => {
         const summary = network.state.data.summary;

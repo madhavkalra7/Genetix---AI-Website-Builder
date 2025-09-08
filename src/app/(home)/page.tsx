@@ -9,6 +9,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useClerk } from "@clerk/nextjs";
 
+function TypingTitle() {
+  const fullText = "Build With Genetix";
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayed(fullText.slice(0, i + 1));
+      i++;
+      if (i >= fullText.length) clearInterval(interval);
+    }, 120);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <h1 className="text-white text-5xl md:text-6xl font-extrabold tracking-widest font-[Orbitron] drop-shadow-xl">
+      {displayed}
+      <span className="animate-blink">|</span>
+      <style jsx>{`
+        .animate-blink {
+          animation: blink 1s steps(2, start) infinite;
+        }
+        @keyframes blink {
+          to { opacity: 0; }
+        }
+      `}</style>
+    </h1>
+  );
+}
+
 const Page = () => {
   const [value, setValue] = useState("");
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -16,6 +44,7 @@ const Page = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const clerk = useClerk();
+  // ...existing code...
   const queryClient = useQueryClient();
   const createProject = useMutation(
     trpc.projects.create.mutationOptions({
@@ -41,14 +70,13 @@ const Page = () => {
     })
   );
 
-  // Custom scroll progress tracker (SSR-safe)
   useEffect(() => {
-  // Prefill from ?prompt= (client-only to avoid Suspense requirement)
-  try {
-    const usp = new URLSearchParams(window.location.search);
-    const p = usp.get("prompt");
-    if (p) setValue(p);
-  } catch {}
+    // Prefill from ?prompt= (client-only to avoid Suspense requirement)
+    try {
+      const usp = new URLSearchParams(window.location.search);
+      const p = usp.get("prompt");
+      if (p) setValue(p);
+    } catch {}
 
     const updateScrollProgress = () => {
       const scrollTop = window.scrollY;
@@ -69,12 +97,34 @@ const Page = () => {
   }, []);
 
   return (
-    <main className="min-h-screen w-full bg-black overflow-x-hidden">
+    <main className="min-h-screen w-full bg-black overflow-x-hidden relative">
+      {/* Animated Stars & Nebula Background */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+        {/* Stars */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {[...Array(80)].map((_, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-white opacity-70 animate-twinkle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 2 + 1}px`,
+                height: `${Math.random() * 2 + 1}px`,
+                animationDelay: `${Math.random() * 3}s`,
+              }}
+            />
+          ))}
+        </div>
+        {/* Nebula (CSS keyframes) */}
+        <div className="absolute left-1/2 top-1/2 w-[900px] h-[600px] -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
+          <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-pink-500 opacity-30 blur-3xl animate-nebula" />
+        </div>
+      </div>
+
       {/* Custom Scroll Indicator (SSR-safe) */}
       <div className="fixed top-0 right-2 w-1 h-full bg-transparent z-50 pointer-events-none">
-        {/* Track */}
         <div className="w-full h-full bg-white/10 rounded-full" />
-        {/* Thumb */}
         <div 
           className="absolute w-full bg-white/50 rounded-full transition-all duration-200 ease-out"
           style={{ 
@@ -95,9 +145,7 @@ const Page = () => {
         <div className="w-full max-w-3xl mx-auto flex flex-col items-center pt-13 pb-19 px-4">
           {/* Header Section */}
           <div className="text-center mb-50">
-            <h1 className="text-white text-5xl md:text-6xl font-extrabold tracking-widest font-[Orbitron] drop-shadow-xl">
-              Build With <span className="text-white/80">Genetix</span>
-            </h1>
+            <TypingTitle />
             <p className="text-gray-300 mt-4 text-sm md:text-lg font-light">
               Your imagination. AI execution. 🚀
             </p>
@@ -134,9 +182,9 @@ const Page = () => {
                 </Button>
               </div>
             )}
-            {/* Demo Prompts */}
             <div className="flex flex-wrap justify-center gap-3 text-sm">
-              {["Create Netflix Clone","Build Admin Dashboard","create Kanban Board","create Calculator","Build E-commerce Site","Build Sudoku Solver",].map((prompt) => (
+              {[
+                "Create Netflix Clone","Build Admin Dashboard","create Kanban Board","create Calculator","Build E-commerce Site","Build Sudoku Solver",].map((prompt) => (
                 <Button
                   key={prompt}
                   variant="outline"
@@ -156,8 +204,26 @@ const Page = () => {
           <ProjectsList />
         </div>
       </section>
+
+      {/* Keyframes for stars and nebula */}
+      <style jsx global>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.7; }
+          50% { opacity: 1; }
+        }
+        .animate-twinkle {
+          animation: twinkle 2.5s infinite ease-in-out;
+        }
+        @keyframes nebula {
+          0% { transform: scale(1) rotate(0deg); filter: blur(60px); }
+          50% { transform: scale(1.08) rotate(8deg); filter: blur(80px); }
+          100% { transform: scale(1) rotate(0deg); filter: blur(60px); }
+        }
+        .animate-nebula {
+          animation: nebula 18s linear infinite;
+        }
+      `}</style>
     </main>
   );
-};
-
+}
 export default Page;
