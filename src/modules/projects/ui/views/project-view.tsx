@@ -33,6 +33,17 @@ export const ProjectView = ({ projectId }: Props) => {
   const hasProAccess=has?.({ plan :"pro"});
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
   const [tabState,setTabState]= useState<"preview" | "code">("preview"); 
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleFileUpdate = async (filePath: string, content: string) => {
+    // Update the fragment files in local state
+    if (activeFragment?.files) {
+      (activeFragment.files as any)[filePath] = content;
+    }
+    
+    // Trigger a refresh of the preview
+    setRefreshKey(prev => prev + 1);
+  }; 
 
   return (
     <div className="h-screen">
@@ -91,12 +102,16 @@ export const ProjectView = ({ projectId }: Props) => {
               </div>
             </div>
             <TabsContent value="preview">
-              {!!activeFragment && <FragmentWeb data={activeFragment}/>}
+              {!!activeFragment && <FragmentWeb key={refreshKey} data={activeFragment}/>}
             </TabsContent>
              <TabsContent value="code" className="min-h-0 h-full flex-1">
                 {!!activeFragment?.files && (
                   <div className="relative h-full min-h-[400px]">
-                    <FileExplorer files={activeFragment.files as {[path: string]: string}} />
+                    <FileExplorer 
+                      files={activeFragment.files as {[path: string]: string}} 
+                      sandboxUrl={activeFragment.sandboxUrl}
+                      onFileUpdate={handleFileUpdate}
+                    />
                   </div>
                 )}
              </TabsContent>

@@ -151,5 +151,6 @@ After ALL tool calls are 100% complete and the task is fully finished, respond w
 
 <task_summary>
 A short, high-level summary of what was created or changed.
+If you are not able to generate the summary then please return "in one line by seeing the user prompt only".
 </task_summary>
 `;

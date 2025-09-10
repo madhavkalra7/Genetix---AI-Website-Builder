@@ -274,8 +274,8 @@ export const codeAgentFunction = inngest.createFunction(
 
 
     const isError =
-      !result.state.data.summary ||
-      Object.keys(result.state.data.files || {}).length === 0;
+  !result.state.data.summary &&
+  Object.keys(result.state.data.files || {}).length === 0;
 
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await getSandbox(sandboxId);
@@ -285,10 +285,11 @@ export const codeAgentFunction = inngest.createFunction(
 
     await step.run("save-result", async () => {
       if (isError) {
+        // Only show error if both summary and files are missing
         return await prisma.message.create({
           data: {
             projectId: event.data.projectId,
-            content: "Something Went Wrong. Please try again.",
+            content: "Something Went Wrong. No summary and no files generated.",
             role: "ASSISTANT",
             type: "ERROR",
           },
