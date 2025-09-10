@@ -20,7 +20,7 @@ export const Navbar =()=>{
                     <Image src="/logo.png" alt="genetix" width={24} height={24} />
                     <span className="font-semibold text-md text-white">Genetix</span>
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="absolute left-1/2 transform -translate-x-1/2">
                     <Link
                         href="/prompt-generator"
                         className="text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors"

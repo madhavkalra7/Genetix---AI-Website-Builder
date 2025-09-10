@@ -7,7 +7,7 @@ import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 
 function TypingTitle() {
   const fullText = "Build With Genetix";
@@ -46,6 +46,7 @@ const Page = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const clerk = useClerk();
+  const { user } = useUser();
   // ...existing code...
   const queryClient = useQueryClient();
   const createProject = useMutation(
@@ -144,29 +145,36 @@ const Page = () => {
           minHeight: "110vh",
         }}
       >
-        <div className="w-full max-w-3xl mx-auto flex flex-col items-center pt-13 pb-19 px-4">
+        <div className="w-full max-w-3xl mx-auto flex flex-col items-center pt-20 pb-19 px-4">
           {/* Header Section */}
-          <div className="text-center mb-50">
+          <div className="text-center mb-16">
+            {user && (
+              <p className="text-green-400 text-sm md:text-base font-mono tracking-[0.3em] mb-8 uppercase animate-led-glow">
+                Welcome, {user.firstName || user.username || 'User'}
+              </p>
+            )}
             <TypingTitle />
-            <p className="text-gray-300 mt-4 text-sm md:text-lg font-light">
+            <p className="text-gray-300 mt-6 text-base md:text-xl font-light">
               Your imagination. AI execution. 🚀
             </p>
           </div>
           {/* Input + Prompts Section */}
           <div className="backdrop-blur-md bg-black/40 border border-gray-700 shadow-2xl px-8 py-8 w-full text-center space-y-6 mt-1">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="relative flex-1 flex items-center">
-                <Input
-                  className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black"
-                  placeholder="🌑 e.g. Build a crypto dashboard"
+            <div className="flex flex-col sm:flex-row items-start gap-3">
+              <div className="relative flex-1 flex">
+                <textarea
+                  className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black resize-none w-full"
+                  placeholder="🌑 e.g. Build a crypto dashboard with real-time updates"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
+                  rows={4}
+                  style={{ minHeight: '50px', maxHeight: '120px' }}
                 />
                 <button
                   type="button"
                   aria-label={listening ? "Listening..." : "Speak"}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-0 m-0 bg-transparent border-none outline-none flex items-center justify-center transition ${listening ? "animate-pulse" : ""}`}
-                  style={{height: '32px', width: '32px'}} // matches input height
+                  className={`absolute right-3 top-3 p-0 m-0 bg-transparent border-none outline-none flex items-center justify-center transition ${listening ? "animate-pulse" : ""}`}
+                  style={{height: '32px', width: '32px'}}
                   onClick={() => {
                     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
                       alert('Speech recognition not supported in this browser.');
@@ -206,7 +214,7 @@ const Page = () => {
               <Button
                 disabled={createProject.isPending || !value}
                 onClick={() => createProject.mutate({ value })}
-                className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold font-[Orbitron] transition"
+                className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold font-[Orbitron] transition mt-2 sm:mt-0"
               >
                 Launch 🚀
               </Button>
@@ -265,6 +273,31 @@ const Page = () => {
         }
         .animate-nebula {
           animation: nebula 18s linear infinite;
+        }
+        @keyframes led-glow {
+          0% { 
+            color: #4ade80; 
+            text-shadow: 0 0 5px #4ade80, 0 0 10px #4ade80, 0 0 15px #4ade80;
+          }
+          25% { 
+            color: #22c55e; 
+            text-shadow: 0 0 8px #22c55e, 0 0 16px #22c55e, 0 0 24px #22c55e;
+          }
+          50% { 
+            color: #16a34a; 
+            text-shadow: 0 0 12px #16a34a, 0 0 24px #16a34a, 0 0 36px #16a34a;
+          }
+          75% { 
+            color: #22c55e; 
+            text-shadow: 0 0 8px #22c55e, 0 0 16px #22c55e, 0 0 24px #22c55e;
+          }
+          100% { 
+            color: #4ade80; 
+            text-shadow: 0 0 5px #4ade80, 0 0 10px #4ade80, 0 0 15px #4ade80;
+          }
+        }
+        .animate-led-glow {
+          animation: led-glow 2s ease-in-out infinite;
         }
       `}</style>
     </main>

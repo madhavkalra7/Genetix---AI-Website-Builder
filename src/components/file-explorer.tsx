@@ -1,8 +1,6 @@
 import { CopyCheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
-import ErrorHelper from "@/app/project/[projectId]/explanation/ErrorHelper";
 import { useState, useMemo, useCallback, Fragment, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import { Hint } from "@/components/ui/hint";
 import { Button } from "@/components/ui/button";
 import { CodeView } from "@/components/code-view";
