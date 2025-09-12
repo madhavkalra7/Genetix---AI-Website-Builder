@@ -20,6 +20,7 @@ import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
 import { useAuth } from "@clerk/nextjs";
 import { ErrorBoundary } from "react-error-boundary";
+import { ProjectLoading } from "@/components/project-loading";
 
 interface Props {
   projectId: string;
@@ -98,12 +99,14 @@ export const ProjectView = ({ projectId }: Props) => {
               </div>
             </div>
             <TabsContent value="preview">
-              {!!activeFragment && (
+              {!!activeFragment ? (
                 <FragmentWeb key={`${refreshKey}-preview`} data={activeFragment} />
+              ) : (
+                <ProjectLoading className="w-full h-full" />
               )}
             </TabsContent>
             <TabsContent value="code" className="min-h-0 h-full flex-1">
-              {!!activeFragment?.files && (
+              {!!activeFragment?.files ? (
                 <div className="relative h-full min-h-[400px]">
                   <FileExplorer
                     files={activeFragment.files as { [path: string]: string }}
@@ -111,6 +114,8 @@ export const ProjectView = ({ projectId }: Props) => {
                     onFileUpdate={handleFileUpdate}
                   />
                 </div>
+              ) : (
+                <ProjectLoading className="w-full h-full" />
               )}
             </TabsContent>
           </Tabs>

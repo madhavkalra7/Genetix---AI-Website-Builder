@@ -24,6 +24,71 @@ export function FragmentWeb({ data }: Props){
             setTimeout(() => setCopied(false), 2000);
         };
 
+        // Function to open static project in new tab
+        const openStaticInNewTab = () => {
+            if (!data.files || typeof data.files !== 'object') return;
+            
+            const files = data.files as {[path: string]: string};
+            const indexHtml = files['index.html'];
+            
+            if (!indexHtml) return;
+
+            // Combine all files into a single HTML document
+            let combinedHTML = indexHtml;
+
+            // Get all CSS files
+            const cssFiles = Object.keys(files).filter(filename => 
+                filename.endsWith('.css') && files[filename]
+            );
+
+            // Get all JS files  
+            const jsFiles = Object.keys(files).filter(filename => 
+                filename.endsWith('.js') && files[filename]
+            );
+
+            // Inject all CSS files
+            cssFiles.forEach(cssFile => {
+                const cssContent = files[cssFile];
+                if (cssContent) {
+                    const cssInjection = `<style>\n/* ${cssFile} */\n${cssContent}\n</style>`;
+                    
+                    if (combinedHTML.includes('</head>')) {
+                        combinedHTML = combinedHTML.replace('</head>', `${cssInjection}\n</head>`);
+                    } else if (combinedHTML.includes('<head>')) {
+                        combinedHTML = combinedHTML.replace('<head>', `<head>\n${cssInjection}`);
+                    } else {
+                        combinedHTML = combinedHTML.replace('<html>', `<html>\n<head>\n${cssInjection}\n</head>`);
+                    }
+                }
+            });
+
+            // Inject all JS files
+            jsFiles.forEach(jsFile => {
+                const jsContent = files[jsFile];
+                if (jsContent) {
+                    const jsInjection = `<script>\n/* ${jsFile} */\n${jsContent}\n</script>`;
+                    
+                    if (combinedHTML.includes('</body>')) {
+                        combinedHTML = combinedHTML.replace('</body>', `${jsInjection}\n</body>`);
+                    } else {
+                        combinedHTML += jsInjection;
+                    }
+                }
+            });
+
+            // Create a blob URL and open in new tab
+            const blob = new Blob([combinedHTML], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Open in new tab
+            const newWindow = window.open(blobUrl, '_blank');
+            
+            // Clean up blob URL after some time
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+            }, 1000);
+        };
+
         // Check if this is a static project that can be previewed locally
         const isStaticProject = data.files && typeof data.files === 'object' && 
             ('index.html' in data.files);
@@ -76,15 +141,11 @@ export function FragmentWeb({ data }: Props){
                                 </span>
                             </Button>
                         </Hint>
-                        <Hint text="View sandbox (if available)" side="bottom" align="start">
+                        <Hint text="Open in full screen" side="bottom" align="start">
                             <Button 
                                 size="sm"
-                                disabled={!data.sandboxUrl}
                                 variant="outline"
-                                onClick={()=>{
-                                    if(!data.sandboxUrl) return;
-                                    window.open(data.sandboxUrl, "_blank");
-                                }}
+                                onClick={openStaticInNewTab}
                             >
                                 <ExternalLinkIcon/>
                             </Button>
