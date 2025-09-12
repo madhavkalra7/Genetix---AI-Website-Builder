@@ -7,6 +7,7 @@ import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useClerk, useUser } from "@clerk/nextjs";
 
 function TypingTitle() {
@@ -39,6 +40,7 @@ function TypingTitle() {
 
 const Page = () => {
   const [value, setValue] = useState("");
+  const [selectedTech, setSelectedTech] = useState("react-nextjs");
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -47,6 +49,15 @@ const Page = () => {
   const trpc = useTRPC();
   const clerk = useClerk();
   const { user } = useUser();
+  
+  // Technology stack options
+  const techOptions = [
+    { value: "react-nextjs", label: "React + Next.js", description: "Modern web apps with React and Next.js" },
+    { value: "html-css-js", label: "HTML + CSS + JavaScript", description: "Vanilla web development" },
+    { value: "vue-nuxt", label: "Vue.js + Nuxt", description: "Vue-based web applications" },
+    { value: "angular", label: "Angular", description: "Enterprise web applications" },
+    { value: "svelte-kit", label: "Svelte + SvelteKit", description: "Fast and lightweight apps" },
+  ];
   // ...existing code...
   const queryClient = useQueryClient();
   const createProject = useMutation(
@@ -72,6 +83,17 @@ const Page = () => {
       },
     })
   );
+
+  const handleCreateProject = () => {
+    const selectedTechOption = techOptions.find(tech => tech.value === selectedTech);
+    const enhancedPrompt = `${value}\n\nTechnology Stack: ${selectedTechOption?.label}\nRequirements: ${selectedTechOption?.description}`;
+    
+    createProject.mutate({ 
+      value: value, // Original prompt for display
+      enhancedValue: enhancedPrompt, // Enhanced prompt for AI
+      techStack: selectedTech 
+    });
+  };
 
   useEffect(() => {
     // Prefill from ?prompt= (client-only to avoid Suspense requirement)
@@ -160,6 +182,32 @@ const Page = () => {
           </div>
           {/* Input + Prompts Section */}
           <div className="backdrop-blur-md bg-black/40 border border-gray-700 shadow-2xl px-8 py-8 w-full text-center space-y-6 mt-1">
+            {/* Technology Stack Selector */}
+            <div className="w-full">
+              <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
+                🔧 Select Technology Stack
+              </label>
+              <Select value={selectedTech} onValueChange={setSelectedTech}>
+                <SelectTrigger className="w-full bg-black/40 border border-white/30 text-white font-[Orbitron] rounded-xl focus:ring-2 focus:ring-white">
+                  <SelectValue placeholder="Choose your tech stack" />
+                </SelectTrigger>
+                <SelectContent className="bg-black/90 border border-white/30 rounded-xl">
+                  {techOptions.map((tech) => (
+                    <SelectItem 
+                      key={tech.value} 
+                      value={tech.value}
+                      className="text-white hover:bg-white/10 font-[Orbitron] focus:bg-white/10"
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="font-semibold">{tech.label}</span>
+                        <span className="text-xs text-white/60">{tech.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="flex flex-col sm:flex-row items-start gap-3">
               <div className="relative flex-1 flex">
                 <textarea
@@ -213,7 +261,7 @@ const Page = () => {
               </div>
               <Button
                 disabled={createProject.isPending || !value}
-                onClick={() => createProject.mutate({ value })}
+                onClick={handleCreateProject}
                 className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold font-[Orbitron] transition mt-2 sm:mt-0"
               >
                 Launch 🚀
@@ -235,8 +283,76 @@ const Page = () => {
               </div>
             )}
             <div className="flex flex-wrap justify-center gap-3 text-sm">
-              {[
-                "Create Netflix Clone","Build Admin Dashboard","create Kanban Board","create Calculator","Build E-commerce Site","Build Sudoku Solver",].map((prompt) => (
+              {/* Dynamic prompts based on selected technology */}
+              {selectedTech === "react-nextjs" && [
+                "Create a landing page", "Build Admin Dashboard", "Create Kanban Board", "Build E-commerce Site"
+              ].map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  onClick={() => setValue(prompt)}
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
+                >
+                  {prompt}
+                </Button>
+              ))}
+              
+              {selectedTech === "html-css-js" && [
+                "Create netflix clone", "Build Portfolio Website", "Create tic tac toe game", "Build rock paper scissor game"
+              ].map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  onClick={() => setValue(prompt)}
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
+                >
+                  {prompt}
+                </Button>
+              ))}
+              
+              {selectedTech === "vue-nuxt" && [
+                "Create Dashboard", "Build Portfolio Site", "Create Blog Platform", "Build E-commerce App"
+              ].map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  onClick={() => setValue(prompt)}
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
+                >
+                  {prompt}
+                </Button>
+              ))}
+              
+              {selectedTech === "angular" && [
+                "Create Admin Panel", "Build Task Manager", "Create Data Visualization", "Build Enterprise App"
+              ].map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  onClick={() => setValue(prompt)}
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
+                >
+                  {prompt}
+                </Button>
+              ))}
+              
+              {selectedTech === "svelte-kit" && [
+                "Create Fast Website", "Build Interactive App", "Create Minimalist Design", "Build Lightweight Tool"
+              ].map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  onClick={() => setValue(prompt)}
+                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
+                >
+                  {prompt}
+                </Button>
+              ))}
+              
+              {/* Default fallback for other technologies */}
+              {!["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(selectedTech) && [
+                "Create Web Application", "Build Dashboard", "Create API", "Build User Interface"
+              ].map((prompt) => (
                 <Button
                   key={prompt}
                   variant="outline"

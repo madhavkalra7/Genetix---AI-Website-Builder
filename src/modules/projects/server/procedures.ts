@@ -40,9 +40,11 @@ export const projectsRouter = createTRPCRouter({
     create: protectedProcedure
         .input(
             z.object({
-                value:z.string()
+                value: z.string()
                 .min(1, { message: "Value is required"})
-                .max(10000,{ message: "Value is too long"})
+                .max(10000,{ message: "Value is too long"}),
+                enhancedValue: z.string().optional(), // Enhanced prompt for AI
+                techStack: z.string().optional().default("react-nextjs")
             }),
         )
         .mutation(async ({ input,ctx })=> {
@@ -65,9 +67,10 @@ export const projectsRouter = createTRPCRouter({
                 data: {
                     userId:ctx.auth.userId,
                     name: generateSlug(2, { format: "kebab" }),
+                    techStack: input.techStack,
                     messages: {
                         create: {
-                            content: input.value,
+                            content: input.value, // Save original prompt for display
                             role: "USER",
                             type: "RESULT",
                         }
@@ -78,7 +81,7 @@ export const projectsRouter = createTRPCRouter({
             await inngest.send({
                 name: "code-agent/run",
                 data: {
-                    value: input.value,
+                    value: input.enhancedValue || input.value, // Use enhanced prompt for AI
                     projectId: createdProject.id,
                 },
                 });

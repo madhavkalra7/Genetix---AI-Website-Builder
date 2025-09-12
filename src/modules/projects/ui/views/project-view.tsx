@@ -2,24 +2,20 @@
 
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { MessagesContainer } from "../components/messages-container";
-import { act, Suspense,useState } from "react";
+import { Suspense, useState } from "react";
 import { Fragment } from "@/generated/prisma";
-import { fr, se } from "date-fns/locale";
 import { ProjectHeader } from "../components/project-header";
 import { FragmentWeb } from "../components/fragment-web";
-import {Tabs , TabsContent,TabsList,TabsTrigger } from "@/components/ui/tabs";
-import { EyeIcon,CodeIcon, CrownIcon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EyeIcon, CodeIcon, CrownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CodeView } from "@/components/code-view";
-import path from "path";
 import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
 import { useAuth } from "@clerk/nextjs";
@@ -28,11 +24,12 @@ import { ErrorBoundary } from "react-error-boundary";
 interface Props {
   projectId: string;
 }
+
 export const ProjectView = ({ projectId }: Props) => {
   const { has } = useAuth();
-  const hasProAccess=has?.({ plan :"pro"});
+  const hasProAccess = has?.({ plan: "pro" });
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
-  const [tabState,setTabState]= useState<"preview" | "code">("preview"); 
+  const [tabState, setTabState] = useState<"preview" | "code">("preview");
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleFileUpdate = async (filePath: string, content: string) => {
@@ -43,7 +40,7 @@ export const ProjectView = ({ projectId }: Props) => {
     
     // Trigger a refresh of the preview
     setRefreshKey(prev => prev + 1);
-  }; 
+  };
 
   return (
     <div className="h-screen">
@@ -61,14 +58,14 @@ export const ProjectView = ({ projectId }: Props) => {
           <ErrorBoundary fallback={<p>Error loading messages</p>}>
             <Suspense fallback={<p>Loading messages...</p>}>
               <MessagesContainer
-              projectId={projectId}
-              activeFragment={activeFragment}
-              setActiveFragment={setActiveFragment}
+                projectId={projectId}
+                activeFragment={activeFragment}
+                setActiveFragment={setActiveFragment}
               />
             </Suspense>
           </ErrorBoundary>
         </ResizablePanel>
-        <ResizableHandle className="hover:bg-primary transition-colors"/>
+        <ResizableHandle className="hover:bg-primary transition-colors" />
         <ResizablePanel
           defaultSize={65}
           minSize={50}
@@ -83,40 +80,40 @@ export const ProjectView = ({ projectId }: Props) => {
             <div className="w-full flex items-center p-2 border-b gap-x-2">
               <TabsList className="h-8 p-0 border rounded-md">
                 <TabsTrigger value="preview" className="rounded-md">
-                  <EyeIcon/> <span>Demo</span>
+                  <EyeIcon /> <span>Demo</span>
                 </TabsTrigger>
                 <TabsTrigger value="code" className="rounded-md">
-                  <CodeIcon/> <span>code</span>
+                  <CodeIcon /> <span>code</span>
                 </TabsTrigger>
-                {!!activeFragment && <FragmentWeb data={activeFragment} />}
               </TabsList>
               <div className="ml-auto flex items-center gap-x-2">
                 {!hasProAccess && (
                   <Button asChild size="sm" variant="tertiary">
                     <Link href="/pricing">
-                      <CrownIcon/> Upgrade
+                      <CrownIcon /> Upgrade
                     </Link>
                   </Button>
                 )}
-                  <UserControl />
+                <UserControl />
               </div>
             </div>
             <TabsContent value="preview">
-              {!!activeFragment && <FragmentWeb key={refreshKey} data={activeFragment}/>}
+              {!!activeFragment && (
+                <FragmentWeb key={`${refreshKey}-preview`} data={activeFragment} />
+              )}
             </TabsContent>
-             <TabsContent value="code" className="min-h-0 h-full flex-1">
-                {!!activeFragment?.files && (
-                  <div className="relative h-full min-h-[400px]">
-                    <FileExplorer 
-                      files={activeFragment.files as {[path: string]: string}} 
-                      sandboxUrl={activeFragment.sandboxUrl}
-                      onFileUpdate={handleFileUpdate}
-                    />
-                  </div>
-                )}
-             </TabsContent>
+            <TabsContent value="code" className="min-h-0 h-full flex-1">
+              {!!activeFragment?.files && (
+                <div className="relative h-full min-h-[400px]">
+                  <FileExplorer
+                    files={activeFragment.files as { [path: string]: string }}
+                    sandboxUrl={activeFragment.sandboxUrl}
+                    onFileUpdate={handleFileUpdate}
+                  />
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
-         
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

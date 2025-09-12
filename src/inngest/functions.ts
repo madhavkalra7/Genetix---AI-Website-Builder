@@ -3,7 +3,7 @@ import { createAgent, createTool, createNetwork, type Tool, openai, type Message
 import { Sandbox } from "@e2b/code-interpreter";
 import { z } from "zod";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
-import { FRAGMENT_TITLE_PROMPT, PROMPT , RESPONSE_PROMPT} from "@/prompt";
+import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT} from "@/prompt";
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 
@@ -25,8 +25,14 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const previousMessages=await step.run("get-previous-messages", async () => {
+    const { previousMessages, projectTechStack } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
+
+      // Get project info including techStack
+      const project = await prisma.project.findUnique({
+        where: { id: event.data.projectId },
+        select: { techStack: true }
+      });
 
       const messages=await prisma.message.findMany({
         where: {
@@ -44,7 +50,10 @@ export const codeAgentFunction = inngest.createFunction(
           content: message.content,
         });
       }
-      return formattedMessages.reverse();
+      return {
+        previousMessages: formattedMessages.reverse(),
+        projectTechStack: project?.techStack || "react-nextjs"
+      };
     });
 
     const state=createState<AgentState>(
@@ -186,7 +195,7 @@ export const codeAgentFunction = inngest.createFunction(
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
-      system: PROMPT,
+      system: getTechSpecificPrompt(projectTechStack),
       model: openai({
     // baseUrl: "https://openrouter.ai/api/v1",
     // apiKey: process.env.OPENROUTER_API_KEY!,
@@ -279,6 +288,9 @@ export const codeAgentFunction = inngest.createFunction(
 
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await getSandbox(sandboxId);
+      
+      // For all projects, use the standard sandbox URL
+      // HTML/CSS/JS preview will be handled by the frontend component
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });
