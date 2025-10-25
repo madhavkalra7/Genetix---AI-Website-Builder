@@ -2,14 +2,20 @@
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import Image from "next/image"
-import { SignedIn , SignedOut, SignInButton,SignUpButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { UserControl } from "@/components/user-control"
 import { useScroll } from "@/hooks/use-scroll"
-import { is } from "date-fns/locale"
+import { useAuth } from "@/contexts/AuthContext"
+import { useSession } from "next-auth/react"
 
 export const Navbar =()=>{
     const isScrolled=useScroll();
+    const { user: customAuthUser } = useAuth();
+    const { data: session } = useSession();
+    
+    // Check both custom auth and NextAuth
+    const user = customAuthUser || session?.user;
+    
     return (
         <nav className={cn(
             "p-4 bg-transparent fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b border-transparent",
@@ -28,23 +34,18 @@ export const Navbar =()=>{
                         Prompt Generator
                     </Link>
                 </div>
-                <SignedOut>
+                {!user ? (
                     <div className="flex gap-2">
-                        <SignUpButton>
-                            <Button variant="outline" size="sm">
-                                Sign Up
-                            </Button>
-                        </SignUpButton>
-                        <SignInButton>
-                            <Button size="sm">
-                                Sign In
-                            </Button>
-                        </SignInButton>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/auth/signup">Sign Up</Link>
+                        </Button>
+                        <Button size="sm" asChild>
+                            <Link href="/auth/signin">Sign In</Link>
+                        </Button>
                     </div>
-                </SignedOut>
-                <SignedIn>
+                ) : (
                     <UserControl showName />
-                </SignedIn>
+                )}
             </div>
         </nav>
     )

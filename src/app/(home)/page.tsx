@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useAuth } from "@/contexts/AuthContext";
 
 function TypingTitle() {
   const fullText = "Build With Genetix";
@@ -47,8 +47,7 @@ const Page = () => {
   const [scrollThumbTop, setScrollThumbTop] = useState(0);
   const router = useRouter();
   const trpc = useTRPC();
-  const clerk = useClerk();
-  const { user } = useUser();
+  const { user } = useAuth();
   
   // Technology stack options
   const techOptions = [
@@ -65,7 +64,7 @@ const Page = () => {
       onError: (error) => {
         toast.error(error.message);
         if (error.data?.code === "UNAUTHORIZED") {
-          clerk.openSignIn();
+          router.push("/auth/signin");
         }
         if (error.data?.code === "TOO_MANY_REQUESTS") {
           router.push("/pricing");

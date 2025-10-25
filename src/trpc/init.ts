@@ -1,16 +1,54 @@
 import { initTRPC, TRPCError } from '@trpc/server';
-import { auth } from "@clerk/nextjs/server";
+import { getSessionByToken } from "@/lib/auth";
+import { cookies } from "next/headers";
 import { cache } from 'react';
 import superjson from 'superjson';
-import { is } from 'date-fns/locale';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth-config-simple";
+import { prisma } from "@/lib/db";
+
 export const createTRPCContext = cache(async () => {
-  return { auth: await auth()};
+  // Check NextAuth session first
+  const nextAuthSession = await getServerSession(authOptions);
+  
+  if (nextAuthSession?.user?.email) {
+    // Fetch the actual user from database to get their UUID
+    const dbUser = await prisma.user.findUnique({
+      where: { email: nextAuthSession.user.email }
+    });
+    
+    if (dbUser) {
+      return {
+        auth: {
+          userId: dbUser.id, // Use actual UUID from database
+          user: nextAuthSession.user,
+          isNextAuth: true,
+        },
+      };
+    }
+  }
+  
+  // Check custom auth session
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("session_token")?.value;
+  
+  if (!sessionToken) {
+    return { auth: { userId: null, user: null, isNextAuth: false } };
+  }
+
+  const session = await getSessionByToken(sessionToken);
+  
+  return {
+    auth: {
+      userId: session?.user.id || null,
+      user: session?.user || null,
+      isNextAuth: false,
+    },
+  };
 });
-// Avoid exporting the entire t-object
-// since it's not very descriptive.
-// For instance, the use of a t variable
-// is common in i18n libraries.
+
 export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+
 const t = initTRPC.context<Context>().create({
   /**
    * @see https://trpc.io/docs/server/data-transformers
@@ -18,16 +56,16 @@ const t = initTRPC.context<Context>().create({
   transformer: superjson, 
 });
 
-const isAuthed=t.middleware(({ next , ctx})=>{
-  if(!ctx.auth.userId) {
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.auth.userId) {
     throw new TRPCError({
-      code:"UNAUTHORIZED",
-      message:"Not authenticated",
+      code: "UNAUTHORIZED",
+      message: "Not authenticated",
     });
   }
   return next({
-    ctx:{
-      auth:ctx.auth,
+    ctx: {
+      auth: ctx.auth,
     },
   });
 });

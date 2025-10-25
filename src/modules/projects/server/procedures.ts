@@ -11,6 +11,12 @@ export const projectsRouter = createTRPCRouter({
         id: z.string().min(1, { message: "Project ID is required" }),
     }))
         .query(async ({ input , ctx})=>{
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
             const existingProject= await prisma.project.findUnique({
                 where: {
                     id: input.id,
@@ -27,14 +33,27 @@ export const projectsRouter = createTRPCRouter({
         }),
     getMany: protectedProcedure
         .query(async ({ ctx })=>{
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+            
+            console.log("📂 getMany called with userId:", ctx.auth.userId);
+            
             const projects= await prisma.project.findMany({
                 where:{
-                    userId:ctx.auth.userId,
+                    userId: ctx.auth.userId,
                 },
                 orderBy: {
                     updatedAt: "asc",
                 },
             });
+            
+            console.log("📂 Found projects:", projects.length);
+            console.log("Projects:", projects.map(p => ({ id: p.id, name: p.name, userId: p.userId })));
+            
             return projects;
         }),
     create: protectedProcedure
@@ -49,12 +68,20 @@ export const projectsRouter = createTRPCRouter({
         )
         .mutation(async ({ input,ctx })=> {
 
+            console.log("🚀 Project create mutation called");
+            console.log("User ID from context:", ctx.auth.userId);
+            console.log("Input:", { value: input.value, techStack: input.techStack });
+
             try{
+                console.log("Attempting to consume credits...");
                 await consumeCredits();
+                console.log("✅ Credits consumed successfully");
                 } catch(error){
+                    console.error("❌ Credit consumption failed:", error);
                     if(error instanceof Error){
+                        console.error("Error message:", error.message);
                         throw new TRPCError({
-                            code:"BAD_REQUEST", message:"Something went wrong"
+                            code:"BAD_REQUEST", message: error.message || "Something went wrong"
                         });
                     } else{
                         throw new TRPCError({
@@ -63,9 +90,16 @@ export const projectsRouter = createTRPCRouter({
                     }
                 }
 
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+            
             const createdProject= await prisma.project.create({
                 data: {
-                    userId:ctx.auth.userId,
+                    userId: ctx.auth.userId,
                     name: generateSlug(2, { format: "kebab" }),
                     techStack: input.techStack,
                     messages: {

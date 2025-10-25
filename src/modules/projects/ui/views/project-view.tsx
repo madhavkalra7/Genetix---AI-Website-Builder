@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileExplorer } from "@/components/file-explorer";
 import { UserControl } from "@/components/user-control";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "react-error-boundary";
 import { ProjectLoading } from "@/components/project-loading";
 
@@ -27,8 +27,9 @@ interface Props {
 }
 
 export const ProjectView = ({ projectId }: Props) => {
-  const { has } = useAuth();
-  const hasProAccess = has?.({ plan: "pro" });
+  const { user } = useAuth();
+  // TODO: Check user's subscription plan from database
+  const hasProAccess = false; // Will be implemented with subscription checking
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
   const [tabState, setTabState] = useState<"preview" | "code">("preview");
   const [refreshKey, setRefreshKey] = useState(0);

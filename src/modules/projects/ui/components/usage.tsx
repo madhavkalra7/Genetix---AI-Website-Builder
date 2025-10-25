@@ -2,18 +2,17 @@ import Link from "next/link";
 import {CrownIcon} from "lucide-react"
 import { formatDuration,intervalToDuration } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
-import { format } from "path";
-import { ms } from "date-fns/locale";
 
 interface Props {
     points:number;
     msBeforeNext:number;
 }
 export const Usage = ({ points, msBeforeNext }: Props) => {
-  const { has } = useAuth();
-  const hasProAccess=has?.({ plan :"pro"});
+  const { user } = useAuth();
+  // TODO: Check user's subscription plan from database
+  const hasProAccess = false; // Will be implemented with subscription checking
   const resetTime=useMemo(()=>{
     try{
         return formatDuration(intervalToDuration({
