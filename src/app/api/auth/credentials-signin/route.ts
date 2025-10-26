@@ -33,6 +33,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user has a password (OAuth users don't have passwords)
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        { error: 'This account uses OAuth login. Please sign in with Google or GitHub.' },
+        { status: 400 }
+      );
+    }
+
     // Verify password
     const isValidPassword = await verifyPassword(validatedData.password, user.passwordHash);
     
