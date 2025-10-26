@@ -5,7 +5,10 @@ import { prisma } from "@/lib/db";
 export const subscriptionRouter = createTRPCRouter({
   // Get current user's subscription
   getMySubscription: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.userId;
+    const userId = ctx.auth.userId;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
     const subscription = await prisma.subscription.findUnique({
       where: { userId },
@@ -19,7 +22,10 @@ export const subscriptionRouter = createTRPCRouter({
 
   // Get user's payment history
   getMyPayments: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.userId;
+    const userId = ctx.auth.userId;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
     const payments = await prisma.payment.findMany({
       where: { userId },
@@ -32,7 +38,10 @@ export const subscriptionRouter = createTRPCRouter({
 
   // Check if user has active subscription
   hasActiveSubscription: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.userId;
+    const userId = ctx.auth.userId;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
     const subscription = await prisma.subscription.findFirst({
       where: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -28,8 +28,14 @@ interface Props {
 
 export const ProjectView = ({ projectId }: Props) => {
   const { user } = useAuth();
-  // TODO: Check user's subscription plan from database
-  const hasProAccess = false; // Will be implemented with subscription checking
+  const trpc = useTRPC();
+  
+  // Fetch user's current subscription
+  const { data: subscription } = useQuery(
+    trpc.subscription.getMySubscription.queryOptions()
+  );
+  
+  const hasProAccess = subscription?.plan?.name === "pro" || subscription?.plan?.name === "enterprise";
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
   const [tabState, setTabState] = useState<"preview" | "code">("preview");
   const [refreshKey, setRefreshKey] = useState(0);

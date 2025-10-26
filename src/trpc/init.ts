@@ -65,7 +65,10 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   }
   return next({
     ctx: {
-      auth: ctx.auth,
+      auth: {
+        ...ctx.auth,
+        userId: ctx.auth.userId as string, // Type assertion after null check
+      },
     },
   });
 });

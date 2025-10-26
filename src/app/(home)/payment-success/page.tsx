@@ -1,32 +1,105 @@
 "use client"
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function PaymentSuccessPage() {
     const searchParams = useSearchParams();
-    const [status, setStatus] = useState<"pending" | "success" | "failed">("pending");
+    const router = useRouter();
+    const [status, setStatus] = useState<"pending" | "success" | "failed" | "activating">("pending");
+    const [credits, setCredits] = useState<number | null>(null);
     const orderId = searchParams.get("order_id");
     const paymentStatus = searchParams.get("status");
 
     useEffect(() => {
-        // Check payment status from URL params
-        if (paymentStatus === "success") {
-            setStatus("success");
-        } else if (paymentStatus === "failed") {
-            setStatus("failed");
-        } else {
-            setStatus("pending");
-        }
-    }, [paymentStatus]);
+        const activateSubscription = async () => {
+            let finalOrderId = orderId;
+            let finalStatus = paymentStatus;
+
+            // If no URL params, check localStorage
+            if (!finalOrderId && !finalStatus) {
+                const storedOrderId = localStorage.getItem("pending_order_id");
+                const storedPlanName = localStorage.getItem("pending_plan_name");
+                
+                if (storedOrderId) {
+                    finalOrderId = storedOrderId;
+                    finalStatus = "success"; // Assume success if coming from PhonePe
+                    
+                    // Update URL with params
+                    window.history.replaceState(
+                        null,
+                        "",
+                        `/payment-success?order_id=${storedOrderId}&status=success`
+                    );
+                    
+                    // Clear localStorage
+                    localStorage.removeItem("pending_order_id");
+                    localStorage.removeItem("pending_plan_name");
+                }
+            }
+
+            // Check payment status from URL params
+            if (finalStatus === "success" && finalOrderId) {
+                setStatus("activating");
+                
+                try {
+                    // Call activation API
+                    const response = await fetch("/api/payment/activate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            transactionId: finalOrderId,
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        setStatus("success");
+                        setCredits(data.credits);
+                        toast.success(`Subscription activated! ${data.credits} credits added to your account.`);
+                        
+                        // Redirect to home page after 3 seconds
+                        setTimeout(() => {
+                            router.push("/");
+                        }, 3000);
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } catch (error: any) {
+                    console.error("Activation error:", error);
+                    setStatus("pending");
+                    toast.error("Activation will be processed manually within 24 hours");
+                }
+            } else if (finalStatus === "failed") {
+                setStatus("failed");
+            } else {
+                setStatus("pending");
+            }
+        };
+
+        activateSubscription();
+    }, [paymentStatus, orderId, router]);
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <Card className="max-w-md w-full">
                 <CardHeader className="text-center">
+                    {status === "activating" && (
+                        <>
+                            <div className="mx-auto mb-4">
+                                <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+                            </div>
+                            <CardTitle className="text-2xl">Activating Subscription...</CardTitle>
+                            <CardDescription>
+                                Please wait while we set up your account
+                            </CardDescription>
+                        </>
+                    )}
                     {status === "success" && (
                         <>
                             <div className="mx-auto mb-4">
@@ -34,7 +107,7 @@ export default function PaymentSuccessPage() {
                             </div>
                             <CardTitle className="text-2xl">Payment Successful! 🎉</CardTitle>
                             <CardDescription>
-                                Thank you for subscribing to our service
+                                Your subscription has been activated
                             </CardDescription>
                         </>
                     )}
@@ -65,20 +138,20 @@ export default function PaymentSuccessPage() {
                     {status === "success" && (
                         <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
                             <p className="text-sm text-green-800 dark:text-green-200">
-                                ✅ Your subscription will be activated within <strong>24 hours</strong>.
+                                ✅ <strong>{credits} AI credits</strong> have been added to your account!
                             </p>
                             <p className="text-sm text-green-800 dark:text-green-200 mt-2">
-                                You will receive a confirmation email once activated.
+                                Redirecting to home page in 3 seconds...
                             </p>
                         </div>
                     )}
                     {status === "pending" && (
                         <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg">
                             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                ⏳ Please wait while we confirm your payment.
+                                ⏳ Your subscription will be activated within 24 hours.
                             </p>
                             <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2">
-                                This usually takes a few minutes. You can close this page.
+                                You will receive a confirmation email once activated.
                             </p>
                         </div>
                     )}
@@ -99,16 +172,20 @@ export default function PaymentSuccessPage() {
                     )}
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
-                    <Link href="/projects" className="w-full">
-                        <Button className="w-full">
-                            Go to Projects
-                        </Button>
-                    </Link>
-                    <Link href="/pricing" className="w-full">
-                        <Button variant="outline" className="w-full">
-                            View Plans
-                        </Button>
-                    </Link>
+                    {status !== "activating" && (
+                        <>
+                            <Link href="/" className="w-full">
+                                <Button className="w-full">
+                                    Go to Home
+                                </Button>
+                            </Link>
+                            <Link href="/pricing" className="w-full">
+                                <Button variant="outline" className="w-full">
+                                    View Plans
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </CardFooter>
             </Card>
         </div>

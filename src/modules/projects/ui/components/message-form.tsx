@@ -76,7 +76,10 @@ export const MessageForm=({ projectId }: Props) => {
     return (
         <Form {...form}>
             {showUsage && (
-                <Usage points={usage.remainingPoints} msBeforeNext={usage.msBeforeNext}/>
+                <Usage 
+                    remainingCredits={usage.remainingCredits} 
+                    totalCredits={usage.creditsLimit}
+                />
             )}
             <form onSubmit={form.handleSubmit(onSubmit)}
                 className={cn(

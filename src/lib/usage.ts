@@ -1,13 +1,9 @@
-import { RateLimiterPrisma } from "rate-limiter-flexible";
 import { prisma } from "@/lib/db";
 import { getSessionByToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth-config-simple";
 
-const FREE_POINTS = 5;
-const PRO_POINTS = 100;
-const DURATION = 30 * 24 * 60 * 60; // 30 days
 const GENERATION_COST = 1;
 
 async function getCurrentUser() {
@@ -32,26 +28,6 @@ async function getCurrentUser() {
   return session?.user || null;
 }
 
-export async function getUsageTracker() {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  // TODO: Check user's actual subscription from database
-  // For now, everyone gets free tier
-  const hasProAccess = false;
-
-  const usageTracker = new RateLimiterPrisma({
-    storeClient: prisma,
-    tableName: "Usage",
-    points: hasProAccess ? PRO_POINTS : FREE_POINTS,
-    duration: DURATION,
-  });
-  return usageTracker;
-}
-
 export async function consumeCredits() {
   const user = await getCurrentUser();
 
@@ -62,15 +38,57 @@ export async function consumeCredits() {
 
   console.log("✅ consumeCredits: User found:", user.email);
   
-  const usageTracker = await getUsageTracker();
-  try {
-    const result = await usageTracker.consume(user.id, GENERATION_COST);
-    console.log("✅ Credits consumed successfully. Remaining:", result.remainingPoints);
-    return result;
-  } catch (error) {
-    console.error("❌ Failed to consume credits:", error);
-    throw error;
+  // Get or create user credits
+  let userCredits = await prisma.userCredits.findUnique({
+    where: { userId: user.id },
+  });
+
+  // If no credits record exists, create one with free plan (3 credits)
+  if (!userCredits) {
+    userCredits = await prisma.userCredits.create({
+      data: {
+        userId: user.id,
+        creditsUsed: 0,
+        creditsLimit: 3, // Free plan default
+        lastReset: new Date(),
+      },
+    });
+    console.log("✅ Created new credits record for user");
   }
+
+  // Check if user has enough credits
+  const remainingCredits = userCredits.creditsLimit - userCredits.creditsUsed;
+  
+  if (remainingCredits < GENERATION_COST) {
+    console.error("❌ Insufficient credits:", {
+      creditsUsed: userCredits.creditsUsed,
+      creditsLimit: userCredits.creditsLimit,
+      remaining: remainingCredits,
+    });
+    throw new Error("Insufficient credits");
+  }
+
+  // Consume credits
+  const updated = await prisma.userCredits.update({
+    where: { userId: user.id },
+    data: {
+      creditsUsed: {
+        increment: GENERATION_COST,
+      },
+    },
+  });
+
+  console.log("✅ Credits consumed successfully:", {
+    used: updated.creditsUsed,
+    limit: updated.creditsLimit,
+    remaining: updated.creditsLimit - updated.creditsUsed,
+  });
+
+  return {
+    creditsUsed: updated.creditsUsed,
+    creditsLimit: updated.creditsLimit,
+    remainingCredits: updated.creditsLimit - updated.creditsUsed,
+  };
 }
 
 export async function getUsageStatus() {
@@ -80,7 +98,25 @@ export async function getUsageStatus() {
     throw new Error("User not authenticated");
   }
 
-  const usageTracker = await getUsageTracker();
-  const result = await usageTracker.get(user.id);
-  return result;
+  // Get or create user credits
+  let userCredits = await prisma.userCredits.findUnique({
+    where: { userId: user.id },
+  });
+
+  if (!userCredits) {
+    userCredits = await prisma.userCredits.create({
+      data: {
+        userId: user.id,
+        creditsUsed: 0,
+        creditsLimit: 3,
+        lastReset: new Date(),
+      },
+    });
+  }
+
+  return {
+    creditsUsed: userCredits.creditsUsed,
+    creditsLimit: userCredits.creditsLimit,
+    remainingCredits: userCredits.creditsLimit - userCredits.creditsUsed,
+  };
 }

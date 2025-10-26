@@ -208,7 +208,7 @@ export const codeAgentFunction = inngest.createFunction(
       model: openai({
     // baseUrl: "https://openrouter.ai/api/v1",
     // apiKey: process.env.OPENROUTER_API_KEY!,
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini-2025-08-07",
     // defaultParameters:{
     //   temperature:0.3,
     // },
@@ -265,7 +265,7 @@ export const codeAgentFunction = inngest.createFunction(
       description: "A fragment title generator",
       system: FRAGMENT_TITLE_PROMPT,
       model: openai({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini-2025-08-07",
       }),
     });
 
@@ -274,7 +274,7 @@ export const codeAgentFunction = inngest.createFunction(
       description: "A response generator",
       system: RESPONSE_PROMPT,
       model: openai({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini-2025-08-07",
       }),
     });
 

@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.0",
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/nextjs": "^6.34.0",
     "@e2b/code-interpreter": "^1.5.1",
     "@e2b/sdk": "^0.12.5",
     "@hookform/resolvers": "^5.1.1",

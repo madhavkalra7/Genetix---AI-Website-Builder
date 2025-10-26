@@ -4,37 +4,34 @@ import { formatDuration,intervalToDuration } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
-    points:number;
-    msBeforeNext:number;
+    remainingCredits?: number;
+    totalCredits?: number;
 }
-export const Usage = ({ points, msBeforeNext }: Props) => {
+export const Usage = ({ remainingCredits = 0, totalCredits = 3 }: Props) => {
   const { user } = useAuth();
-  // TODO: Check user's subscription plan from database
-  const hasProAccess = false; // Will be implemented with subscription checking
-  const resetTime=useMemo(()=>{
-    try{
-        return formatDuration(intervalToDuration({
-            start:new Date(),
-            end:new Date(Date.now()+msBeforeNext),
-        }),
-        {format:["months","days","hours"]}
-        );
-    } catch(error){
-        console.error("Error formatting duration ",error);
-        return "Unknown";
-    }
-  },[msBeforeNext]);
+  const trpc = useTRPC();
+  
+  // Fetch user's current subscription
+  const { data: subscription } = useQuery(
+    trpc.subscription.getMySubscription.queryOptions()
+  );
+
+  const planName = subscription?.plan?.displayName || "Free";
+  const hasProAccess = subscription?.plan?.name === "pro" || subscription?.plan?.name === "enterprise";
+
     return (
         <div className="rounded-t-xl bg-background border border-b-0 p-2.5">
            <div className="flex items-center gap-x-2">
                 <div>
                     <p className="text-sm">
-                        {points} {hasProAccess ? "" : "free"} credits remaining
+                        {remainingCredits} / {totalCredits} {planName} credits remaining
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        Resets in {" "} {resetTime}
+                        {hasProAccess ? "Resets monthly" : "Resets daily"}
                     </p>
                 </div>
                 {!hasProAccess && (

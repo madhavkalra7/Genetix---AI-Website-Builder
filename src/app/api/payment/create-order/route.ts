@@ -43,17 +43,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planId, amount, planName, paymentMethod } = await request.json();
+    const { planName, amount } = await request.json();
 
-    console.log("📦 Request payload:", { planId, amount, planName, paymentMethod });
+    console.log("📦 Request payload:", { planName, amount });
 
-    // Get plan details
+    // Get plan details by name
     const plan = await prisma.plan.findUnique({
-      where: { id: planId },
+      where: { name: planName },
     });
 
     if (!plan) {
-      console.error("❌ Plan not found:", planId);
+      console.error("❌ Plan not found:", planName);
       return NextResponse.json(
         { error: "Plan not found" },
         { status: 404 }
@@ -69,14 +69,16 @@ export async function POST(request: NextRequest) {
     await prisma.payment.create({
       data: {
         userId: userId,
+        planId: plan.id,
         amount: plan.price,
         currency: "INR",
         status: "PENDING",
         transactionId: orderId,
-        paymentMethod: paymentMethod || "phonepe",
+        paymentMethod: "phonepe",
         description: `Payment for ${plan.displayName} plan`,
         metadata: {
-          planId: planId,
+          planId: plan.id,
+          planName: plan.name,
           orderId: orderId,
           userName: userName,
           userEmail: userEmail,
