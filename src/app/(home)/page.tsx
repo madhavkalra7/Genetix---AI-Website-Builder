@@ -71,14 +71,23 @@ const Page = () => {
         }
       },
       onSuccess: (data) => {
+        // Invalidate queries in background (don't await)
         queryClient.invalidateQueries(
           trpc.projects.getMany.queryOptions(),
         );
         queryClient.invalidateQueries(
           trpc.usage.status.queryOptions()
         );
-        toast.success("🚀 Project created");
+        
+        // Show loading toast and redirect immediately
+        toast.loading("Creating your project...", { id: "project-create" });
         router.push(`/projects/${data.id}`);
+        
+        // Clear the loading toast after redirect
+        setTimeout(() => {
+          toast.dismiss("project-create");
+          toast.success("🚀 Project created! AI is generating your code...");
+        }, 500);
       },
     })
   );
