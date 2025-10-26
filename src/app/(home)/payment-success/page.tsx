@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { CheckCircle, Clock, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [status, setStatus] = useState<"pending" | "success" | "failed" | "activating">("pending");
@@ -189,5 +189,27 @@ export default function PaymentSuccessPage() {
                 </CardFooter>
             </Card>
         </div>
+    );
+}
+
+export default function PaymentSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <Card className="max-w-md w-full">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4">
+                            <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+                        </div>
+                        <CardTitle className="text-2xl">Loading...</CardTitle>
+                        <CardDescription>
+                            Please wait while we process your payment
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+            </div>
+        }>
+            <PaymentSuccessContent />
+        </Suspense>
     );
 }
