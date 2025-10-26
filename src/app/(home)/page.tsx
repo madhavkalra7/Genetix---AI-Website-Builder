@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSession } from "next-auth/react";
 
 function TypingTitle() {
   const fullText = "Build With Genetix";
@@ -48,6 +49,11 @@ const Page = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const { user } = useAuth();
+  const { data: session } = useSession();
+  
+  // Get display name from either auth method
+  const displayName = user?.firstName || user?.username || session?.user?.name || 'USER';
+  const isLoggedIn = !!(user || session?.user);
   
   // Technology stack options
   const techOptions = [
@@ -178,9 +184,10 @@ const Page = () => {
         <div className="w-full max-w-3xl mx-auto flex flex-col items-center pt-20 pb-19 px-4">
           {/* Header Section */}
           <div className="text-center mb-16">
-            {user && (
-              <p className="text-green-400 text-sm md:text-base font-mono tracking-[0.3em] mb-8 uppercase animate-led-glow">
-                Welcome, {user.firstName || user.username || 'User'}
+            {isLoggedIn && (
+              <p className="text-green-400 text-sm md:text-base font-[Orbitron] tracking-[0.3em] mb-8 uppercase" 
+                 style={{ textShadow: '0 0 10px rgba(74, 222, 128, 0.8), 0 0 20px rgba(74, 222, 128, 0.5)' }}>
+                WELCOME, {displayName}
               </p>
             )}
             <TypingTitle />
