@@ -6,6 +6,7 @@ import { getSandbox, lastAssistantTextMessageContent } from "./utils";
 import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT} from "@/prompt";
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
+import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
 
 interface AgentState {
   summary: string;
@@ -240,9 +241,33 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
     console.log("🚀 Starting agent network with prompt:", event.data.value);
+    
+    // Extract keywords and fetch relevant images
+    const keywords = extractKeywords(event.data.value);
+    console.log("🔍 Extracted keywords:", keywords);
+    
+    const imageUrls = await fetchRelevantImages(keywords, 5);
+    console.log("🖼️ Fetched images:", imageUrls);
+    
+    // Enhance prompt with image URLs
+    let enhancedPrompt = event.data.value;
+    if (imageUrls.length > 0) {
+      enhancedPrompt += `\n\n🎨 IMPORTANT - USE THESE HIGH-QUALITY IMAGES:\n`;
+      imageUrls.forEach((url, index) => {
+        enhancedPrompt += `Image ${index + 1}: ${url}\n`;
+      });
+      enhancedPrompt += `\nIntegrate these images naturally into your design:\n`;
+      enhancedPrompt += `- Use Image 1 for the hero section or main banner\n`;
+      enhancedPrompt += `- Use Image 2-3 for content sections or features\n`;
+      enhancedPrompt += `- Use Image 4-5 for galleries, backgrounds, or additional content\n`;
+      enhancedPrompt += `Make sure all images are responsive and have proper alt text.\n`;
+    }
+    
+    console.log("📝 Enhanced prompt with images");
+    
     let result;
     try {
-      result = await network.run(event.data.value,{ state });
+      result = await network.run(enhancedPrompt,{ state });
     } catch (error) {
       console.error("❌ Agent network execution failed:", error);
       throw error;

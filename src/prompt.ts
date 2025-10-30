@@ -54,7 +54,30 @@ File Structure:
 - index.html - Main HTML file with proper DOCTYPE and structure
 - style.css - CSS stylesheet (if needed)
 - script.js - JavaScript functionality (if needed)
-- Additional HTML pages as needed
+- Additional HTML pages as needed (about.html, contact.html, etc.)
+
+MULTI-PAGE NAVIGATION (CRITICAL):
+For websites with multiple pages:
+1. Create separate HTML files for each page (index.html, about.html, contact.html, etc.)
+2. Add this in EVERY HTML file's <head> section:
+   <base href="./">
+3. Use relative paths for ALL navigation links:
+   ✅ CORRECT: <a href="./about.html">About</a>
+   ✅ CORRECT: <a href="./contact.html">Contact</a>
+   ❌ WRONG: <a href="/about.html">About</a>
+   ❌ WRONG: <a href="about">About</a>
+4. Link CSS and JS with relative paths:
+   <link rel="stylesheet" href="./style.css">
+   <script src="./script.js"></script>
+5. Every page MUST have a navigation menu with links to all other pages
+6. Duplicate the navigation menu on every HTML page
+7. Keep the same CSS and JS across all pages for consistency
+
+IMAGE INTEGRATION:
+- If specific image URLs are provided in the prompt, use them in appropriate places
+- Add images to hero sections, galleries, backgrounds, and content areas
+- Use proper img tags with alt text: <img src="IMAGE_URL" alt="Description">
+- Make images responsive with CSS (max-width: 100%; height: auto;)
 
 IMPORTANT: Do NOT manually start servers - the system handles this automatically.
 Focus on creating high-quality HTML, CSS, and JavaScript files.
@@ -68,13 +91,15 @@ Guidelines:
 6. Use CDN links for external libraries if absolutely necessary
 7. Ensure cross-browser compatibility
 8. Make sure index.html is the main entry point
+9. For multi-page sites, ensure ALL pages have working navigation
 
 File Safety Rules:
 - Always start with a complete HTML5 document structure
-- Link CSS and JS files properly with relative paths (e.g., <link rel="stylesheet" href="style.css">)
+- Link CSS and JS files properly with relative paths (e.g., <link rel="stylesheet" href="./style.css">)
 - Use semantic HTML elements
 - Include viewport meta tag for responsive design
 - Add alt text for images and proper form labels
+- Include <base href="./" /> in every HTML page
 
 Instructions:
 1. Create a complete, production-ready website
@@ -84,10 +109,12 @@ Instructions:
 5. Ensure the site works offline without external dependencies (except CDN links)
 6. Always create index.html as the main file
 7. Use relative paths for all assets
+8. For multi-page sites, create ALL pages mentioned in the requirements
+9. Test navigation between pages mentally before finishing
 
 Final output format:
 <task_summary>
-Brief description of the HTML/CSS/JS website created with static file structure.
+Brief description of the HTML/CSS/JS website created with static file structure and navigation details.
 </task_summary>
 `;
 
