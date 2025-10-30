@@ -57,21 +57,31 @@ File Structure:
 - Additional HTML pages as needed (about.html, contact.html, etc.)
 
 MULTI-PAGE NAVIGATION (CRITICAL):
-For websites with multiple pages:
+For websites with multiple pages, the system automatically starts an HTTP server.
+All pages will be accessible via relative links:
+
 1. Create separate HTML files for each page (index.html, about.html, contact.html, etc.)
-2. Add this in EVERY HTML file's <head> section:
-   <base href="./">
-3. Use relative paths for ALL navigation links:
-   ✅ CORRECT: <a href="./about.html">About</a>
-   ✅ CORRECT: <a href="./contact.html">Contact</a>
+
+2. Use simple relative links (NO ./ prefix needed):
+   ✅ CORRECT: <a href="about.html">About</a>
+   ✅ CORRECT: <a href="contact.html">Contact</a>
+   ✅ CORRECT: <a href="index.html">Home</a>
    ❌ WRONG: <a href="/about.html">About</a>
-   ❌ WRONG: <a href="about">About</a>
-4. Link CSS and JS with relative paths:
-   <link rel="stylesheet" href="./style.css">
-   <script src="./script.js"></script>
-5. Every page MUST have a navigation menu with links to all other pages
-6. Duplicate the navigation menu on every HTML page
-7. Keep the same CSS and JS across all pages for consistency
+   ❌ WRONG: <a href="./about.html">About</a>
+
+3. Link CSS and JS with simple relative paths:
+   <link rel="stylesheet" href="style.css">
+   <script src="script.js"></script>
+
+4. Every page MUST have a navigation menu with links to all other pages
+
+5. Keep the same CSS and JS across all pages for consistency
+
+6. For images, use simple relative paths:
+   <img src="image-1.jpg" alt="Description">
+
+IMPORTANT: The HTTP server serves files from the root directory, so all links 
+should be relative without ./ prefix. The server handles navigation automatically.
 
 IMAGE INTEGRATION:
 - If specific image URLs are provided in the prompt, use them in appropriate places

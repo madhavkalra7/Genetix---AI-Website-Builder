@@ -249,21 +249,65 @@ export const codeAgentFunction = inngest.createFunction(
     const imageUrls = await fetchRelevantImages(keywords, 5);
     console.log("🖼️ Fetched images:", imageUrls);
     
-    // Enhance prompt with image URLs
-    let enhancedPrompt = event.data.value;
+    // Download images to sandbox to avoid CORS issues
+    const localImagePaths: string[] = [];
     if (imageUrls.length > 0) {
-      enhancedPrompt += `\n\n🎨 IMPORTANT - USE THESE HIGH-QUALITY IMAGES:\n`;
-      imageUrls.forEach((url, index) => {
-        enhancedPrompt += `Image ${index + 1}: ${url}\n`;
+      await step.run("download-images", async () => {
+        try {
+          const sandbox = await getSandbox(sandboxId);
+          
+          for (let i = 0; i < imageUrls.length; i++) {
+            const imageUrl = imageUrls[i];
+            const imageName = `image-${i + 1}.jpg`;
+            
+            try {
+              // Download image using curl in sandbox
+              await sandbox.commands.run(
+                `curl -L "${imageUrl}" -o "${imageName}"`,
+                { timeoutMs: 10000 }
+              );
+              
+              // Also save as base64 in files object for frontend preview
+              const imageBase64Result = await sandbox.commands.run(
+                `base64 -w 0 "${imageName}"`,
+                { timeoutMs: 5000 }
+              );
+              
+              if (imageBase64Result.stdout && network.state.data.files) {
+                // Store as data URL for easy embedding
+                network.state.data.files[imageName] = `data:image/jpeg;base64,${imageBase64Result.stdout.trim()}`;
+              }
+              
+              localImagePaths.push(imageName);
+              console.log(`✅ Downloaded image ${i + 1}: ${imageName}`);
+            } catch (error) {
+              console.warn(`⚠️ Failed to download image ${i + 1}:`, error);
+            }
+          }
+        } catch (error) {
+          console.error("❌ Image download failed:", error);
+        }
       });
-      enhancedPrompt += `\nIntegrate these images naturally into your design:\n`;
-      enhancedPrompt += `- Use Image 1 for the hero section or main banner\n`;
-      enhancedPrompt += `- Use Image 2-3 for content sections or features\n`;
-      enhancedPrompt += `- Use Image 4-5 for galleries, backgrounds, or additional content\n`;
-      enhancedPrompt += `Make sure all images are responsive and have proper alt text.\n`;
     }
     
-    console.log("📝 Enhanced prompt with images");
+    // Enhance prompt with local image paths
+    let enhancedPrompt = event.data.value;
+    if (localImagePaths.length > 0) {
+      enhancedPrompt += `\n\n🎨 IMPORTANT - USE THESE HIGH-QUALITY IMAGES (already downloaded in your workspace):\n`;
+      localImagePaths.forEach((path, index) => {
+        const simplePath = `image-${index + 1}.jpg`;
+        enhancedPrompt += `Image ${index + 1}: ${simplePath}\n`;
+      });
+      enhancedPrompt += `\nIntegrate these images naturally into your design:\n`;
+      enhancedPrompt += `- Use Image 1 (image-1.jpg) for the hero section or main banner\n`;
+      enhancedPrompt += `- Use Image 2-3 (image-2.jpg, image-3.jpg) for content sections or features\n`;
+      enhancedPrompt += `- Use Image 4-5 (image-4.jpg, image-5.jpg) for galleries, backgrounds, or additional content\n`;
+      enhancedPrompt += `IMPORTANT: Use these exact file paths in your HTML: <img src="image-1.jpg" alt="description">\n`;
+      enhancedPrompt += `Make sure all images are responsive with CSS: img { max-width: 100%; height: auto; }\n`;
+      console.log(`📝 Enhanced prompt with ${localImagePaths.length} local images`);
+    } else {
+      console.log("📝 No images downloaded, proceeding without images");
+    }
     
     let result;
     try {
@@ -342,8 +386,38 @@ export const codeAgentFunction = inngest.createFunction(
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await getSandbox(sandboxId);
       
-      // For all projects, use the standard sandbox URL
-      // HTML/CSS/JS preview will be handled by the frontend component
+      // For HTML/CSS/JS projects, start a simple HTTP server
+      if (projectTechStack === "html-css-js") {
+        try {
+          // Check if files exist in home directory
+          const lsResult = await sandbox.commands.run("ls -la /home/user/*.html 2>/dev/null || echo 'no-files'");
+          console.log("📁 Files in /home/user:", lsResult.stdout);
+          
+          // Install http-server globally if not present
+          await sandbox.commands.run("npm install -g http-server 2>/dev/null || true", { timeoutMs: 30000 });
+          
+          // Kill any existing http-server process
+          await sandbox.commands.run("pkill -f http-server || true");
+          
+          // Change to home directory and start HTTP server
+          await sandbox.commands.run(
+            "cd /home/user && nohup http-server -p 3000 --cors -c-1 -d false > /tmp/server.log 2>&1 &",
+            { timeoutMs: 5000 }
+          );
+          
+          console.log("✅ HTTP server started on port 3000 in /home/user");
+          
+          // Wait for server to start
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Verify server is running
+          const psResult = await sandbox.commands.run("ps aux | grep http-server | grep -v grep || echo 'not-running'");
+          console.log("🔍 Server status:", psResult.stdout);
+        } catch (error) {
+          console.error("❌ Failed to start HTTP server:", error);
+        }
+      }
+      
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });

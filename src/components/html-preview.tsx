@@ -9,93 +9,140 @@ interface HTMLPreviewProps {
 
 export function HTMLPreview({ files, className }: HTMLPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [blobUrl, setBlobUrl] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<string>('index.html');
 
   useEffect(() => {
-    const indexHtml = files['index.html'];
+    if (!iframeRef.current) return;
+
+    const iframe = iframeRef.current;
     
-    if (!indexHtml) {
-      setBlobUrl('');
-      return;
-    }
+    // Function to load a specific HTML page
+    const loadPage = (pageName: string) => {
+      let htmlContent = files[pageName] || files['index.html'];
+      
+      if (!htmlContent) return;
 
-    // Start with the base HTML
-    let combinedHTML = indexHtml;
+      // Get all CSS files
+      const cssFiles = Object.keys(files).filter(filename => 
+        filename.endsWith('.css') && files[filename]
+      );
 
-    // Get all CSS files (handles different naming conventions)
-    const cssFiles = Object.keys(files).filter(filename => 
-      filename.endsWith('.css') && files[filename]
-    );
+      // Get all JS files
+      const jsFiles = Object.keys(files).filter(filename => 
+        filename.endsWith('.js') && files[filename]
+      );
 
-    // Get all JS files (handles different naming conventions)  
-    const jsFiles = Object.keys(files).filter(filename => 
-      filename.endsWith('.js') && files[filename]
-    );
+      // Get all image files
+      const imageFiles = Object.keys(files).filter(filename => 
+        /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(filename) && files[filename]
+      );
 
-    // Inject all CSS files
-    cssFiles.forEach(cssFile => {
-      const cssContent = files[cssFile];
-      if (cssContent) {
-        const cssInjection = `<style>\n/* ${cssFile} */\n${cssContent}\n</style>`;
-        
-        if (combinedHTML.includes('</head>')) {
-          combinedHTML = combinedHTML.replace('</head>', `${cssInjection}\n</head>`);
-        } else if (combinedHTML.includes('<head>')) {
-          combinedHTML = combinedHTML.replace('<head>', `<head>\n${cssInjection}`);
-        } else {
-          // If no head tag, add it
-          combinedHTML = combinedHTML.replace('<html>', `<html>\n<head>\n${cssInjection}\n</head>`);
+      // Convert images to base64 data URLs if they're in the files
+      imageFiles.forEach(imageFile => {
+        const imageContent = files[imageFile];
+        if (imageContent) {
+          // If it's already a base64 string, use it directly
+          if (imageContent.startsWith('data:')) {
+            htmlContent = htmlContent.replace(
+              new RegExp(`(src=["'])(\\.?\\/)?${imageFile}(["'])`, 'g'),
+              `$1${imageContent}$3`
+            );
+          }
         }
-      }
-    });
+      });
 
-    // Inject all JS files
-    jsFiles.forEach(jsFile => {
-      const jsContent = files[jsFile];
-      if (jsContent) {
-        const jsInjection = `<script>\n/* ${jsFile} */\n${jsContent}\n</script>`;
-        
-        if (combinedHTML.includes('</body>')) {
-          combinedHTML = combinedHTML.replace('</body>', `${jsInjection}\n</body>`);
-        } else {
-          combinedHTML += jsInjection;
+      // Replace relative image paths with downloaded images
+      // This handles both ./image.jpg and image.jpg formats
+      const imagePathRegex = /(<img[^>]+src=["'])(\.\/)? *([^"']+\.(jpg|jpeg|png|gif|svg|webp))(["'])/gi;
+      htmlContent = htmlContent.replace(
+        imagePathRegex,
+        (_match, prefix, _slashes, filename, _ext, suffix) => {
+          return `${prefix}${filename}${suffix}`;
         }
-      }
-    });
+      );
 
-    // Create a blob URL for the combined HTML
-    const blob = new Blob([combinedHTML], { type: 'text/html' });
-    const newBlobUrl = URL.createObjectURL(blob);
+      // Inject CSS inline
+      cssFiles.forEach(cssFile => {
+        const cssContent = files[cssFile];
+        if (cssContent) {
+          const cssInjection = `<style>\n/* ${cssFile} */\n${cssContent}\n</style>`;
+          
+          if (htmlContent.includes('</head>')) {
+            htmlContent = htmlContent.replace('</head>', `${cssInjection}\n</head>`);
+          } else if (htmlContent.includes('<head>')) {
+            htmlContent = htmlContent.replace('<head>', `<head>\n${cssInjection}`);
+          }
+        }
+      });
 
-    // Set the blob URL in state
-    setBlobUrl(newBlobUrl);
+      // Inject JS inline
+      jsFiles.forEach(jsFile => {
+        const jsContent = files[jsFile];
+        if (jsContent) {
+          const jsInjection = `<script>\n/* ${jsFile} */\n${jsContent}\n</script>`;
+          
+          if (htmlContent.includes('</body>')) {
+            htmlContent = htmlContent.replace('</body>', `${jsInjection}\n</body>`);
+          } else {
+            htmlContent += jsInjection;
+          }
+        }
+      });
 
-    // Cleanup function to revoke the blob URL
-    return () => {
-      if (newBlobUrl) {
-        URL.revokeObjectURL(newBlobUrl);
+      // Inject navigation interceptor script
+      const navigationScript = `
+        <script>
+          (function() {
+            // Intercept all link clicks
+            document.addEventListener('click', function(e) {
+              const target = e.target.closest('a');
+              if (target && target.href) {
+                const url = new URL(target.href, window.location.href);
+                const filename = url.pathname.split('/').pop();
+                
+                // Check if it's an HTML file
+                if (filename && filename.endsWith('.html')) {
+                  e.preventDefault();
+                  
+                  // Send message to parent to load the new page
+                  window.parent.postMessage({
+                    type: 'navigate',
+                    page: filename
+                  }, '*');
+                }
+              }
+            }, true);
+          })();
+        </script>
+      `;
+
+      htmlContent = htmlContent.replace('</head>', `${navigationScript}\n</head>`);
+
+      // Write to iframe
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (iframeDoc) {
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
       }
     };
-  }, [files]);
 
-  // Update iframe source when blobUrl changes
-  useEffect(() => {
-    if (iframeRef.current && blobUrl) {
-      iframeRef.current.src = blobUrl;
-    }
-  }, [blobUrl]);
-
-  // Cleanup effect to clear iframe when component unmounts
-  useEffect(() => {
-    return () => {
-      if (iframeRef.current) {
-        iframeRef.current.src = 'about:blank';
-      }
-      if (blobUrl) {
-        URL.revokeObjectURL(blobUrl);
+    // Listen for navigation messages from iframe
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'navigate' && event.data.page) {
+        setCurrentPage(event.data.page);
       }
     };
-  }, []);
+
+    window.addEventListener('message', handleMessage);
+
+    // Load the current page
+    loadPage(currentPage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [files, currentPage]);
 
   // If no HTML file, show placeholder
   if (!files['index.html']) {
@@ -111,7 +158,7 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
       ref={iframeRef}
       className={`border-0 ${className}`}
       title="HTML Preview"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-modals"
       style={{ width: '100%', height: '100%' }}
     />
   );
