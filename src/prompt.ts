@@ -11,11 +11,17 @@ export const FRAGMENT_TITLE_PROMPT = `
 You are an assistant that generates a short, descriptive title for a code fragment based on its <task_summary>.
 The title should be:
   - Relevant to what was built or changed
-  - Max 3 words
-  - Written in title case (e.g., "Landing Page", "Chat Widget")
+  - Max 2 words (STRICT LIMIT)
+  - Written in title case (e.g., "Restaurant Website", "Gym Portfolio", "Fashion Store")
   - No punctuation, quotes, or prefixes
+  - Must be meaningful and descriptive
 
-Only return the raw title.
+Examples:
+- User prompt: "Create a restaurant website with menu" → Title: "Restaurant Website"
+- User prompt: "Build a gym portfolio" → Title: "Gym Portfolio"
+- User prompt: "Make an e-commerce fashion store" → Title: "Fashion Store"
+
+Only return the raw title (exactly 2 words).
 `
 
 

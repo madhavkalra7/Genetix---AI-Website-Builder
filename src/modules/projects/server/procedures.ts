@@ -5,6 +5,35 @@ import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
+
+// Function to generate a meaningful 2-word project name from user prompt
+function generateProjectName(prompt: string): string {
+    // Remove common words
+    const commonWords = [
+        'create', 'build', 'make', 'design', 'develop', 'generate', 'a', 'an', 
+        'the', 'my', 'new', 'modern', 'simple', 'basic', 'advanced', 'with', 
+        'for', 'and', 'or', 'but', 'website', 'app', 'application', 'page'
+    ];
+    
+    // Clean and tokenize
+    const words = prompt
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .split(/\s+/)
+        .filter(word => word.length > 2 && !commonWords.includes(word));
+    
+    // Take first 2 meaningful words
+    if (words.length === 0) return 'Web Project';
+    if (words.length === 1) return `${capitalize(words[0])} Site`;
+    
+    // Return first 2 words in title case
+    return `${capitalize(words[0])} ${capitalize(words[1])}`;
+}
+
+function capitalize(word: string): string {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 export const projectsRouter = createTRPCRouter({
     getOne: protectedProcedure
     .input(z.object({
@@ -97,10 +126,14 @@ export const projectsRouter = createTRPCRouter({
                 });
             }
             
+            // Generate meaningful project name from user prompt
+            const projectName = generateProjectName(input.value);
+            console.log("📝 Generated project name:", projectName);
+            
             const createdProject= await prisma.project.create({
                 data: {
                     userId: ctx.auth.userId,
-                    name: generateSlug(2, { format: "kebab" }),
+                    name: projectName, // Use meaningful name instead of random slug
                     techStack: input.techStack,
                     messages: {
                         create: {
