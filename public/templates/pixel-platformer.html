@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Platformer Kingdom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            line-height: 1.8;
+            color: #fff;
+            background: #5c94fc;
+            overflow-x: hidden;
+        }
+        
+        /* Pixel Sky Background */
+        .pixel-sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(180deg, #5c94fc 0%, #a3d3ff 50%, #5c94fc 100%);
+            animation: skyShift 20s ease-in-out infinite;
+        }
+        
+        @keyframes skyShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(10deg); }
+        }
+        
+        /* Pixelated Clouds */
+        .pixel-clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: #fff;
+            box-shadow: 
+                0 0 0 16px #fff,
+                16px 0 0 16px #fff,
+                -16px 0 0 16px #fff,
+                0 16px 0 16px #fff,
+                16px 16px 0 8px #fff,
+                -16px 16px 0 8px #fff;
+            width: 32px;
+            height: 16px;
+            animation: cloudFloat 30s linear infinite;
+            opacity: 0.9;
+        }
+        
+        @keyframes cloudFloat {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        
+        /* Pixel Coins */
+        .pixel-coins {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .coin {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            border: 3px solid #ff8c00;
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 0 0 2px #ffe34d,
+                0 4px 0 #b8860b;
+            animation: coinSpin 3s ease-in-out infinite, coinFloat 6s ease-in-out infinite;
+        }
+        
+        @keyframes coinSpin {
+            0%, 100% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+        
+        @keyframes coinFloat {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-30px) rotateY(180deg); }
+        }
+        
+        /* Power-up Stars */
+        .power-stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .power-star {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 16px solid #ffff00;
+            animation: starTwinkle 2s ease-in-out infinite;
+        }
+        
+        .power-star::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 16px solid #ffff00;
+        }
+        
+        @keyframes starTwinkle {
+            0%, 100% { 
+                transform: rotate(0deg) scale(1);
+                filter: brightness(1);
+            }
+            50% { 
+                transform: rotate(180deg) scale(1.3);
+                filter: brightness(1.5) drop-shadow(0 0 10px #ffff00);
+            }
+        }
+        
+        /* Header */
+        header {
+            background: #00a800;
+            border-bottom: 4px solid #008000;
+            box-shadow: 0 4px 0 #006400;
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            animation: headerDrop 0.6s ease;
+        }
+        
+        @keyframes headerDrop {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.2rem;
+            color: #fff;
+            text-shadow: 
+                2px 2px 0 #000,
+                4px 4px 0 #ff0000;
+            animation: logoJump 2s ease-in-out infinite;
+        }
+        
+        @keyframes logoJump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            text-shadow: 2px 2px 0 #000;
+            position: relative;
+        }
+        
+        nav a:hover {
+            color: #ffff00;
+            transform: translateY(-2px);
+            text-shadow: 
+                2px 2px 0 #000,
+                0 0 10px #ffff00;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 200px 2rem 120px;
+            text-align: center;
+            position: relative;
+        }
+        
+        /* Pixel Blocks Platform */
+        .pixel-platform {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+        }
+        
+        .pixel-block {
+            width: 48px;
+            height: 48px;
+            background: #c84c0c;
+            border: 4px solid #000;
+            box-shadow: 
+                inset 8px 8px 0 #fc9838,
+                inset -8px -8px 0 #881400,
+                0 4px 0 #000;
+            animation: blockBounce 1s ease-in-out infinite;
+        }
+        
+        .pixel-block:nth-child(2) { animation-delay: 0.1s; }
+        .pixel-block:nth-child(3) { animation-delay: 0.2s; }
+        .pixel-block:nth-child(4) { animation-delay: 0.3s; }
+        .pixel-block:nth-child(5) { animation-delay: 0.4s; }
+        
+        @keyframes blockBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            text-shadow: 
+                4px 4px 0 #000,
+                6px 6px 0 #ff0000,
+                8px 8px 0 #ffff00;
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes titleBounce {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.05) translateY(-10px); }
+        }
+        
+        .hero p {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 3rem;
+            text-shadow: 2px 2px 0 #000;
+            animation: fadeIn 1.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pixel-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: #00a800;
+            color: #fff;
+            text-decoration: none;
+            border: 4px solid #000;
+            box-shadow: 
+                inset 4px 4px 0 #00d800,
+                inset -4px -4px 0 #006400,
+                0 4px 0 #000;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            text-shadow: 2px 2px 0 #000;
+            position: relative;
+        }
+        
+        .pixel-button:hover {
+            background: #00d800;
+            transform: translateY(-4px);
+            box-shadow: 
+                inset 4px 4px 0 #00ff00,
+                inset -4px -4px 0 #008000,
+                0 8px 0 #000;
+        }
+        
+        .pixel-button:active {
+            transform: translateY(2px);
+            box-shadow: 
+                inset 4px 4px 0 #00d800,
+                inset -4px -4px 0 #006400,
+                0 2px 0 #000;
+        }
+        
+        /* Game Canvas Section */
+        .game-canvas {
+            padding: 100px 2rem;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .pixel-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            color: #fff;
+            text-shadow: 
+                4px 4px 0 #000,
+                6px 6px 0 #ff0000;
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+        
+        /* Game Screen Frame */
+        .game-frame {
+            max-width: 900px;
+            margin: 0 auto 5rem;
+            background: #000;
+            border: 8px solid #c84c0c;
+            box-shadow: 
+                0 0 0 4px #000,
+                0 8px 0 #881400,
+                0 8px 20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            position: relative;
+            animation: frameFloat 4s ease-in-out infinite;
+        }
+        
+        @keyframes frameFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .screen-display {
+            background: #5c94fc;
+            border: 4px solid #000;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            min-height: 300px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .screen-display h3 {
+            color: #fff;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .screen-display p {
+            color: #fff;
+            font-size: 0.7rem;
+            line-height: 2;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        /* Pixel Character Preview */
+        .character-preview {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 64px;
+            height: 64px;
+            animation: characterRun 0.6s steps(2) infinite;
+        }
+        
+        @keyframes characterRun {
+            0%, 100% { transform: translateX(0) scaleX(1); }
+            50% { transform: translateX(10px) scaleX(1); }
+        }
+        
+        /* Level Cards */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .level-card {
+            background: #00a800;
+            border: 4px solid #000;
+            box-shadow: 
+                inset 4px 4px 0 #00d800,
+                inset -4px -4px 0 #006400,
+                0 4px 0 #000;
+            padding: 2rem;
+            transition: all 0.3s;
+            animation: cardPop 0.5s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes cardPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-10deg);
+            }
+            70% {
+                transform: scale(1.1) rotate(2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        .level-card:nth-child(1) { animation-delay: 0.1s; }
+        .level-card:nth-child(2) { animation-delay: 0.2s; }
+        .level-card:nth-child(3) { animation-delay: 0.3s; }
+        .level-card:nth-child(4) { animation-delay: 0.4s; }
+        .level-card:nth-child(5) { animation-delay: 0.5s; }
+        .level-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        .level-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                inset 4px 4px 0 #00ff00,
+                inset -4px -4px 0 #008000,
+                0 8px 0 #000,
+                0 12px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .level-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            animation: iconBob 2s ease-in-out infinite;
+            filter: drop-shadow(4px 4px 0 #000);
+        }
+        
+        @keyframes iconBob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+        }
+        
+        .level-card h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .level-card p {
+            color: #ffff00;
+            font-size: 0.6rem;
+            line-height: 1.6;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        /* Power-Ups Section */
+        .powerups {
+            padding: 100px 2rem;
+            background: linear-gradient(180deg, #5c94fc 0%, #00a800 100%);
+        }
+        
+        .powerups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .powerup-box {
+            background: #c84c0c;
+            border: 4px solid #000;
+            box-shadow: 
+                inset 4px 4px 0 #fc9838,
+                inset -4px -4px 0 #881400,
+                0 4px 0 #000;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .powerup-box::before {
+            content: '?';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .powerup-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                inset 4px 4px 0 #ffd700,
+                inset -4px -4px 0 #ff4500,
+                0 8px 0 #000;
+            animation: powerupGlow 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes powerupGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        
+        .powerup-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: powerupSpin 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes powerupSpin {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(1.2); }
+        }
+        
+        .powerup-box h3 {
+            color: #fff;
+            margin-bottom: 0.8rem;
+            font-size: 0.8rem;
+            text-shadow: 2px 2px 0 #000;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .powerup-box p {
+            color: #ffff00;
+            font-size: 0.6rem;
+            line-height: 1.6;
+            text-shadow: 2px 2px 0 #000;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Footer */
+        footer {
+            background: #00a800;
+            border-top: 4px solid #008000;
+            box-shadow: 0 -4px 0 #006400;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #fff;
+            font-size: 0.6rem;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .pixel-title {
+                font-size: 1.5rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .pixel-button {
+                padding: 15px 30px;
+                font-size: 0.7rem;
+            }
+            
+            .pixel-block {
+                width: 32px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pixel-sky"></div>
+    <div class="pixel-clouds" id="clouds"></div>
+    <div class="pixel-coins" id="coins"></div>
+    <div class="power-stars" id="stars"></div>
+
+    <header>
+        <nav>
+            <div class="logo">🍄 PIXEL KINGDOM</div>
+            <ul>
+                <li><a href="#levels">LEVELS</a></li>
+                <li><a href="#powerups">POWER-UPS</a></li>
+                <li><a href="#contact">CONTACT</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>⭐ PLATFORMER ADVENTURE ⭐</h1>
+            <p>JUMP • RUN • COLLECT • WIN</p>
+            <a href="#levels" class="pixel-button">▶ START GAME</a>
+        </div>
+        
+        <div class="pixel-platform">
+            <div class="pixel-block"></div>
+            <div class="pixel-block"></div>
+            <div class="pixel-block"></div>
+            <div class="pixel-block"></div>
+            <div class="pixel-block"></div>
+        </div>
+    </section>
+
+    <section id="levels" class="game-canvas">
+        <div class="container">
+            <h2 class="pixel-title">▼ GAME SCREEN ▼</h2>
+            
+            <div class="game-frame">
+                <div class="screen-display">
+                    <h3>═══ MAIN GAME CANVAS ═══</h3>
+                    <p>YOUR GAME LOGIC GOES HERE</p>
+                    <p>PIXEL-PERFECT PLATFORMER ENGINE</p>
+                    <p>SUPPORTS: JUMPING • SCROLLING • COLLISION</p>
+                    <p>POWER-UPS • ENEMIES • CHECKPOINTS</p>
+                    <div class="character-preview">🏃</div>
+                </div>
+            </div>
+
+            <div class="levels-grid">
+                <div class="level-card">
+                    <div class="level-icon">🏰</div>
+                    <h3>CASTLE CLIMB</h3>
+                    <p>SCALE THE FORTRESS WALLS AND DEFEAT THE BOSS</p>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🌳</div>
+                    <h3>FOREST RUN</h3>
+                    <p>DASH THROUGH ENCHANTED WOODS AT FULL SPEED</p>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🏔️</div>
+                    <h3>MOUNTAIN PEAK</h3>
+                    <p>CLIMB TO THE HIGHEST POINT FOR TREASURE</p>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🌊</div>
+                    <h3>OCEAN DEPTHS</h3>
+                    <p>SWIM THROUGH UNDERWATER OBSTACLES</p>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🌋</div>
+                    <h3>VOLCANO ESCAPE</h3>
+                    <p>DODGE LAVA AND FALLING ROCKS</p>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">☁️</div>
+                    <h3>SKY ISLANDS</h3>
+                    <p>LEAP BETWEEN FLOATING PLATFORMS</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="powerups" class="powerups">
+        <div class="container">
+            <h2 class="pixel-title">⚡ POWER-UPS ⚡</h2>
+            <div class="powerups-grid">
+                <div class="powerup-box">
+                    <div class="powerup-icon">🍄</div>
+                    <h3>SUPER MUSHROOM</h3>
+                    <p>GROW BIGGER AND STRONGER</p>
+                </div>
+                <div class="powerup-box">
+                    <div class="powerup-icon">⭐</div>
+                    <h3>STAR POWER</h3>
+                    <p>BECOME INVINCIBLE FOR 10 SECONDS</p>
+                </div>
+                <div class="powerup-box">
+                    <div class="powerup-icon">🔥</div>
+                    <h3>FIRE FLOWER</h3>
+                    <p>SHOOT FIREBALLS AT ENEMIES</p>
+                </div>
+                <div class="powerup-box">
+                    <div class="powerup-icon">💎</div>
+                    <h3>DOUBLE COINS</h3>
+                    <p>COLLECT 2X COINS FOR 30 SECONDS</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <p>© 2025 PIXEL KINGDOM • GAME ON!</p>
+        </div>
+    </footer>
+
+    <script>
+        // Create pixelated clouds
+        const cloudsContainer = document.getElementById('clouds');
+        for (let i = 0; i < 8; i++) {
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud';
+            cloud.style.top = (Math.random() * 40 + 10) + '%';
+            cloud.style.left = (Math.random() * 100) + '%';
+            cloud.style.animationDelay = (Math.random() * 30) + 's';
+            cloud.style.animationDuration = (Math.random() * 20 + 20) + 's';
+            cloudsContainer.appendChild(cloud);
+        }
+        
+        // Create spinning coins
+        const coinsContainer = document.getElementById('coins');
+        for (let i = 0; i < 15; i++) {
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            coin.style.left = (Math.random() * 100) + '%';
+            coin.style.top = (Math.random() * 100) + '%';
+            coin.style.animationDelay = (Math.random() * 6) + 's';
+            coinsContainer.appendChild(coin);
+        }
+        
+        // Create power stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 10; i++) {
+            const star = document.createElement('div');
+            star.className = 'power-star';
+            star.style.left = (Math.random() * 100) + '%';
+            star.style.top = (Math.random() * 100) + '%';
+            star.style.animationDelay = (Math.random() * 2) + 's';
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

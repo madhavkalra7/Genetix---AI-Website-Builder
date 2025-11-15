@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegant Restaurant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #1a0f0a;
+            overflow-x: hidden;
+        }
+        
+        /* Luxury Gold Background */
+        .luxury-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at top, #2d1810 0%, #1a0f0a 50%, #0a0504 100%);
+        }
+        
+        .luxury-bg::before {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 10%;
+            left: 20%;
+            animation: luxuryFloat 30s infinite ease-in-out;
+            filter: blur(100px);
+        }
+        
+        .luxury-bg::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: 15%;
+            right: 15%;
+            animation: luxuryFloat 35s infinite ease-in-out reverse;
+            filter: blur(80px);
+        }
+        
+        @keyframes luxuryFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -40px) scale(1.1); }
+            66% { transform: translate(-40px, 50px) scale(0.9); }
+        }
+        
+        .gold-particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(45deg, #f59e0b, #fbbf24);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #f59e0b;
+            opacity: 0;
+            animation: sparkle 6s infinite ease-in-out;
+            z-index: 1;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0) translateY(0); }
+            10% { opacity: 1; transform: scale(1) translateY(-20px); }
+            90% { opacity: 0.8; }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(26, 15, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.8s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: logoGlow 3s infinite;
+            font-family: 'Georgia', serif;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
+            50% { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.8)); }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: #fbbf24;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1.1rem;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            transition: width 0.3s;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 200px 2rem 140px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero h1 {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease, goldShine 4s infinite;
+            font-family: 'Georgia', serif;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes goldShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.4); }
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: #d4a574;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #1a0f0a;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.4s;
+            animation: fadeInUp 1s ease 0.6s both;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .cta-button:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(245, 158, 11, 0.8);
+        }
+        
+        /* Menu Section */
+        .menu {
+            padding: 120px 2rem;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease;
+            font-family: 'Georgia', serif;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+        }
+        
+        .menu-item {
+            background: rgba(245, 158, 11, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 25px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            transition: all 0.5s;
+            animation: fadeInUp 0.8s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+        
+        .menu-item:hover::before {
+            top: -20%;
+            right: -20%;
+        }
+        
+        .menu-item:nth-child(1) { animation-delay: 0.2s; }
+        .menu-item:nth-child(2) { animation-delay: 0.3s; }
+        .menu-item:nth-child(3) { animation-delay: 0.4s; }
+        .menu-item:nth-child(4) { animation-delay: 0.5s; }
+        .menu-item:nth-child(5) { animation-delay: 0.6s; }
+        .menu-item:nth-child(6) { animation-delay: 0.7s; }
+        
+        .menu-item:hover {
+            transform: translateY(-15px) scale(1.02);
+            border-color: #f59e0b;
+            box-shadow: 0 25px 60px rgba(245, 158, 11, 0.4);
+        }
+        
+        .menu-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            animation: bounce 3s infinite;
+            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .menu-item h3 {
+            color: #fbbf24;
+            margin-bottom: 0.8rem;
+            font-size: 1.8rem;
+            position: relative;
+        }
+        
+        .menu-item p {
+            color: #d4a574;
+            margin-bottom: 1rem;
+        }
+        
+        .menu-price {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* About Section */
+        .about {
+            padding: 120px 2rem;
+            background: rgba(245, 158, 11, 0.03);
+            position: relative;
+        }
+        
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .about-content p {
+            font-size: 1.3rem;
+            color: #d4a574;
+            line-height: 2;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease both;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #d4a574;
+            margin: 0.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="luxury-bg"></div>
+    
+    <header>
+        <nav>
+            <div class="logo">🍷 Le Gourmet</div>
+            <ul>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Fine Dining Excellence</h1>
+            <p>Experience culinary artistry in every dish</p>
+            <a href="#menu" class="cta-button">View Menu ✨</a>
+        </div>
+    </section>
+
+    <section id="menu" class="menu">
+        <div class="container">
+            <h2 class="section-title">Our Signature Dishes</h2>
+            <div class="menu-grid">
+                <div class="menu-item">
+                    <div class="menu-icon">🥩</div>
+                    <h3>Wagyu Steak</h3>
+                    <p>Premium Japanese wagyu with truffle butter and seasonal vegetables</p>
+                    <div class="menu-price">$85</div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-icon">🦞</div>
+                    <h3>Lobster Thermidor</h3>
+                    <p>Fresh Atlantic lobster in creamy cognac sauce</p>
+                    <div class="menu-price">$75</div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-icon">🍝</div>
+                    <h3>Truffle Pasta</h3>
+                    <p>Handmade pasta with black truffle and parmesan</p>
+                    <div class="menu-price">$45</div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-icon">🐟</div>
+                    <h3>Seared Tuna</h3>
+                    <p>Yellowfin tuna with wasabi aioli and pickled ginger</p>
+                    <div class="menu-price">$55</div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-icon">🍰</div>
+                    <h3>Chocolate Soufflé</h3>
+                    <p>Belgian chocolate with vanilla ice cream</p>
+                    <div class="menu-price">$25</div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-icon">🍾</div>
+                    <h3>Wine Pairing</h3>
+                    <p>Sommelier-selected wines for your meal</p>
+                    <div class="menu-price">$40</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">Our Story</h2>
+            <div class="about-content">
+                <p>For over 20 years, Le Gourmet has been delighting guests with exquisite cuisine and unparalleled service. Our Michelin-starred chefs craft each dish with passion and precision.</p>
+                <p>We source only the finest ingredients from local farms and international suppliers, ensuring every meal is a celebration of flavor and craftsmanship.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <p>📍 123 Gourmet Street, Fine Dine City</p>
+            <p>📞 (555) 123-4567 | 📧 reservations@legourmet.com</p>
+            <p>&copy; 2025 Le Gourmet. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Create gold particles
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'gold-particle';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            document.body.appendChild(particle);
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

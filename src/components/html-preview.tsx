@@ -37,29 +37,25 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
         /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(filename) && files[filename]
       );
 
-      // Convert images to base64 data URLs if they're in the files
+      // Replace ALL image references with base64 data URLs
       imageFiles.forEach(imageFile => {
         const imageContent = files[imageFile];
-        if (imageContent) {
-          // If it's already a base64 string, use it directly
-          if (imageContent.startsWith('data:')) {
-            htmlContent = htmlContent.replace(
-              new RegExp(`(src=["'])(\\.?\\/)?${imageFile}(["'])`, 'g'),
-              `$1${imageContent}$3`
-            );
-          }
+        if (imageContent && imageContent.startsWith('data:')) {
+          // Create multiple regex patterns to catch all variations
+          const patterns = [
+            new RegExp(`(src=["'])${imageFile}(["'])`, 'gi'),           // src="image-1.jpg"
+            new RegExp(`(src=["'])\\.\\/${imageFile}(["'])`, 'gi'),      // src="./image-1.jpg"
+            new RegExp(`(src=["'])\\/+${imageFile}(["'])`, 'gi'),        // src="/image-1.jpg"
+            new RegExp(`(src=["'])\\s*${imageFile}(["'])`, 'gi'),       // src=" image-1.jpg"
+          ];
+          
+          patterns.forEach(pattern => {
+            htmlContent = htmlContent.replace(pattern, `$1${imageContent}$2`);
+          });
+          
+          console.log(`✅ Replaced ${imageFile} with base64 data URL`);
         }
       });
-
-      // Replace relative image paths with downloaded images
-      // This handles both ./image.jpg and image.jpg formats
-      const imagePathRegex = /(<img[^>]+src=["'])(\.\/)? *([^"']+\.(jpg|jpeg|png|gif|svg|webp))(["'])/gi;
-      htmlContent = htmlContent.replace(
-        imagePathRegex,
-        (_match, prefix, _slashes, filename, _ext, suffix) => {
-          return `${prefix}${filename}${suffix}`;
-        }
-      );
 
       // Inject CSS inline
       cssFiles.forEach(cssFile => {

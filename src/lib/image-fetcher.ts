@@ -1,53 +1,98 @@
 /**
- * Fetches relevant images from Unsplash based on keywords
+ * Fetches relevant images from Unsplash/Pexels based on keywords
+ * Falls back to relevant placeholder service if both fail
  */
 export async function fetchRelevantImages(keywords: string[], count: number = 5): Promise<string[]> {
   try {
     const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+    const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
     
-    if (!UNSPLASH_ACCESS_KEY) {
-      console.warn('⚠️ UNSPLASH_ACCESS_KEY not found, using placeholder images');
-      return Array(count).fill('https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop');
-    }
-
     const query = keywords.join(' ');
-    console.log(`🔍 Fetching images for: "${query}"`);
     
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
-      {
-        headers: {
-          'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
+    // Try Unsplash first if API key exists
+    if (UNSPLASH_ACCESS_KEY) {
+      console.log(`🔍 Trying Unsplash API for: "${query}"`);
+      
+      try {
+        const response = await fetch(
+          `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
+          {
+            headers: {
+              'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.results && data.results.length > 0) {
+            const imageUrls = data.results.map((img: any) => img.urls.regular);
+            console.log(`✅ Fetched ${imageUrls.length} images from Unsplash`);
+            return imageUrls;
+          }
         }
+      } catch (error) {
+        console.warn('⚠️ Unsplash failed, trying Pexels...', error);
       }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Unsplash API error: ${response.status}`);
     }
-
-    const data = await response.json();
     
-    if (!data.results || data.results.length === 0) {
-      console.warn('⚠️ No images found, using fallback');
-      return Array(count).fill('https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop');
+    // Try Pexels if Unsplash fails or no key
+    if (PEXELS_API_KEY) {
+      console.log(`� Trying Pexels API for: "${query}"`);
+      
+      try {
+        const response = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
+          {
+            headers: {
+              'Authorization': PEXELS_API_KEY
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.photos && data.photos.length > 0) {
+            const imageUrls = data.photos.map((photo: any) => photo.src.large);
+            console.log(`✅ Fetched ${imageUrls.length} images from Pexels`);
+            return imageUrls;
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Pexels failed, using fallback...', error);
+      }
     }
-
-    const imageUrls = data.results.map((img: any) => img.urls.regular);
-    console.log(`✅ Fetched ${imageUrls.length} images from Unsplash`);
     
-    return imageUrls;
+    // Final fallback - Use LoremFlickr (keyword-based, no API key required)
+    // It searches Flickr for actual relevant images based on keywords
+    console.log(`📸 Using LoremFlickr with keywords: "${query}"`);
+    
+    const loremFlickrImages: string[] = [];
+    const primaryKeyword = keywords[0] || 'website';
+    
+    for (let i = 0; i < count; i++) {
+      // LoremFlickr format: https://loremflickr.com/width/height/keyword
+      // Adding random seed to get different images each time
+      const randomSeed = Date.now() + i;
+      loremFlickrImages.push(`https://loremflickr.com/1200/800/${encodeURIComponent(query)}?random=${randomSeed}`);
+    }
+    
+    console.log(`✅ Generated ${loremFlickrImages.length} LoremFlickr URLs with keyword: "${query}"`);
+    return loremFlickrImages;
+    
   } catch (error) {
-    console.error('❌ Error fetching images from Unsplash:', error);
-    // Fallback to high-quality placeholder images
-    const fallbackImages = [
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=800&fit=crop',
-      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop',
-      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&h=800&fit=crop',
-      'https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=1200&h=800&fit=crop',
-    ];
-    return fallbackImages.slice(0, count);
+    console.error('❌ All image services failed:', error);
+    
+    // Ultimate emergency fallback - keyword-based Unsplash direct URLs
+    const keyword = keywords[0] || 'website';
+    const fallbackImages = Array(count).fill(null).map((_, i) => 
+      `https://source.unsplash.com/1200x800/?${encodeURIComponent(keyword)},${i}`
+    );
+    
+    console.log(`🆘 Using emergency fallback with keyword: "${keyword}"`);
+    return fallbackImages;
   }
 }
 

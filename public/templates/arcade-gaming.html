@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Gaming Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            line-height: 1.8;
+            color: #00ff00;
+            background: #000;
+            overflow-x: hidden;
+        }
+        
+        /* Retro Grid Background */
+        .retro-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                linear-gradient(0deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            animation: gridScroll 20s linear infinite;
+        }
+        
+        @keyframes gridScroll {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        /* Neon Sun */
+        .neon-sun {
+            position: fixed;
+            bottom: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff00ff 0%, #ff0080 50%, transparent 70%);
+            box-shadow: 
+                0 0 50px #ff00ff,
+                0 0 100px #ff0080,
+                0 0 150px #ff00ff;
+            animation: sunPulse 4s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes sunPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+        }
+        
+        /* Pixel Particles */
+        .pixel-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .pixel {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #0ff;
+            box-shadow: 0 0 10px #0ff;
+            animation: pixelFloat 15s infinite ease-in-out;
+        }
+        
+        @keyframes pixelFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Glitch Effect */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 3px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.8s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.2rem;
+            color: #ff00ff;
+            text-shadow: 
+                0 0 10px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 30px #ff00ff;
+            animation: logoGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { 
+                text-shadow: 
+                    0 0 10px #ff00ff,
+                    0 0 20px #ff00ff,
+                    0 0 30px #ff00ff;
+            }
+            50% { 
+                text-shadow: 
+                    0 0 20px #ff00ff,
+                    0 0 40px #ff00ff,
+                    0 0 60px #ff00ff;
+            }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: #0ff;
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px #0ff;
+            position: relative;
+        }
+        
+        nav a:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+            animation: glitch 0.3s infinite;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 200px 2rem 150px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #ff00ff;
+            text-shadow: 
+                0 0 10px #ff00ff,
+                0 0 20px #ff00ff,
+                0 0 40px #ff00ff,
+                3px 3px 0 #0ff;
+            animation: titleFloat 3s ease-in-out infinite, glitch 0.5s infinite;
+        }
+        
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .hero p {
+            font-size: 0.9rem;
+            color: #0ff;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 10px #0ff;
+            animation: fadeIn 1s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .pixel-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: #000;
+            color: #ff00ff;
+            text-decoration: none;
+            border: 4px solid #ff00ff;
+            box-shadow: 
+                0 0 20px #ff00ff,
+                inset 0 0 20px rgba(255, 0, 255, 0.2);
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pixel-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .pixel-button:hover::before {
+            left: 100%;
+        }
+        
+        .pixel-button:hover {
+            background: #ff00ff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 40px #ff00ff,
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Game Screen Section */
+        .game-screen {
+            padding: 100px 2rem;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .arcade-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            color: #0ff;
+            text-shadow: 
+                0 0 10px #0ff,
+                0 0 20px #0ff,
+                3px 3px 0 #ff00ff;
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+        
+        /* Arcade Cabinet */
+        .arcade-frame {
+            max-width: 800px;
+            margin: 0 auto 5rem;
+            background: #1a0033;
+            border: 8px solid #ff00ff;
+            border-radius: 20px 20px 0 0;
+            padding: 3rem;
+            box-shadow: 
+                0 0 30px #ff00ff,
+                inset 0 0 30px rgba(255, 0, 255, 0.2);
+            position: relative;
+            animation: cabinetFloat 4s ease-in-out infinite;
+        }
+        
+        @keyframes cabinetFloat {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-20px) rotateX(2deg); }
+        }
+        
+        .screen-inner {
+            background: #000;
+            border: 4px solid #0ff;
+            padding: 2rem;
+            box-shadow: 
+                0 0 20px #0ff,
+                inset 0 0 20px rgba(0, 255, 255, 0.3);
+            text-align: center;
+        }
+        
+        .screen-inner h3 {
+            color: #ff00ff;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        
+        .screen-inner p {
+            color: #0ff;
+            font-size: 0.7rem;
+            line-height: 1.8;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        /* Game Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .game-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 4px solid #00ff00;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.4s;
+            animation: cardReveal 0.6s ease both;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 45%, 
+                rgba(0, 255, 255, 0.3) 50%, 
+                transparent 55%);
+            background-size: 200% 200%;
+            animation: scanline 3s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes scanline {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateY(90deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+        
+        .game-card:nth-child(1) { animation-delay: 0.1s; }
+        .game-card:nth-child(2) { animation-delay: 0.2s; }
+        .game-card:nth-child(3) { animation-delay: 0.3s; }
+        .game-card:nth-child(4) { animation-delay: 0.4s; }
+        .game-card:nth-child(5) { animation-delay: 0.5s; }
+        .game-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        .game-card:hover {
+            transform: scale(1.05) rotateZ(2deg);
+            border-color: #ff00ff;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.6);
+        }
+        
+        .game-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: iconBounce 2s infinite;
+            filter: drop-shadow(0 0 10px #ff00ff);
+        }
+        
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.1); }
+        }
+        
+        .game-card h3 {
+            color: #ff00ff;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        
+        .game-card p {
+            color: #0ff;
+            font-size: 0.6rem;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 100px 2rem;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-box {
+            background: #000;
+            border: 3px solid #0ff;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .feature-box::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(0, 255, 255, 0.3), transparent 30%);
+            animation: rotate 4s linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-box:hover::after {
+            opacity: 1;
+        }
+        
+        .feature-box:hover {
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon-box {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .feature-box h3 {
+            color: #ff00ff;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            text-shadow: 0 0 10px #ff00ff;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-box p {
+            color: #0ff;
+            font-size: 0.6rem;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #0ff;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Footer */
+        footer {
+            background: #000;
+            border-top: 3px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #0ff;
+            font-size: 0.6rem;
+            text-shadow: 0 0 10px #0ff;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .arcade-title {
+                font-size: 1.5rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .pixel-button {
+                padding: 15px 30px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="retro-grid"></div>
+    <div class="neon-sun"></div>
+    <div class="pixel-particles" id="pixels"></div>
+
+    <header>
+        <nav>
+            <div class="logo">🕹️ ARCADE ZONE</div>
+            <ul>
+                <li><a href="#games">GAMES</a></li>
+                <li><a href="#features">FEATURES</a></li>
+                <li><a href="#contact">CONTACT</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>INSERT COIN</h1>
+            <p>PRESS START TO BUILD YOUR RETRO GAME</p>
+            <a href="#games" class="pixel-button">▶ START GAME</a>
+        </div>
+    </section>
+
+    <section id="games" class="game-screen">
+        <div class="container">
+            <h2 class="arcade-title">▼ GAME ZONE ▼</h2>
+            
+            <div class="arcade-frame">
+                <div class="screen-inner">
+                    <h3>◆ MAIN GAME SCREEN ◆</h3>
+                    <p>THIS IS WHERE YOUR CUSTOM GAME LOGIC WILL RUN</p>
+                    <p>USER CAN ADD GAME CANVAS AND INTERACTIVE ELEMENTS HERE</p>
+                    <p>SUPPORTS: PLATFORMERS • SHOOTERS • PUZZLE GAMES • RPG</p>
+                </div>
+            </div>
+
+            <div class="games-grid">
+                <div class="game-card">
+                    <div class="game-icon">👾</div>
+                    <h3>SPACE INVADER</h3>
+                    <p>CLASSIC ARCADE SHOOTER WITH PIXEL PERFECT COLLISION</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🏃</div>
+                    <h3>ENDLESS RUNNER</h3>
+                    <p>INFINITE SCROLLING PLATFORMER WITH OBSTACLE GENERATION</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🧩</div>
+                    <h3>PUZZLE MASTER</h3>
+                    <p>BRAIN TEASING PUZZLES WITH COMBO SYSTEM</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🎯</div>
+                    <h3>TARGET STRIKE</h3>
+                    <p>PRECISION AIMING GAME WITH POWER-UPS</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🗡️</div>
+                    <h3>DUNGEON QUEST</h3>
+                    <p>RPG ADVENTURE WITH TURN-BASED COMBAT</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🏎️</div>
+                    <h3>SPEED RACER</h3>
+                    <p>HIGH-SPEED RACING WITH DRIFT MECHANICS</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="arcade-title">◈ POWER-UPS ◈</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon-box">⚡</div>
+                    <h3>LIGHTNING ENGINE</h3>
+                    <p>60 FPS GAMEPLAY WITH ZERO LAG</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon-box">🎮</div>
+                    <h3>CONTROLLER SUPPORT</h3>
+                    <p>KEYBOARD & GAMEPAD READY</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon-box">💾</div>
+                    <h3>AUTO SAVE</h3>
+                    <p>NEVER LOSE YOUR PROGRESS</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon-box">🏆</div>
+                    <h3>LEADERBOARDS</h3>
+                    <p>COMPETE WITH PLAYERS GLOBALLY</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <p>© 2025 ARCADE ZONE • READY PLAYER ONE</p>
+        </div>
+    </footer>
+
+    <script>
+        // Create pixel particles
+        const pixelsContainer = document.getElementById('pixels');
+        for (let i = 0; i < 40; i++) {
+            const pixel = document.createElement('div');
+            pixel.className = 'pixel';
+            pixel.style.left = Math.random() * 100 + '%';
+            pixel.style.animationDelay = Math.random() * 15 + 's';
+            pixel.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            
+            // Random colors
+            const colors = ['#0ff', '#ff00ff', '#00ff00', '#ffff00'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            pixel.style.background = color;
+            pixel.style.boxShadow = `0 0 10px ${color}`;
+            
+            pixelsContainer.appendChild(pixel);
+        }
+    </script>
+</body>
+</html>

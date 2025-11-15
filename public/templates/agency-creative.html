@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Agency</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #020f0a;
+            overflow-x: hidden;
+        }
+        
+        /* Geometric Background */
+        .geo-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #020f0a 0%, #051f15 50%, #020f0a 100%);
+        }
+        
+        /* 3D Rotating Shapes */
+        .geo-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .geo-shape {
+            position: absolute;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            animation: rotate3d 25s infinite linear;
+        }
+        
+        .geo-shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        }
+        
+        .geo-shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            right: 15%;
+            animation-delay: -8s;
+            animation-duration: 30s;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, transparent 70%);
+        }
+        
+        .geo-shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: 15%;
+            left: 40%;
+            animation-delay: -15s;
+            animation-duration: 20s;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+        }
+        
+        @keyframes rotate3d {
+            0% { transform: rotate(0deg) rotateY(0deg) rotateX(0deg); }
+            100% { transform: rotate(360deg) rotateY(360deg) rotateX(360deg); }
+        }
+        
+        /* Energy Field */
+        .energy-field {
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(16, 185, 129, 0.3) 50%, transparent 100%);
+            border-radius: 50%;
+            animation: energySpin 12s linear infinite;
+            filter: blur(60px);
+            z-index: -1;
+            top: 20%;
+            left: 30%;
+        }
+        
+        @keyframes energySpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: particleDrift 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        
+        @keyframes particleDrift {
+            0% { transform: translate(0, 100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 0.6; }
+            100% { transform: translate(200px, -100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(2, 15, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.8s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: logoGlow 3s infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.9)); }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: #10b981;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1.1rem;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero */
+        .hero {
+            padding: 200px 2rem 140px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero h1 {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, #10b981 50%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease, energyGlow 3s infinite;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes energyGlow {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(16, 185, 129, 0.5)); }
+            50% { filter: brightness(1.3) drop-shadow(0 0 40px rgba(16, 185, 129, 0.8)); }
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: #6ee7b7;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.4s;
+            animation: fadeInUp 1s ease 0.6s both;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .cta-button:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(16, 185, 129, 0.9);
+        }
+        
+        /* Services */
+        .services {
+            padding: 120px 2rem;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, #fff 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+        
+        .service-card {
+            background: rgba(16, 185, 129, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 25px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            transition: all 0.5s;
+            animation: fadeInUp 0.8s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(16, 185, 129, 0.2) 50%, transparent 100%);
+            animation: rotateBorder 6s linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes rotateBorder {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .service-card:hover::before {
+            opacity: 1;
+        }
+        
+        .service-card:nth-child(1) { animation-delay: 0.2s; }
+        .service-card:nth-child(2) { animation-delay: 0.3s; }
+        .service-card:nth-child(3) { animation-delay: 0.4s; }
+        .service-card:nth-child(4) { animation-delay: 0.5s; }
+        .service-card:nth-child(5) { animation-delay: 0.6s; }
+        .service-card:nth-child(6) { animation-delay: 0.7s; }
+        
+        .service-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            border-color: #10b981;
+            box-shadow: 0 25px 60px rgba(16, 185, 129, 0.4);
+        }
+        
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            animation: float 4s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.6));
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        
+        .service-card h3 {
+            color: #10b981;
+            margin-bottom: 0.8rem;
+            font-size: 1.6rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .service-card p {
+            color: #6ee7b7;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #6ee7b7;
+            margin: 0.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            nav ul { gap: 1rem; font-size: 0.9rem; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="geo-bg"></div>
+    <div class="geo-shapes">
+        <div class="geo-shape"></div>
+        <div class="geo-shape"></div>
+        <div class="geo-shape"></div>
+    </div>
+    <div class="energy-field"></div>
+    <div class="particles" id="particles"></div>
+
+    <header>
+        <nav>
+            <div class="logo">⚡ Vertex Agency</div>
+            <ul>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#work">Work</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Creative Solutions</h1>
+            <p>Transform ideas into digital masterpieces</p>
+            <a href="#services" class="cta-button">Let's Create 🎯</a>
+        </div>
+    </section>
+
+    <section id="services" class="services">
+        <div class="container">
+            <h2 class="section-title">What We Do</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🎨</div>
+                    <h3>Brand Identity</h3>
+                    <p>Create memorable brands that stand out</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💻</div>
+                    <h3>Web Development</h3>
+                    <p>Build stunning websites and applications</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📱</div>
+                    <h3>Mobile Apps</h3>
+                    <p>Craft beautiful mobile experiences</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🎬</div>
+                    <h3>Motion Design</h3>
+                    <p>Bring your vision to life with animation</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📊</div>
+                    <h3>Digital Marketing</h3>
+                    <p>Grow your audience with smart strategies</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🚀</div>
+                    <h3>Strategy</h3>
+                    <p>Plan for success with expert guidance</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <p>🌟 Let's build something amazing together</p>
+            <p>📧 hello@vertexagency.com | 📞 (555) 987-6543</p>
+            <p>&copy; 2025 Vertex Agency. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Create particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 15 + 15) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

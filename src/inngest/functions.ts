@@ -7,6 +7,9 @@ import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT} from "@/
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
+import { getTemplateById } from "@/lib/templates";
+import fs from "fs";
+import path from "path";
 
 interface AgentState {
   summary: string;
@@ -261,50 +264,127 @@ export const codeAgentFunction = inngest.createFunction(
             const imageName = `image-${i + 1}.jpg`;
             
             try {
-              // Download image using curl in sandbox
-              await sandbox.commands.run(
-                `curl -L "${imageUrl}" -o "${imageName}"`,
-                { timeoutMs: 10000 }
+              console.log(`📥 Downloading image ${i + 1} from: ${imageUrl}`);
+              
+              // Download image using curl in sandbox with better error handling
+              const downloadResult = await sandbox.commands.run(
+                `curl -L -f -s -S "${imageUrl}" -o "${imageName}" && echo "SUCCESS" || echo "FAILED"`,
+                { timeoutMs: 15000 }
               );
               
-              // Also save as base64 in files object for frontend preview
+              if (!downloadResult.stdout?.includes('SUCCESS')) {
+                console.warn(`⚠️ Download failed for image ${i + 1}, skipping...`);
+                continue;
+              }
+              
+              // Verify file exists and has content
+              const verifyResult = await sandbox.commands.run(
+                `ls -lh "${imageName}" && echo "EXISTS"`,
+                { timeoutMs: 2000 }
+              );
+              
+              if (!verifyResult.stdout?.includes('EXISTS')) {
+                console.warn(`⚠️ Image ${i + 1} not found after download, skipping...`);
+                continue;
+              }
+              
+              // Convert to base64 for frontend preview (with error handling)
               const imageBase64Result = await sandbox.commands.run(
-                `base64 -w 0 "${imageName}"`,
-                { timeoutMs: 5000 }
+                `base64 -w 0 "${imageName}" 2>/dev/null || base64 "${imageName}"`,
+                { timeoutMs: 8000 }
               );
               
-              if (imageBase64Result.stdout && network.state.data.files) {
+              if (imageBase64Result.stdout && imageBase64Result.stdout.trim().length > 100) {
                 // Store as data URL for easy embedding
-                network.state.data.files[imageName] = `data:image/jpeg;base64,${imageBase64Result.stdout.trim()}`;
+                const base64Data = imageBase64Result.stdout.trim();
+                
+                // Detect image type (jpg by default)
+                let mimeType = 'image/jpeg';
+                if (imageName.endsWith('.png')) mimeType = 'image/png';
+                else if (imageName.endsWith('.gif')) mimeType = 'image/gif';
+                else if (imageName.endsWith('.webp')) mimeType = 'image/webp';
+                
+                if (network.state.data.files) {
+                  network.state.data.files[imageName] = `data:${mimeType};base64,${base64Data}`;
+                  console.log(`✅ Image ${i + 1} saved as base64 (${Math.round(base64Data.length / 1024)}KB)`);
+                }
+              } else {
+                console.warn(`⚠️ Base64 conversion failed or empty for image ${i + 1}`);
+                continue;
               }
               
               localImagePaths.push(imageName);
-              console.log(`✅ Downloaded image ${i + 1}: ${imageName}`);
+              console.log(`✅ Successfully processed image ${i + 1}: ${imageName}`);
             } catch (error) {
-              console.warn(`⚠️ Failed to download image ${i + 1}:`, error);
+              console.error(`❌ Failed to process image ${i + 1}:`, error);
             }
           }
+          
+          console.log(`📊 Final result: ${localImagePaths.length}/${imageUrls.length} images successfully downloaded`);
         } catch (error) {
-          console.error("❌ Image download failed:", error);
+          console.error("❌ Image download process failed:", error);
         }
       });
     }
     
     // Enhance prompt with local image paths
     let enhancedPrompt = event.data.value;
+    
+    // Load template HTML if template is selected
+    let templateHTML = "";
+    if (event.data.templateId) {
+      console.log(`🎨 Template selected: ${event.data.templateId}`);
+      const template = getTemplateById(event.data.templateId);
+      if (template) {
+        try {
+          const templatePath = path.join(process.cwd(), 'public', template.templateFile);
+          templateHTML = fs.readFileSync(templatePath, 'utf-8');
+          console.log(`✅ Template HTML loaded: ${template.name} (${templateHTML.length} characters)`);
+          
+          // Add template HTML to prompt
+          enhancedPrompt = `🎨 BASE TEMPLATE PROVIDED:\n`;
+          enhancedPrompt += `You have been given a complete HTML template as a starting point.\n`;
+          enhancedPrompt += `Your task is to MODIFY this template based on user requirements while keeping the design structure.\n\n`;
+          enhancedPrompt += `=== TEMPLATE HTML ===\n${templateHTML}\n=== END TEMPLATE ===\n\n`;
+          enhancedPrompt += `📋 MODIFICATION INSTRUCTIONS:\n`;
+          enhancedPrompt += `1. Keep the overall design structure, colors, and layout from the template\n`;
+          enhancedPrompt += `2. Update text content based on user requirements below\n`;
+          enhancedPrompt += `3. Modify sections as needed but maintain the template's aesthetic\n`;
+          enhancedPrompt += `4. Replace placeholder content with user-specific content\n`;
+          enhancedPrompt += `5. Keep all CSS styling intact unless user specifically asks to change design\n\n`;
+          enhancedPrompt += `⚠️ CRITICAL: SINGLE PAGE APPLICATION - NO SEPARATE PAGES!\n`;
+          enhancedPrompt += `- ALL navigation links MUST use anchor links (#section-id) for smooth scrolling\n`;
+          enhancedPrompt += `- Example: <a href="#features">Features</a> NOT <a href="features.html">\n`;
+          enhancedPrompt += `- All sections must be on the SAME HTML page\n`;
+          enhancedPrompt += `- Add smooth scroll CSS: html { scroll-behavior: smooth; }\n`;
+          enhancedPrompt += `- Use IDs for sections: <section id="features">, <section id="pricing">, etc.\n\n`;
+          enhancedPrompt += `=== USER REQUIREMENTS ===\n${event.data.value}\n\n`;
+        } catch (error) {
+          console.error(`❌ Failed to load template HTML:`, error);
+        }
+      }
+    }
+    
     if (localImagePaths.length > 0) {
-      enhancedPrompt += `\n\n🎨 IMPORTANT - USE THESE HIGH-QUALITY IMAGES (already downloaded in your workspace):\n`;
+      enhancedPrompt += `\n\n🎨 CRITICAL REQUIREMENT - YOU MUST USE THESE HIGH-QUALITY IMAGES:\n`;
+      enhancedPrompt += `=================================================================\n`;
       localImagePaths.forEach((path, index) => {
         const simplePath = `image-${index + 1}.jpg`;
-        enhancedPrompt += `Image ${index + 1}: ${simplePath}\n`;
+        enhancedPrompt += `✓ Image ${index + 1}: "${simplePath}" (already downloaded, ready to use)\n`;
       });
-      enhancedPrompt += `\nIntegrate these images naturally into your design:\n`;
-      enhancedPrompt += `- Use Image 1 (image-1.jpg) for the hero section or main banner\n`;
-      enhancedPrompt += `- Use Image 2-3 (image-2.jpg, image-3.jpg) for content sections or features\n`;
-      enhancedPrompt += `- Use Image 4-5 (image-4.jpg, image-5.jpg) for galleries, backgrounds, or additional content\n`;
-      enhancedPrompt += `IMPORTANT: Use these exact file paths in your HTML: <img src="image-1.jpg" alt="description">\n`;
-      enhancedPrompt += `Make sure all images are responsive with CSS: img { max-width: 100%; height: auto; }\n`;
-      console.log(`📝 Enhanced prompt with ${localImagePaths.length} local images`);
+      enhancedPrompt += `\n📋 MANDATORY IMAGE INTEGRATION INSTRUCTIONS:\n`;
+      enhancedPrompt += `1. Hero Section: Use "image-1.jpg" as the main hero/banner image\n`;
+      enhancedPrompt += `2. Content Sections: Use "image-2.jpg" and "image-3.jpg" for feature showcases\n`;
+      enhancedPrompt += `3. Gallery/Background: Use "image-4.jpg" and "image-5.jpg" for additional visuals\n\n`;
+      enhancedPrompt += `⚠️ CRITICAL HTML SYNTAX:\n`;
+      enhancedPrompt += `<img src="image-1.jpg" alt="Hero banner">\n`;
+      enhancedPrompt += `<img src="image-2.jpg" alt="Feature showcase">\n`;
+      enhancedPrompt += `(NO ./ prefix, NO / prefix - just the filename!)\n\n`;
+      enhancedPrompt += `📐 REQUIRED CSS for responsive images:\n`;
+      enhancedPrompt += `img { max-width: 100%; height: auto; display: block; }\n`;
+      enhancedPrompt += `=================================================================\n`;
+      enhancedPrompt += `YOU MUST include ALL ${localImagePaths.length} images in the website design!\n\n`;
+      console.log(`📝 Enhanced prompt with ${localImagePaths.length} local images (MANDATORY USAGE)`);
     } else {
       console.log("📝 No images downloaded, proceeding without images");
     }
@@ -434,6 +514,7 @@ export const codeAgentFunction = inngest.createFunction(
           },
         });
       }
+      
       return prisma.message.create({
         data: {
           projectId: event.data.projectId,

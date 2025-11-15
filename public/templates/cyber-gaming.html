@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Gaming Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #00ffff;
+            background: #000;
+            overflow-x: hidden;
+        }
+        
+        /* Digital Rain Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+        }
+        
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .rain-column {
+            position: absolute;
+            top: -100%;
+            width: 20px;
+            font-size: 14px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            animation: rain 10s linear infinite;
+            opacity: 0.7;
+        }
+        
+        @keyframes rain {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+        
+        /* Hexagon Grid */
+        .hex-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        .hexagon {
+            position: absolute;
+            width: 80px;
+            height: 46px;
+            background: #00ffff;
+            margin: 23px 0;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            animation: hexPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes hexPulse {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.05); }
+        }
+        
+        /* Holographic Orbs */
+        .holo-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 255, 255, 0.4), transparent);
+            filter: blur(40px);
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+        
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 255, 255, 0.3), transparent);
+        }
+        
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            bottom: 10%;
+            right: 10%;
+            background: radial-gradient(circle at 30% 30%, rgba(138, 43, 226, 0.3), transparent);
+            animation-delay: -5s;
+        }
+        
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            top: 50%;
+            left: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 0, 255, 0.3), transparent);
+            animation-delay: -10s;
+        }
+        
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+        
+        /* Laser Particles */
+        .laser-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .laser {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, #00ffff, transparent);
+            box-shadow: 0 0 10px #00ffff;
+            animation: laserShoot 8s linear infinite;
+        }
+        
+        @keyframes laserShoot {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(100vh) rotate(180deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.8s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 
+                0 0 10px #00ffff,
+                0 0 20px #00ffff,
+                0 0 40px #00ffff;
+            animation: logoGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .logo::before {
+            content: '▶';
+            position: absolute;
+            left: -30px;
+            animation: arrowPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; }
+            50% { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00ffff; }
+        }
+        
+        @keyframes arrowPulse {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            box-shadow: 0 0 10px #00ffff;
+            transition: width 0.3s;
+        }
+        
+        nav a:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        
+        nav a:hover::before {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 180px 2rem 120px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #00ffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: titleGlitch 5s ease-in-out infinite, textShine 3s linear infinite;
+            position: relative;
+        }
+        
+        @keyframes titleGlitch {
+            0%, 96%, 100% { transform: translate(0); }
+            97% { transform: translate(-2px, 2px); }
+            98% { transform: translate(2px, -2px); }
+            99% { transform: translate(-2px, -2px); }
+        }
+        
+        @keyframes textShine {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #8a2be2;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 10px #8a2be2;
+            letter-spacing: 2px;
+            animation: fadeIn 1.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .cyber-button {
+            display: inline-block;
+            padding: 20px 60px;
+            background: transparent;
+            color: #00ffff;
+            text-decoration: none;
+            border: 3px solid #00ffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.5),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:hover {
+            background: rgba(0, 255, 255, 0.1);
+            color: #fff;
+            border-color: #ff00ff;
+            box-shadow: 
+                0 0 40px rgba(255, 0, 255, 0.8),
+                inset 0 0 30px rgba(255, 0, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        /* Game Terminal Section */
+        .game-terminal {
+            padding: 100px 2rem;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .cyber-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 4rem;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 
+                0 0 10px #00ffff,
+                0 0 20px #00ffff,
+                0 0 40px #00ffff;
+            animation: titleGlitch 5s ease-in-out infinite;
+        }
+        
+        /* Holographic Terminal */
+        .holo-terminal {
+            max-width: 900px;
+            margin: 0 auto 5rem;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ffff;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 255, 0.6),
+                inset 0 0 40px rgba(0, 255, 255, 0.1);
+            padding: 3rem;
+            position: relative;
+            animation: terminalFloat 5s ease-in-out infinite;
+        }
+        
+        @keyframes terminalFloat {
+            0%, 100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+            33% { transform: perspective(1000px) rotateX(2deg) rotateY(-2deg); }
+            66% { transform: perspective(1000px) rotateX(-2deg) rotateY(2deg); }
+        }
+        
+        .holo-terminal::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ffff);
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0.5;
+            animation: borderRotate 3s linear infinite;
+        }
+        
+        @keyframes borderRotate {
+            0% { filter: blur(10px) hue-rotate(0deg); }
+            100% { filter: blur(10px) hue-rotate(360deg); }
+        }
+        
+        .terminal-screen {
+            background: #000;
+            padding: 2.5rem;
+            border: 2px solid #0f0;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.5),
+                inset 0 0 30px rgba(0, 255, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .terminal-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.8), transparent);
+            animation: scanLine 3s linear infinite;
+        }
+        
+        @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .terminal-screen h3 {
+            color: #0f0;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #0f0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .terminal-screen p {
+            color: #00ffff;
+            font-size: 0.95rem;
+            line-height: 2;
+            text-shadow: 0 0 5px #00ffff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* VR Game Cards */
+        .vr-games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+        
+        .vr-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8a2be2;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.5s;
+            animation: cardReveal 0.8s ease both;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+            overflow: hidden;
+        }
+        
+        .vr-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(138, 43, 226, 0.3), transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: perspective(1000px) rotateY(90deg) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: perspective(1000px) rotateY(0deg) scale(1);
+            }
+        }
+        
+        .vr-card:nth-child(1) { animation-delay: 0.1s; }
+        .vr-card:nth-child(2) { animation-delay: 0.2s; }
+        .vr-card:nth-child(3) { animation-delay: 0.3s; }
+        .vr-card:nth-child(4) { animation-delay: 0.4s; }
+        .vr-card:nth-child(5) { animation-delay: 0.5s; }
+        .vr-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        .vr-card:hover {
+            transform: perspective(1000px) translateY(-15px) rotateX(5deg);
+            border-color: #00ffff;
+            box-shadow: 
+                0 0 60px rgba(0, 255, 255, 0.8),
+                0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .vr-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            animation: iconHover 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px #ff00ff);
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes iconHover {
+            0%, 100% { 
+                transform: translateY(0) rotateZ(0deg); 
+                filter: drop-shadow(0 0 20px #ff00ff);
+            }
+            50% { 
+                transform: translateY(-10px) rotateZ(5deg); 
+                filter: drop-shadow(0 0 30px #00ffff);
+            }
+        }
+        
+        .vr-card h3 {
+            color: #00ffff;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .vr-card p {
+            color: #8a2be2;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            text-shadow: 0 0 5px #8a2be2;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Features Section */
+        .cyber-features {
+            padding: 100px 2rem;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .cyber-feature {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            overflow: hidden;
+        }
+        
+        .cyber-feature::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cyber-feature:hover::after {
+            left: 100%;
+        }
+        
+        .cyber-feature:hover {
+            border-color: #ff00ff;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.6);
+            transform: translateY(-10px) scale(1.05);
+        }
+        
+        .cyber-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+            filter: drop-shadow(0 0 15px #00ffff);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .cyber-feature h3 {
+            color: #00ffff;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .cyber-feature p {
+            color: #8a2be2;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #8a2be2;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        footer p {
+            color: #00ffff;
+            font-size: 0.9rem;
+            text-shadow: 0 0 10px #00ffff;
+            letter-spacing: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+                letter-spacing: 2px;
+            }
+            
+            .cyber-title {
+                font-size: 2rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .cyber-button {
+                padding: 15px 35px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    <div class="matrix-rain" id="matrix"></div>
+    <div class="hex-grid" id="hexGrid"></div>
+    <div class="holo-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="laser-particles" id="lasers"></div>
+
+    <header>
+        <nav>
+            <div class="logo">CYBER GAMING</div>
+            <ul>
+                <li><a href="#games">GAMES</a></li>
+                <li><a href="#features">FEATURES</a></li>
+                <li><a href="#contact">CONTACT</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>ENTER THE MATRIX</h1>
+            <p>// NEXT-GEN GAMING EXPERIENCE //</p>
+            <a href="#games" class="cyber-button">JACK IN</a>
+        </div>
+    </section>
+
+    <section id="games" class="game-terminal">
+        <div class="container">
+            <h2 class="cyber-title">GAME MATRIX</h2>
+            
+            <div class="holo-terminal">
+                <div class="terminal-screen">
+                    <h3>>>> INITIALIZING GAME ENGINE...</h3>
+                    <p>> MAIN GAME LOGIC CONTAINER</p>
+                    <p>> CANVAS RENDERING: ENABLED</p>
+                    <p>> VR/AR SUPPORT: ACTIVE</p>
+                    <p>> USER PROMPT SYSTEM: ONLINE</p>
+                    <p>> AI GAME GENERATION: READY</p>
+                </div>
+            </div>
+
+            <div class="vr-games-grid">
+                <div class="vr-card">
+                    <div class="vr-icon">🥽</div>
+                    <h3>VR COMBAT</h3>
+                    <p>IMMERSIVE VIRTUAL REALITY BATTLES WITH HAPTIC FEEDBACK</p>
+                </div>
+                <div class="vr-card">
+                    <div class="vr-icon">🌌</div>
+                    <h3>SPACE ODYSSEY</h3>
+                    <p>EXPLORE INFINITE GALAXIES IN ZERO-GRAVITY ENVIRONMENTS</p>
+                </div>
+                <div class="vr-card">
+                    <div class="vr-icon">🤖</div>
+                    <h3>AI WARFARE</h3>
+                    <p>STRATEGIC BATTLES AGAINST ADVANCED AI OPPONENTS</p>
+                </div>
+                <div class="vr-card">
+                    <div class="vr-icon">⚔️</div>
+                    <h3>CYBER ARENA</h3>
+                    <p>MULTIPLAYER COMBAT IN HOLOGRAPHIC BATTLEGROUNDS</p>
+                </div>
+                <div class="vr-card">
+                    <div class="vr-icon">🎯</div>
+                    <h3>NEURAL HACK</h3>
+                    <p>PUZZLE-SOLVING IN VIRTUAL NEURAL NETWORKS</p>
+                </div>
+                <div class="vr-card">
+                    <div class="vr-icon">🚀</div>
+                    <h3>QUANTUM RACE</h3>
+                    <p>HIGH-SPEED RACING THROUGH DIGITAL DIMENSIONS</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="cyber-features">
+        <div class="container">
+            <h2 class="cyber-title">SYSTEM MODULES</h2>
+            <div class="features-grid">
+                <div class="cyber-feature">
+                    <div class="cyber-icon">⚡</div>
+                    <h3>QUANTUM ENGINE</h3>
+                    <p>ULTRA-FAST RENDERING AT 120 FPS</p>
+                </div>
+                <div class="cyber-feature">
+                    <div class="cyber-icon">🔮</div>
+                    <h3>HOLOGRAPHIC UI</h3>
+                    <p>3D INTERFACE PROJECTION SYSTEM</p>
+                </div>
+                <div class="cyber-feature">
+                    <div class="cyber-icon">🧠</div>
+                    <h3>NEURAL SYNC</h3>
+                    <p>AI-POWERED ADAPTIVE GAMEPLAY</p>
+                </div>
+                <div class="cyber-feature">
+                    <div class="cyber-icon">🌐</div>
+                    <h3>CLOUD MATRIX</h3>
+                    <p>SEAMLESS CROSS-PLATFORM SYNC</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <p>© 2025 CYBER GAMING NETWORK // ALL SYSTEMS OPERATIONAL</p>
+        </div>
+    </footer>
+
+    <script>
+        // Matrix digital rain effect
+        const matrixContainer = document.getElementById('matrix');
+        const chars = '01アイウエオカキクケコサシスセソタチツテト';
+        
+        for (let i = 0; i < 30; i++) {
+            const column = document.createElement('div');
+            column.className = 'rain-column';
+            column.style.left = Math.random() * 100 + '%';
+            column.style.animationDelay = Math.random() * 10 + 's';
+            column.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            
+            let text = '';
+            for (let j = 0; j < 20; j++) {
+                text += chars[Math.floor(Math.random() * chars.length)] + '<br>';
+            }
+            column.innerHTML = text;
+            matrixContainer.appendChild(column);
+        }
+        
+        // Hexagon grid
+        const hexGrid = document.getElementById('hexGrid');
+        for (let i = 0; i < 15; i++) {
+            const hex = document.createElement('div');
+            hex.className = 'hexagon';
+            hex.style.left = Math.random() * 100 + '%';
+            hex.style.top = Math.random() * 100 + '%';
+            hex.style.animationDelay = Math.random() * 4 + 's';
+            hexGrid.appendChild(hex);
+        }
+        
+        // Laser particles
+        const lasersContainer = document.getElementById('lasers');
+        for (let i = 0; i < 30; i++) {
+            const laser = document.createElement('div');
+            laser.className = 'laser';
+            laser.style.left = Math.random() * 100 + '%';
+            laser.style.animationDelay = Math.random() * 8 + 's';
+            laser.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            
+            // Random colors
+            const colors = ['#00ffff', '#ff00ff', '#00ff00'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            laser.style.background = `linear-gradient(180deg, transparent, ${color}, transparent)`;
+            laser.style.boxShadow = `0 0 10px ${color}`;
+            
+            lasersContainer.appendChild(laser);
+        }
+    </script>
+</body>
+</html>

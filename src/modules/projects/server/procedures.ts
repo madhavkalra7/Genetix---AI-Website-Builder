@@ -92,7 +92,8 @@ export const projectsRouter = createTRPCRouter({
                 .min(1, { message: "Value is required"})
                 .max(10000,{ message: "Value is too long"}),
                 enhancedValue: z.string().optional(), // Enhanced prompt for AI
-                techStack: z.string().optional().default("react-nextjs")
+                techStack: z.string().optional().default("react-nextjs"),
+                templateId: z.string().optional() // Template ID if user selected a template
             }),
         )
         .mutation(async ({ input,ctx })=> {
@@ -150,6 +151,7 @@ export const projectsRouter = createTRPCRouter({
                 data: {
                     value: input.enhancedValue || input.value, // Use enhanced prompt for AI
                     projectId: createdProject.id,
+                    templateId: input.templateId, // Pass template ID to inngest
                 },
                 });
                 return createdProject;

@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
+import { getTemplateById } from "@/lib/templates";
+import type { Template } from "@/lib/templates";
 
 function TypingTitle() {
   const fullText = "Build With Genetix";
@@ -41,11 +43,12 @@ function TypingTitle() {
 
 const Page = () => {
   const [value, setValue] = useState("");
-  const [selectedTech, setSelectedTech] = useState("react-nextjs");
+  const [selectedTech, setSelectedTech] = useState("html-css-js");
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollThumbTop, setScrollThumbTop] = useState(0);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const router = useRouter();
   const trpc = useTRPC();
   const { user } = useAuth();
@@ -100,21 +103,40 @@ const Page = () => {
 
   const handleCreateProject = () => {
     const selectedTechOption = techOptions.find(tech => tech.value === selectedTech);
-    const enhancedPrompt = `${value}\n\nTechnology Stack: ${selectedTechOption?.label}\nRequirements: ${selectedTechOption?.description}`;
+    
+    let enhancedPrompt = value;
+    
+    // If template is selected, merge template design with user prompt
+    if (selectedTemplate) {
+      enhancedPrompt = `${selectedTemplate.designPrompt}\n\n=== USER REQUIREMENTS ===\n${value}`;
+    }
+    
+    // Add technology stack information
+    enhancedPrompt += `\n\nTechnology Stack: ${selectedTechOption?.label}\nRequirements: ${selectedTechOption?.description}`;
     
     createProject.mutate({ 
       value: value, // Original prompt for display
-      enhancedValue: enhancedPrompt, // Enhanced prompt for AI
-      techStack: selectedTech 
+      enhancedValue: enhancedPrompt, // Enhanced prompt with template design
+      techStack: selectedTech,
+      templateId: selectedTemplate?.id // Pass template ID if selected
     });
   };
 
   useEffect(() => {
-    // Prefill from ?prompt= (client-only to avoid Suspense requirement)
+    // Prefill from ?prompt= and ?template= (client-only to avoid Suspense requirement)
     try {
       const usp = new URLSearchParams(window.location.search);
       const p = usp.get("prompt");
       if (p) setValue(p);
+      
+      const templateId = usp.get("template");
+      if (templateId) {
+        const template = getTemplateById(templateId);
+        if (template) {
+          setSelectedTemplate(template);
+          toast.success(`Template "${template.name}" selected!`);
+        }
+      }
     } catch {}
 
     const updateScrollProgress = () => {
@@ -194,7 +216,45 @@ const Page = () => {
             <p className="text-gray-300 mt-6 text-base md:text-xl font-light">
               Your imagination. AI execution. 🚀
             </p>
+            
+            {/* Templates Button */}
+            <div className="mt-8">
+              <Button
+                onClick={() => router.push('/templates')}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-purple-500/50"
+              >
+                ✨ Browse Templates
+              </Button>
+            </div>
           </div>
+          
+          {/* Selected Template Display */}
+          {selectedTemplate && (
+            <div className="backdrop-blur-md bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl px-6 py-4 w-full mb-6 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-purple-300 text-xs font-[Orbitron] uppercase tracking-wider mb-1">Selected Template</p>
+                  <h3 className="text-white font-bold text-lg font-[Orbitron]">{selectedTemplate.name}</h3>
+                  <p className="text-gray-300 text-sm mt-1">{selectedTemplate.description}</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      {selectedTemplate.category}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    toast.info("Template cleared");
+                  }}
+                  variant="outline"
+                  className="text-white bg-white/10 hover:bg-red-500/20 border border-white/30 hover:border-red-500 px-4 py-2 transition font-[Orbitron] ml-4"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
           {/* Input + Prompts Section */}
           <div className="backdrop-blur-md bg-black/40 border border-gray-700 shadow-2xl px-8 py-8 w-full text-center space-y-6 mt-1">
             {/* Technology Stack Selector */}
