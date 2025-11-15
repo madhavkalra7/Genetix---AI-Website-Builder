@@ -8,15 +8,48 @@ import { useScroll } from "@/hooks/use-scroll"
 import { useAuth } from "@/contexts/AuthContext"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
+import { useLanguage } from "@/contexts/LanguageContext"
+
+const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+    { code: 'pt', name: 'Português', flag: '🇵🇹' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
+    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+    { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+    { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+    { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+    { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+    { code: 'th', name: 'ไทย', flag: '🇹🇭' },
+    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+];
 
 export const Navbar =()=>{
     const isScrolled=useScroll();
     const { user: customAuthUser } = useAuth();
     const { data: session } = useSession();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+    const { language, setLanguage, t } = useLanguage();
     
     // Check both custom auth and NextAuth
     const user = customAuthUser || session?.user;
+    
+    const selectedLanguage = languages.find(l => l.code === language) || languages[0];
+    
+    const handleLanguageChange = (lang: typeof languages[0]) => {
+        setLanguage(lang.code as any);
+        setLanguageMenuOpen(false);
+    };
     
     return (
         <nav className={cn(
@@ -36,19 +69,60 @@ export const Navbar =()=>{
                         href="/prompt-generator"
                         className="text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors"
                     >
-                        Prompt Generator
+                        {t('nav.promptGenerator')}
                     </Link>
                 </div>
                 
-                {/* Desktop Auth Buttons */}
-                <div className="hidden md:flex items-center">
+                {/* Desktop Auth Buttons + Language Selector */}
+                <div className="hidden md:flex items-center gap-3">
+                    {/* Language Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
+                            className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all backdrop-blur-sm"
+                            aria-label="Select language"
+                        >
+                            <span className="text-lg">🌍</span>
+                        </button>
+                        
+                        {languageMenuOpen && (
+                            <>
+                                <div 
+                                    className="fixed inset-0 z-40" 
+                                    onClick={() => setLanguageMenuOpen(false)}
+                                />
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-lg border border-white/20 rounded-lg shadow-xl overflow-hidden z-50 max-h-96 overflow-y-auto">
+                                    <div className="p-2 border-b border-white/10">
+                                        <p className="text-xs text-white/60 font-semibold px-2">{t('templates.selectLanguage')}</p>
+                                    </div>
+                                    {languages.map((lang) => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => handleLanguageChange(lang)}
+                                            className={cn(
+                                                "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/10 transition-colors",
+                                                selectedLanguage.code === lang.code && "bg-white/20"
+                                            )}
+                                        >
+                                            <span className="text-xl">{lang.flag}</span>
+                                            <span className="text-sm text-white font-medium">{lang.name}</span>
+                                            {selectedLanguage.code === lang.code && (
+                                                <span className="ml-auto text-green-400">✓</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    
                     {!user ? (
                         <div className="flex gap-2">
                             <Button variant="outline" size="sm" asChild>
-                                <Link href="/auth/signup">Sign Up</Link>
+                                <Link href="/auth/signup">{t('nav.signUp')}</Link>
                             </Button>
                             <Button size="sm" asChild>
-                                <Link href="/auth/signin">Sign In</Link>
+                                <Link href="/auth/signin">{t('nav.signIn')}</Link>
                             </Button>
                         </div>
                     ) : (
@@ -75,6 +149,46 @@ export const Navbar =()=>{
             {/* Mobile Menu */}
             {mobileMenuOpen && (
                 <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-lg border-b border-white/10 p-4 space-y-4">
+                    {/* Mobile Language Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-white"
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">🌍</span>
+                                <span className="text-sm font-semibold">{selectedLanguage.name}</span>
+                            </div>
+                            <svg className={cn("w-4 h-4 transition-transform", languageMenuOpen && "rotate-180")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        {languageMenuOpen && (
+                            <div className="mt-2 w-full bg-black/95 backdrop-blur-lg border border-white/20 rounded-lg shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+                                {languages.map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        onClick={() => {
+                                            handleLanguageChange(lang);
+                                            setLanguageMenuOpen(false);
+                                        }}
+                                        className={cn(
+                                            "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/10 transition-colors",
+                                            selectedLanguage.code === lang.code && "bg-white/20"
+                                        )}
+                                    >
+                                        <span className="text-xl">{lang.flag}</span>
+                                        <span className="text-sm text-white font-medium">{lang.name}</span>
+                                        {selectedLanguage.code === lang.code && (
+                                            <span className="ml-auto text-green-400">✓</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    
                     <Link
                         href="/prompt-generator"
                         className="block text-sm font-[Orbitron] font-semibold text-white px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-center"

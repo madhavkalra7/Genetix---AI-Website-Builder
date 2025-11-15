@@ -12,9 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
 import { getTemplateById } from "@/lib/templates";
 import type { Template } from "@/lib/templates";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function TypingTitle() {
-  const fullText = "Build With Genetix";
+  const { t } = useLanguage();
+  const fullText = t('home.title');
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
     let i = 0;
@@ -24,7 +26,7 @@ function TypingTitle() {
       if (i >= fullText.length) clearInterval(interval);
     }, 120);
     return () => clearInterval(interval);
-  }, []);
+  }, [fullText]);
   return (
     <h1 className="text-white text-5xl md:text-6xl font-extrabold tracking-widest font-[Orbitron] drop-shadow-xl">
       {displayed}
@@ -40,7 +42,6 @@ function TypingTitle() {
     </h1>
   );
 }
-
 const Page = () => {
   const [value, setValue] = useState("");
   const [selectedTech, setSelectedTech] = useState("html-css-js");
@@ -53,18 +54,18 @@ const Page = () => {
   const trpc = useTRPC();
   const { user } = useAuth();
   const { data: session } = useSession();
+  const { t } = useLanguage();
   
   // Get display name from either auth method
   const displayName = user?.firstName || user?.username || session?.user?.name || 'USER';
   const isLoggedIn = !!(user || session?.user);
-  
   // Technology stack options
   const techOptions = [
-    { value: "react-nextjs", label: "React + Next.js", description: "Modern web apps with React and Next.js" },
-    { value: "html-css-js", label: "HTML + CSS + JavaScript", description: "Vanilla web development" },
-    { value: "vue-nuxt", label: "Vue.js + Nuxt", description: "Vue-based web applications" },
-    { value: "angular", label: "Angular", description: "Enterprise web applications" },
-    { value: "svelte-kit", label: "Svelte + SvelteKit", description: "Fast and lightweight apps" },
+    { value: "react-nextjs", label: t('tech.react'), description: t('tech.reactDesc') },
+    { value: "html-css-js", label: t('tech.html'), description: t('tech.htmlDesc') },
+    { value: "vue-nuxt", label: t('tech.vue'), description: t('tech.vueDesc') },
+    { value: "angular", label: t('tech.angular'), description: t('tech.angularDesc') },
+    { value: "svelte-kit", label: t('tech.svelte'), description: t('tech.svelteDesc') },
   ];
   // ...existing code...
   const queryClient = useQueryClient();
@@ -209,12 +210,12 @@ const Page = () => {
             {isLoggedIn && (
               <p className="text-green-400 text-sm md:text-base font-[Orbitron] tracking-[0.3em] mb-8 uppercase" 
                  style={{ textShadow: '0 0 10px rgba(74, 222, 128, 0.8), 0 0 20px rgba(74, 222, 128, 0.5)' }}>
-                WELCOME, {displayName}
+                {t('home.welcome')}, {displayName}
               </p>
             )}
             <TypingTitle />
             <p className="text-gray-300 mt-6 text-base md:text-xl font-light">
-              Your imagination. AI execution. 🚀
+              {t('home.subtitle')}
             </p>
             
             {/* Templates Button */}
@@ -223,7 +224,7 @@ const Page = () => {
                 onClick={() => router.push('/templates')}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-purple-500/50"
               >
-                ✨ Browse Templates
+                {t('home.browseTemplates')}
               </Button>
             </div>
           </div>
@@ -233,7 +234,7 @@ const Page = () => {
             <div className="backdrop-blur-md bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl px-6 py-4 w-full mb-6 rounded-xl">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-purple-300 text-xs font-[Orbitron] uppercase tracking-wider mb-1">Selected Template</p>
+                  <p className="text-purple-300 text-xs font-[Orbitron] uppercase tracking-wider mb-1">{t('home.selectedTemplate')}</p>
                   <h3 className="text-white font-bold text-lg font-[Orbitron]">{selectedTemplate.name}</h3>
                   <p className="text-gray-300 text-sm mt-1">{selectedTemplate.description}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -250,7 +251,7 @@ const Page = () => {
                   variant="outline"
                   className="text-white bg-white/10 hover:bg-red-500/20 border border-white/30 hover:border-red-500 px-4 py-2 transition font-[Orbitron] ml-4"
                 >
-                  Clear
+                  {t('home.clear')}
                 </Button>
               </div>
             </div>
@@ -260,7 +261,7 @@ const Page = () => {
             {/* Technology Stack Selector */}
             <div className="w-full">
               <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
-                🔧 Select Technology Stack
+                {t('home.selectTech')}
               </label>
               <Select value={selectedTech} onValueChange={setSelectedTech}>
                 <SelectTrigger className="w-full bg-black/40 border border-white/30 text-white font-[Orbitron] rounded-xl focus:ring-2 focus:ring-white">
@@ -287,7 +288,7 @@ const Page = () => {
               <div className="relative flex-1 flex">
                 <textarea
                   className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black resize-none w-full"
-                  placeholder="🌑 e.g. Build a crypto dashboard with real-time updates"
+                  placeholder={t('home.placeholder')}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
                   rows={4}
@@ -339,12 +340,12 @@ const Page = () => {
                 onClick={handleCreateProject}
                 className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold font-[Orbitron] transition mt-2 sm:mt-0"
               >
-                Launch 🚀
+                {t('home.launch')}
               </Button>
             </div>
             {value && (
               <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-left">
-                <span className="text-xs sm:text-sm text-white/80 font-[Orbitron]">Need help crafting this? Get a concise, better prompt.</span>
+                <span className="text-xs sm:text-sm text-white/80 font-[Orbitron]">{t('home.needHelp')}</span>
                 <Button
                   variant="outline"
                   className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 px-4 py-2 transition font-[Orbitron]"
@@ -353,14 +354,14 @@ const Page = () => {
                     router.push(`/prompt-generator?${qs}`);
                   }}
                 >
-                  Enhance this prompt
+                  {t('home.enhancePrompt')}
                 </Button>
               </div>
             )}
             <div className="flex flex-wrap justify-center gap-3 text-sm">
               {/* Dynamic prompts based on selected technology */}
               {selectedTech === "react-nextjs" && [
-                "Create a landing page", "Build Admin Dashboard", "Create Kanban Board", "Build E-commerce Site"
+                t('prompt.landing'), t('prompt.dashboard'), t('prompt.kanban'), t('prompt.ecommerce')
               ].map((prompt) => (
                 <Button
                   key={prompt}
@@ -373,7 +374,7 @@ const Page = () => {
               ))}
               
               {selectedTech === "html-css-js" && [
-                "Create netflix clone", "Build Portfolio Website", "Create tic tac toe game", "Build rock paper scissor game"
+                t('prompt.netflix'), t('prompt.portfolio'), t('prompt.tictactoe'), t('prompt.rockpaper')
               ].map((prompt) => (
                 <Button
                   key={prompt}

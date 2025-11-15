@@ -1,4 +1,5 @@
 import {Navbar} from "./navbar";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 interface Props {
     children: React.ReactNode;
@@ -6,12 +7,14 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
     return (
-        <main className="flex flex-col min-h-screen bg-black overflow-x-hidden">
-            <Navbar />
-            <div className="flex-1 flex flex-col">
-                {children}
-            </div>
-        </main>
+        <LanguageProvider>
+            <main className="flex flex-col min-h-screen bg-black overflow-x-hidden">
+                <Navbar />
+                <div className="flex-1 flex flex-col">
+                    {children}
+                </div>
+            </main>
+        </LanguageProvider>
     );
 };
 
