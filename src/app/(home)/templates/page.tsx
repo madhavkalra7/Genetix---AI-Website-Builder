@@ -37,25 +37,25 @@ export default function TemplatesPage() {
           <div className="h-full flex flex-col">
             {/* Preview Header */}
             <div className="border-b border-white/10 bg-black/80 backdrop-blur-sm">
-              <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold">{selectedTemplateData.name}</h2>
-                  <p className="text-sm text-gray-400">{selectedTemplateData.description}</p>
+              <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex-1">
+                  <h2 className="text-lg sm:text-xl font-bold">{selectedTemplateData.name}</h2>
+                  <p className="text-xs sm:text-sm text-gray-400">{selectedTemplateData.description}</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                   <Button 
                     onClick={() => {
                       setPreviewTemplate(null);
                       handleSelectTemplate(previewTemplate);
                     }}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-xs sm:text-sm"
                   >
-                    Use This Template
+                    Use Template
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => setPreviewTemplate(null)}
-                    className="border-white/20 hover:bg-white/10"
+                    className="flex-1 sm:flex-none border-white/20 hover:bg-white/10 text-xs sm:text-sm"
                   >
                     Close
                   </Button>
@@ -76,17 +76,17 @@ export default function TemplatesPage() {
 
       {/* Header */}
       <div className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
               Website Templates
             </h1>
-            <p className="text-sm text-gray-400 mt-1">Choose a template to start building</p>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1">Choose a template to start building</p>
           </div>
           <Button 
             variant="outline" 
             onClick={() => router.push("/")}
-            className="border-white/20 hover:bg-white/10"
+            className="border-white/20 hover:bg-white/10 w-full sm:w-auto"
           >
             Back to Home
           </Button>
@@ -95,7 +95,7 @@ export default function TemplatesPage() {
 
       {/* Category Filter */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map((category) => (
             <Button
               key={category}
@@ -103,8 +103,8 @@ export default function TemplatesPage() {
               onClick={() => setSelectedCategory(category)}
               className={
                 selectedCategory === category
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 border-0"
-                  : "border-white/20 hover:bg-white/10"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 border-0 whitespace-nowrap text-xs sm:text-sm"
+                  : "border-white/20 hover:bg-white/10 whitespace-nowrap text-xs sm:text-sm"
               }
             >
               {category}
@@ -168,9 +168,9 @@ export default function TemplatesPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button 
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 text-xs sm:text-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSelectTemplate(template.id);
@@ -180,7 +180,7 @@ export default function TemplatesPage() {
                   </Button>
                   <Button 
                     variant="outline"
-                    className="border-white/20 hover:bg-white/10"
+                    className="border-white/20 hover:bg-white/10 text-xs sm:text-sm"
                     onClick={(e) => handlePreview(template.id, e)}
                   >
                     👁️ Preview
