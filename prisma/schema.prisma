@@ -191,12 +191,13 @@ enum PaymentStatus {
 // ==================== PROJECT MODELS ====================
 
 model Project {
-  id        String   @id @default(uuid())
-  name      String
-  userId    String
-  techStack String   @default("react-nextjs")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  name               String
+  userId             String
+  techStack          String   @default("react-nextjs")
+  advancedReasoning  Boolean  @default(false) // GPT-5.1 model flag (24h limit)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Relations
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -260,4 +261,15 @@ model UserCredits {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
+}
+// Track GPT-5.1 Advanced Reasoning usage (24-hour limit for ALL users)
+model AdvancedReasoningUsage {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  lastUsedAt      DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([lastUsedAt])
 }

@@ -45,6 +45,10 @@ function TypingTitle() {
 const Page = () => {
   const [value, setValue] = useState("");
   const [selectedTech, setSelectedTech] = useState("html-css-js");
+  const [advancedReasoning, setAdvancedReasoning] = useState(false);
+  const [canUseAdvanced, setCanUseAdvanced] = useState(false); // Start with false until API check completes
+  const [hoursRemaining, setHoursRemaining] = useState(0);
+  const [showModelPopup, setShowModelPopup] = useState(false);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -119,7 +123,8 @@ const Page = () => {
       value: value, // Original prompt for display
       enhancedValue: enhancedPrompt, // Enhanced prompt with template design
       techStack: selectedTech,
-      templateId: selectedTemplate?.id // Pass template ID if selected
+      templateId: selectedTemplate?.id, // Pass template ID if selected
+      advancedReasoning: selectedTech === "html-css-js" && advancedReasoning // Only for HTML/CSS/JS
     });
   };
 
@@ -139,6 +144,28 @@ const Page = () => {
         }
       }
     } catch {}
+    
+    // Check if user can use Advanced Reasoning (24-hour limit)
+    const checkAdvancedReasoningAvailability = async () => {
+      if (isLoggedIn) {
+        try {
+          console.log("🔍 Checking Advanced Reasoning availability...");
+          const response = await fetch('/api/check-advanced-reasoning');
+          const data = await response.json();
+          console.log("📊 API Response:", data);
+          setCanUseAdvanced(data.available);
+          setHoursRemaining(data.hoursRemaining || 0);
+          console.log("✅ Set canUseAdvanced:", data.available, "hoursRemaining:", data.hoursRemaining);
+        } catch (error) {
+          console.error('❌ Failed to check advanced reasoning availability:', error);
+          setCanUseAdvanced(true); // Default to available on error
+        }
+      } else {
+        console.log("ℹ️ User not logged in, setting available to true");
+        setCanUseAdvanced(true);
+      }
+    };
+    checkAdvancedReasoningAvailability();
 
     const updateScrollProgress = () => {
       const scrollTop = window.scrollY;
@@ -156,7 +183,7 @@ const Page = () => {
       window.removeEventListener('scroll', updateScrollProgress);
       window.removeEventListener('resize', updateScrollProgress);
     };
-  }, []);
+  }, [isLoggedIn]);
 
   return (
     <main className="min-h-screen w-full bg-black overflow-x-hidden relative">
@@ -263,7 +290,13 @@ const Page = () => {
               <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
                 {t('home.selectTech')}
               </label>
-              <Select value={selectedTech} onValueChange={setSelectedTech}>
+              <Select value={selectedTech} onValueChange={(value) => {
+                setSelectedTech(value);
+                // Reset advanced reasoning when changing tech stack
+                if (value !== "html-css-js") {
+                  setAdvancedReasoning(false);
+                }
+              }}>
                 <SelectTrigger className="w-full bg-black/40 border border-white/30 text-white font-[Orbitron] rounded-xl focus:ring-2 focus:ring-white">
                   <SelectValue placeholder="Choose your tech stack" />
                 </SelectTrigger>
@@ -283,6 +316,109 @@ const Page = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* AI Model Selection Button (only for HTML/CSS/JS) */}
+            {selectedTech === "html-css-js" && (
+              <div className="relative w-full">
+                {/* Compact Round Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowModelPopup(!showModelPopup)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 rounded-full hover:from-purple-600/30 hover:to-pink-600/30 transition-all duration-200"
+                >
+                  <span className="text-white text-sm font-[Orbitron]">
+                    {advancedReasoning ? '🧠 Advanced Reasoning' : '🚀 Simple & Fast'}
+                  </span>
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                    NEW
+                  </span>
+                  <svg 
+                    className={`w-3 h-3 text-purple-400 transition-transform duration-200 ${showModelPopup ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Compact Dropdown */}
+                {showModelPopup && (
+                  <>
+                    {/* Invisible backdrop to close on outside click */}
+                    <div 
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowModelPopup(false)}
+                    />
+                    
+                    {/* Dropdown Content */}
+                    <div className="absolute top-full left-0 mt-2 w-80 bg-black/95 backdrop-blur-md border border-purple-500/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                      <div className="p-3 space-y-2">
+                        {/* Simple and Fast Option */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setAdvancedReasoning(false);
+                            setShowModelPopup(false);
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg transition cursor-pointer ${
+                            !advancedReasoning 
+                              ? 'bg-green-500/20 border border-green-500/40' 
+                              : 'hover:bg-white/10 border border-white/10'
+                          }`}
+                        >
+                          <div className="flex-1 text-left">
+                            <span className="text-white text-sm font-[Orbitron] font-semibold">🚀 Simple & Fast</span>
+                            <p className="text-[11px] text-white/50 mt-1">Quick responses • Unlimited use</p>
+                          </div>
+                          {!advancedReasoning && (
+                            <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                        
+                        {/* Advanced Reasoning Option */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (canUseAdvanced) {
+                              setAdvancedReasoning(true);
+                              setShowModelPopup(false);
+                            } else {
+                              toast.error(`⏰ Available in ${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''}`);
+                            }
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg transition ${
+                            advancedReasoning 
+                              ? 'bg-purple-500/20 border border-purple-500/40' 
+                              : canUseAdvanced
+                              ? 'hover:bg-white/10 border border-white/10 cursor-pointer'
+                              : 'opacity-50 cursor-not-allowed border border-red-500/30'
+                          }`}
+                        >
+                          <div className="flex-1 text-left">
+                            <span className="text-white text-sm font-[Orbitron] font-semibold">🧠 Advanced Reasoning</span>
+                            <p className="text-[11px] text-white/50 mt-1">
+                              {canUseAdvanced ? 'Deep thinking • 1 use / 24h' : `⏰ Wait ${hoursRemaining}h`}
+                            </p>
+                          </div>
+                          {advancedReasoning && (
+                            <svg className="w-5 h-5 text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
             
             <div className="flex flex-col sm:flex-row items-start gap-3">
               <div className="relative flex-1 flex">

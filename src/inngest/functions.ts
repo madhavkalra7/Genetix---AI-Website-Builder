@@ -38,13 +38,13 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const { previousMessages, projectTechStack, previousFiles } = await step.run("get-project-data", async () => {
+    const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
 
-      // Get project info including techStack
+      // Get project info including techStack and advancedReasoning flag
       const project = await prisma.project.findUnique({
         where: { id: event.data.projectId },
-        select: { techStack: true }
+        select: { techStack: true, advancedReasoning: true }
       });
 
       // Get ALL messages for complete conversation history (not just 5)
@@ -86,7 +86,8 @@ export const codeAgentFunction = inngest.createFunction(
       return {
         previousMessages: formattedMessages,
         projectTechStack: project?.techStack || "react-nextjs",
-        previousFiles: (latestFragment?.files as { [path: string]: string }) || {}
+        previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
+        useAdvancedReasoning: project?.advancedReasoning || false
       };
     });
 
@@ -267,12 +268,12 @@ export const codeAgentFunction = inngest.createFunction(
       description: "An expert coding agent",
       system: getTechSpecificPrompt(projectTechStack),
       model: openai({
-    // baseUrl: "https://openrouter.ai/api/v1",
-    // apiKey: process.env.OPENROUTER_API_KEY!,
-    model: "gpt-5-mini-2025-08-07",
-    // defaultParameters:{
-    //   temperature:0.3,
-    // },
+    // Dynamically choose model based on advancedReasoning flag
+    // GPT-5.1 for advanced reasoning (24h limit), GPT-5-mini for standard (fast & efficient)
+    model: useAdvancedReasoning ? "gpt-5.1-2025-11-13" : "gpt-5-mini-2025-08-07",
+    defaultParameters:{
+      temperature: useAdvancedReasoning ? 0.5 : 0.3, // Slightly higher temp for reasoning
+    },
       }),   
       tools: [terminalTool, createOrUpdateFilesTool, readFilesTool],
       lifecycle: {

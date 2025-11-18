@@ -93,14 +93,15 @@ export const projectsRouter = createTRPCRouter({
                 .max(10000,{ message: "Value is too long"}),
                 enhancedValue: z.string().optional(), // Enhanced prompt for AI
                 techStack: z.string().optional().default("react-nextjs"),
-                templateId: z.string().optional() // Template ID if user selected a template
+                templateId: z.string().optional(), // Template ID if user selected a template
+                advancedReasoning: z.boolean().optional().default(false) // GPT-5.1 flag
             }),
         )
         .mutation(async ({ input,ctx })=> {
 
             console.log("🚀 Project create mutation called");
             console.log("User ID from context:", ctx.auth.userId);
-            console.log("Input:", { value: input.value, techStack: input.techStack });
+            console.log("Input:", { value: input.value, techStack: input.techStack, advancedReasoning: input.advancedReasoning });
 
             try{
                 console.log("Attempting to consume credits...");
@@ -127,6 +128,34 @@ export const projectsRouter = createTRPCRouter({
                 });
             }
             
+            // If using advanced reasoning, check 24-hour limit
+            if (input.advancedReasoning) {
+                const usage = await prisma.advancedReasoningUsage.findUnique({
+                    where: { userId: ctx.auth.userId }
+                });
+                
+                if (usage) {
+                    const now = new Date();
+                    const timeSinceLastUse = now.getTime() - usage.lastUsedAt.getTime();
+                    const hours24 = 24 * 60 * 60 * 1000;
+                    
+                    if (timeSinceLastUse < hours24) {
+                        const hoursRemaining = Math.ceil((hours24 - timeSinceLastUse) / (60 * 60 * 1000));
+                        throw new TRPCError({
+                            code: "TOO_MANY_REQUESTS",
+                            message: `Advanced Reasoning is limited to once per 24 hours. Available again in ${hoursRemaining} hours.`
+                        });
+                    }
+                }
+                
+                // Update or create usage record
+                await prisma.advancedReasoningUsage.upsert({
+                    where: { userId: ctx.auth.userId },
+                    update: { lastUsedAt: new Date() },
+                    create: { userId: ctx.auth.userId, lastUsedAt: new Date() }
+                });
+            }
+            
             // Generate meaningful project name from user prompt
             const projectName = generateProjectName(input.value);
             console.log("📝 Generated project name:", projectName);
@@ -136,6 +165,7 @@ export const projectsRouter = createTRPCRouter({
                     userId: ctx.auth.userId,
                     name: projectName, // Use meaningful name instead of random slug
                     techStack: input.techStack,
+                    advancedReasoning: input.advancedReasoning, // Store GPT-5.1 flag
                     messages: {
                         create: {
                             content: input.value, // Save original prompt for display
