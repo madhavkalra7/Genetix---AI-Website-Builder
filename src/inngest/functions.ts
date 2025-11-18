@@ -272,7 +272,7 @@ export const codeAgentFunction = inngest.createFunction(
     // GPT-5.1 for advanced reasoning (24h limit), GPT-5-mini for standard (fast & efficient)
     model: useAdvancedReasoning ? "gpt-5.1-2025-11-13" : "gpt-5-mini-2025-08-07",
     defaultParameters:{
-      temperature: useAdvancedReasoning ? 0.5 : 0.3, // Slightly higher temp for reasoning
+      temperature: useAdvancedReasoning ? 0.5 : 1, // Slightly higher temp for reasoning
     },
       }),   
       tools: [terminalTool, createOrUpdateFilesTool, readFilesTool],
