@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRON FITNESS - Transform Your Body</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;900&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .hero {
+            position: relative;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(255,69,0,0.3)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23111" width="1200" height="800"/></svg>');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 69, 0, 0.03) 2px,
+                rgba(255, 69, 0, 0.03) 4px
+            );
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-50%); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Energy Lines */
+        .energy-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff4500, transparent);
+            animation: energy-flow 3s ease-in-out infinite;
+        }
+
+        .energy-line:nth-child(1) { top: 20%; width: 300px; left: 10%; animation-delay: 0s; }
+        .energy-line:nth-child(2) { top: 60%; width: 400px; right: 10%; animation-delay: 1s; }
+        .energy-line:nth-child(3) { top: 80%; width: 250px; left: 30%; animation-delay: 2s; }
+
+        @keyframes energy-flow {
+            0%, 100% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+        }
+
+        /* Floating Weights */
+        .weight {
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.1;
+            animation: float-weight 15s ease-in-out infinite;
+        }
+
+        .weight:nth-child(4) { left: 5%; top: 15%; animation-delay: 0s; }
+        .weight:nth-child(5) { right: 10%; top: 25%; animation-delay: 3s; }
+        .weight:nth-child(6) { left: 15%; bottom: 20%; animation-delay: 6s; }
+
+        @keyframes float-weight {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-50px) rotate(180deg); }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 120px;
+            color: #ff4500;
+            text-shadow: 0 0 40px rgba(255, 69, 0, 0.8),
+                         0 0 80px rgba(255, 69, 0, 0.5);
+            letter-spacing: 10px;
+            animation: pulse-glow 2s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 40px rgba(255, 69, 0, 0.8), 0 0 80px rgba(255, 69, 0, 0.5); }
+            50% { text-shadow: 0 0 60px rgba(255, 69, 0, 1), 0 0 120px rgba(255, 69, 0, 0.8); }
+        }
+
+        .tagline {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+        }
+
+        .cta-btn {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 32px;
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #ff4500, #ff6347);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(255, 69, 0, 0.5);
+        }
+
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-btn:hover::before {
+            left: 100%;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 60px rgba(255, 69, 0, 0.8);
+        }
+
+        /* Stats Section */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            padding: 100px 20px;
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 100px,
+                rgba(255, 69, 0, 0.05) 100px,
+                rgba(255, 69, 0, 0.05) 101px
+            );
+        }
+
+        .stat-item {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .stat-number {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 80px;
+            color: #ff4500;
+            text-shadow: 0 0 30px rgba(255, 69, 0, 0.6);
+        }
+
+        .stat-label {
+            font-size: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #aaa;
+        }
+
+        /* Programs Section */
+        .programs {
+            padding: 100px 50px;
+            background: linear-gradient(180deg, #0a0a0a, #000);
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 80px;
+            text-align: center;
+            color: #fff;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ff4500, transparent);
+        }
+
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .program-card {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            padding: 50px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #222;
+            transition: all 0.3s;
+        }
+
+        .program-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .program-card:hover::before {
+            left: 100%;
+        }
+
+        .program-card:hover {
+            border-color: #ff4500;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(255, 69, 0, 0.3);
+        }
+
+        .program-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+        }
+
+        .program-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 36px;
+            color: #ff4500;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .program-desc {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #aaa;
+        }
+
+        /* Trainers Section */
+        .trainers {
+            padding: 100px 50px;
+            background: #0a0a0a;
+        }
+
+        .trainers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .trainer-card {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 3/4;
+            background: #1a1a1a;
+            border: 3px solid #ff4500;
+            transition: all 0.3s;
+        }
+
+        .trainer-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 60px rgba(255, 69, 0, 0.5);
+        }
+
+        .trainer-img {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+        }
+
+        .trainer-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+        }
+
+        .trainer-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 32px;
+            color: #ff4500;
+            margin-bottom: 5px;
+        }
+
+        .trainer-role {
+            font-size: 14px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Membership Section */
+        .membership {
+            padding: 100px 50px;
+            background: linear-gradient(180deg, #000, #0a0a0a);
+        }
+
+        .membership-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .membership-card {
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            padding: 50px 40px;
+            text-align: center;
+            border: 3px solid #333;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .membership-card.featured {
+            border-color: #ff4500;
+            transform: scale(1.05);
+        }
+
+        .membership-card:hover {
+            border-color: #ff4500;
+            transform: scale(1.08);
+            box-shadow: 0 20px 60px rgba(255, 69, 0, 0.4);
+        }
+
+        .membership-badge {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: #ff4500;
+            color: #fff;
+            padding: 5px 40px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            transform: rotate(45deg);
+        }
+
+        .membership-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 42px;
+            color: #fff;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .membership-price {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 72px;
+            color: #ff4500;
+            margin-bottom: 10px;
+        }
+
+        .membership-period {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 40px;
+        }
+
+        .membership-features {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+
+        .membership-features li {
+            padding: 15px 0;
+            border-bottom: 1px solid #222;
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .membership-features li::before {
+            content: '✓';
+            color: #ff4500;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .membership-btn {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 24px;
+            padding: 15px 50px;
+            background: linear-gradient(135deg, #ff4500, #ff6347);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+
+        .membership-btn:hover {
+            background: linear-gradient(135deg, #ff6347, #ff4500);
+            box-shadow: 0 10px 40px rgba(255, 69, 0, 0.6);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 50px;
+            background: #000;
+            text-align: center;
+            border-top: 2px solid #ff4500;
+        }
+
+        .footer-text {
+            font-size: 16px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 60px;
+            }
+
+            .tagline {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 50px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .cta-btn {
+                font-size: 24px;
+                padding: 15px 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="energy-line"></div>
+        <div class="energy-line"></div>
+        <div class="energy-line"></div>
+        <div class="weight">🏋️</div>
+        <div class="weight">💪</div>
+        <div class="weight">⚡</div>
+        
+        <div class="hero-content">
+            <h1>IRON FITNESS</h1>
+            <p class="tagline">Transform Your Body, Elevate Your Life</p>
+            <button class="cta-btn">Start Your Journey</button>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-number">5000+</div>
+            <div class="stat-label">Members</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Trainers</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">100+</div>
+            <div class="stat-label">Programs</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Access</div>
+        </div>
+    </section>
+
+    <section class="programs">
+        <h2 class="section-title">Training Programs</h2>
+        <div class="programs-grid">
+            <div class="program-card">
+                <div class="program-icon">💪</div>
+                <h3 class="program-title">Strength Training</h3>
+                <p class="program-desc">Build muscle mass and increase your overall strength with our comprehensive weightlifting programs.</p>
+            </div>
+            <div class="program-card">
+                <div class="program-icon">🔥</div>
+                <h3 class="program-title">HIIT Cardio</h3>
+                <p class="program-desc">High-intensity interval training to burn fat fast and improve cardiovascular endurance.</p>
+            </div>
+            <div class="program-card">
+                <div class="program-icon">🧘</div>
+                <h3 class="program-title">Yoga & Flexibility</h3>
+                <p class="program-desc">Improve flexibility, balance, and mental clarity through guided yoga sessions.</p>
+            </div>
+            <div class="program-card">
+                <div class="program-icon">🥊</div>
+                <h3 class="program-title">Boxing & MMA</h3>
+                <p class="program-desc">Learn combat sports techniques while getting an intense full-body workout.</p>
+            </div>
+            <div class="program-card">
+                <div class="program-icon">🏃</div>
+                <h3 class="program-title">CrossFit</h3>
+                <p class="program-desc">Functional fitness training with varied, high-intensity movements for total body conditioning.</p>
+            </div>
+            <div class="program-card">
+                <div class="program-icon">🍎</div>
+                <h3 class="program-title">Nutrition Coaching</h3>
+                <p class="program-desc">Personalized meal plans and nutrition guidance to fuel your fitness goals.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="trainers">
+        <h2 class="section-title">Elite Trainers</h2>
+        <div class="trainers-grid">
+            <div class="trainer-card">
+                <div class="trainer-img">💪</div>
+                <div class="trainer-info">
+                    <div class="trainer-name">ALEX STRONG</div>
+                    <div class="trainer-role">Head Strength Coach</div>
+                </div>
+            </div>
+            <div class="trainer-card">
+                <div class="trainer-img">🔥</div>
+                <div class="trainer-info">
+                    <div class="trainer-name">SARA POWER</div>
+                    <div class="trainer-role">HIIT Specialist</div>
+                </div>
+            </div>
+            <div class="trainer-card">
+                <div class="trainer-img">🧘</div>
+                <div class="trainer-info">
+                    <div class="trainer-name">ZEN MASTER</div>
+                    <div class="trainer-role">Yoga Instructor</div>
+                </div>
+            </div>
+            <div class="trainer-card">
+                <div class="trainer-img">🥊</div>
+                <div class="trainer-info">
+                    <div class="trainer-name">MIKE FIGHTER</div>
+                    <div class="trainer-role">Combat Coach</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="membership">
+        <h2 class="section-title">Membership Plans</h2>
+        <div class="membership-grid">
+            <div class="membership-card">
+                <h3 class="membership-name">BASIC</h3>
+                <div class="membership-price">$29</div>
+                <div class="membership-period">per month</div>
+                <ul class="membership-features">
+                    <li>Gym Access (6am-10pm)</li>
+                    <li>Basic Equipment</li>
+                    <li>Locker Room Access</li>
+                    <li>Monthly Fitness Assessment</li>
+                </ul>
+                <button class="membership-btn">Join Now</button>
+            </div>
+            <div class="membership-card featured">
+                <div class="membership-badge">POPULAR</div>
+                <h3 class="membership-name">PRO</h3>
+                <div class="membership-price">$59</div>
+                <div class="membership-period">per month</div>
+                <ul class="membership-features">
+                    <li>24/7 Gym Access</li>
+                    <li>All Equipment & Classes</li>
+                    <li>Personal Trainer (2x/month)</li>
+                    <li>Nutrition Plan</li>
+                    <li>Sauna & Steam Room</li>
+                </ul>
+                <button class="membership-btn">Join Now</button>
+            </div>
+            <div class="membership-card">
+                <h3 class="membership-name">ELITE</h3>
+                <div class="membership-price">$99</div>
+                <div class="membership-period">per month</div>
+                <ul class="membership-features">
+                    <li>24/7 VIP Access</li>
+                    <li>Personal Trainer (Unlimited)</li>
+                    <li>Custom Meal Plans</li>
+                    <li>Recovery Services</li>
+                    <li>Guest Passes (5/month)</li>
+                    <li>Exclusive Events</li>
+                </ul>
+                <button class="membership-btn">Join Now</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p class="footer-text">© 2025 IRON FITNESS. ALL RIGHTS RESERVED.</p>
+    </footer>
+</body>
+</html>

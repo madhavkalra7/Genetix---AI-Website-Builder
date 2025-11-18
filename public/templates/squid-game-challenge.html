@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오징어 게임 - Squid Game Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.93) 0%, rgba(233, 236, 239, 0.93) 50%, rgba(222, 226, 230, 0.93) 100%),
+                        url('https://images.unsplash.com/photo-1561828995-f9d6bc6e9872?w=1920&q=80') center/cover fixed;
+            color: #212529;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Geometric Shapes Background */
+        .shape {
+            position: fixed;
+            opacity: 0.15;
+            z-index: 1;
+        }
+
+        .shape-circle {
+            width: 200px;
+            height: 200px;
+            border: 15px solid #00A878;
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+            animation: float-shape 15s ease-in-out infinite;
+        }
+
+        .shape-triangle {
+            width: 0;
+            height: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 173px solid #F7A1C4;
+            top: 60%;
+            right: 15%;
+            animation: float-shape 18s ease-in-out infinite;
+        }
+
+        .shape-square {
+            width: 180px;
+            height: 180px;
+            background: #E71D27;
+            bottom: 15%;
+            left: 20%;
+            animation: float-shape 20s ease-in-out infinite;
+        }
+
+        @keyframes float-shape {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-40px) rotate(180deg); }
+        }
+
+        /* Pink Guards Walking */
+        .guard {
+            position: fixed;
+            font-size: 80px;
+            animation: guard-walk 25s linear infinite;
+            z-index: 2;
+            filter: drop-shadow(0 5px 15px rgba(247, 161, 196, 0.6));
+        }
+
+        .guard::before {
+            content: '💂';
+        }
+
+        .guard:nth-child(5) {
+            animation-delay: 0s;
+            top: 15%;
+        }
+
+        .guard:nth-child(6) {
+            animation-delay: 8s;
+            top: 70%;
+        }
+
+        @keyframes guard-walk {
+            0% { left: -100px; }
+            100% { left: 110%; }
+        }
+
+        /* Piggy Bank Animation */
+        .piggy-bank {
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            font-size: 120px;
+            animation: piggy-fill 5s ease-in-out infinite;
+            z-index: 3;
+            filter: drop-shadow(0 10px 30px rgba(231, 29, 39, 0.5));
+        }
+
+        .piggy-bank::before {
+            content: '🏦';
+        }
+
+        @keyframes piggy-fill {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Red Light Green Light Doll */
+        .doll {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 100px;
+            z-index: 4;
+            animation: doll-turn 6s ease-in-out infinite;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+        }
+
+        .doll::before {
+            content: '👧';
+        }
+
+        @keyframes doll-turn {
+            0%, 40% { transform: translateX(-50%) rotateY(0deg); }
+            50%, 90% { transform: translateX(-50%) rotateY(180deg); }
+            100% { transform: translateX(-50%) rotateY(360deg); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 75px;
+            color: #E71D27;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-shadow: 
+                5px 5px 0 #000,
+                10px 10px 20px rgba(0, 0, 0, 0.5);
+            animation: title-glitch 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes title-glitch {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-2px, -2px); }
+        }
+
+        .korean-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 50px;
+            color: #00A878;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #F7A1C4;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 4px;
+        }
+
+        /* Prize Money */
+        .prize-box {
+            background: linear-gradient(135deg, rgba(0, 168, 120, 0.9), rgba(0, 100, 70, 0.9));
+            border: 8px solid #00A878;
+            border-radius: 30px;
+            padding: 50px;
+            margin: 50px auto;
+            max-width: 900px;
+            box-shadow: 
+                0 0 50px rgba(0, 168, 120, 0.6),
+                inset 0 0 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .prize-box::before {
+            content: '🏆';
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 100px;
+            filter: drop-shadow(0 5px 20px rgba(231, 29, 39, 0.8));
+        }
+
+        .prize-box h2 {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 48px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .prize-amount {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 65px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .prize-text {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            letter-spacing: 3px;
+        }
+
+        /* Game Arena */
+        .game-arena {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 10px solid #212529;
+            border-radius: 40px;
+            padding: 50px;
+            margin: 50px 0;
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-arena::before {
+            content: '🔴';
+            position: absolute;
+            top: -50px;
+            left: 40px;
+            font-size: 80px;
+            animation: light-blink 2s ease-in-out infinite;
+        }
+
+        .game-arena::after {
+            content: '🟢';
+            position: absolute;
+            top: -50px;
+            right: 40px;
+            font-size: 80px;
+            animation: light-blink 2s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes light-blink {
+            0%, 40% { opacity: 1; transform: scale(1); }
+            50%, 90% { opacity: 0.3; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Canvas */
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border: 8px solid #000;
+            border-radius: 25px;
+            box-shadow: 
+                0 0 40px rgba(0, 0, 0, 0.5),
+                inset 0 0 60px rgba(0, 0, 0, 0.1);
+            cursor: none;
+        }
+
+        /* Game Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 28px;
+            padding: 20px 50px;
+            border: 6px solid;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #00A878, #007d5a);
+            border-color: #00A878;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px rgba(0, 168, 120, 0.6);
+        }
+
+        .btn-green:hover {
+            box-shadow: 0 0 50px rgba(0, 168, 120, 1);
+        }
+
+        .btn-pink {
+            background: linear-gradient(135deg, #F7A1C4, #f47ba8);
+            border-color: #F7A1C4;
+            color: #000;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(247, 161, 196, 0.6);
+        }
+
+        .btn-pink:hover {
+            box-shadow: 0 0 50px rgba(247, 161, 196, 1);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #E71D27, #b31620);
+            border-color: #E71D27;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px rgba(231, 29, 39, 0.6);
+        }
+
+        .btn-red:hover {
+            box-shadow: 0 0 50px rgba(231, 29, 39, 1);
+        }
+
+        /* Player Stats */
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border: 6px solid #000;
+            border-radius: 25px;
+            padding: 35px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-card-green { border-color: #00A878; }
+        .stat-card-pink { border-color: #F7A1C4; }
+        .stat-card-red { border-color: #E71D27; }
+        .stat-card-gold { border-color: #ffd700; }
+
+        .stat-number {
+            position: absolute;
+            top: -25px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: #000;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: stat-pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes stat-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stat-label {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #212529;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 50px;
+            font-weight: bold;
+            color: #E71D27;
+        }
+
+        /* Games List */
+        .games-list {
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(33, 37, 41, 0.9));
+            border: 5px solid #F7A1C4;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            min-width: 200px;
+            box-shadow: 0 0 30px rgba(247, 161, 196, 0.5);
+            transition: all 0.3s;
+        }
+
+        .game-card:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 50px rgba(247, 161, 196, 0.9);
+            border-color: #00A878;
+        }
+
+        .game-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .game-name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 24px;
+            color: #F7A1C4;
+            margin-bottom: 8px;
+        }
+
+        .game-korean {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #00A878;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(33, 37, 41, 0.95));
+            border: 8px solid #E71D27;
+            border-radius: 30px;
+            padding: 60px;
+            margin-top: 70px;
+            box-shadow: 0 15px 50px rgba(231, 29, 39, 0.6);
+        }
+
+        .instructions h2 {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 52px;
+            color: #F7A1C4;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .instructions ul {
+            list-style: none;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 2.8;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .instructions li {
+            padding-left: 60px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            font-size: 30px;
+            color: #00A878;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 45px;
+            }
+            
+            .korean-title {
+                font-size: 32px;
+            }
+            
+            .subtitle {
+                font-size: 20px;
+            }
+            
+            .btn {
+                font-size: 20px;
+                padding: 15px 35px;
+            }
+
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="shape shape-circle"></div>
+    <div class="shape shape-triangle"></div>
+    <div class="shape shape-square"></div>
+    <div class="guard"></div>
+    <div class="guard"></div>
+    <div class="piggy-bank"></div>
+    <div class="doll"></div>
+
+    <div class="container">
+        <header>
+            <div class="korean-title">오징어 게임</div>
+            <h1>🔺 SQUID GAME CHALLENGE 🔺</h1>
+            <p class="subtitle">⭕ SURVIVAL OF THE FITTEST ⭕</p>
+        </header>
+
+        <div class="prize-box">
+            <h2>총 상금 / PRIZE MONEY</h2>
+            <div class="prize-amount">₩ 45,600,000,000</div>
+            <p class="prize-text">456 PLAYERS • 6 GAMES • 1 WINNER</p>
+        </div>
+
+        <div class="game-arena">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <div class="controls">
+                <button class="btn btn-green" onclick="startGame()">🟢 GREEN LIGHT (START)</button>
+                <button class="btn btn-pink" onclick="pauseGame()">⏸️ PAUSE</button>
+                <button class="btn btn-red" onclick="resetGame()">🔴 RED LIGHT (RESET)</button>
+            </div>
+
+            <div class="player-stats">
+                <div class="stat-card stat-card-green">
+                    <div class="stat-number">456</div>
+                    <div class="stat-icon">🏃</div>
+                    <div class="stat-label">SCORE</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-number">001</div>
+                    <div class="stat-icon">💚</div>
+                    <div class="stat-label">LIVES</div>
+                    <div class="stat-value" id="lives">3</div>
+                </div>
+                <div class="stat-card stat-card-red">
+                    <div class="stat-number">067</div>
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-label">LEVEL</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-card stat-card-gold">
+                    <div class="stat-number">218</div>
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-label">BEST</div>
+                    <div class="stat-value" id="highscore">0</div>
+                </div>
+            </div>
+
+            <div class="games-list">
+                <div class="game-card">
+                    <div class="game-icon">🚦</div>
+                    <div class="game-name">RED LIGHT</div>
+                    <div class="game-korean">무궁화 꽃이 피었습니다</div>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🍬</div>
+                    <div class="game-name">HONEYCOMB</div>
+                    <div class="game-korean">달고나</div>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🪢</div>
+                    <div class="game-name">TUG OF WAR</div>
+                    <div class="game-korean">줄다리기</div>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🔮</div>
+                    <div class="game-name">MARBLES</div>
+                    <div class="game-korean">구슬치기</div>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🌉</div>
+                    <div class="game-name">GLASS BRIDGE</div>
+                    <div class="game-korean">유리다리</div>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🦑</div>
+                    <div class="game-name">SQUID GAME</div>
+                    <div class="game-korean">오징어 게임</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>🎮 GAME RULES / 게임 규칙</h2>
+            <ul>
+                <li>Use ARROW KEYS or WASD to move your player</li>
+                <li>GREEN LIGHT: Move forward quickly</li>
+                <li>RED LIGHT: Stop immediately or you're eliminated</li>
+                <li>Press SPACE to jump over obstacles</li>
+                <li>Collect marbles for bonus points</li>
+                <li>Avoid pink guards and survive all six games</li>
+                <li>Only one winner takes the prize money</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let highscore = localStorage.getItem('squidGameHighScore') || 0;
+        let gameRunning = false;
+        let animationId;
+        let isRedLight = false;
+        let lightTimer = 0;
+
+        document.getElementById('highscore').textContent = highscore;
+
+        // Player object (player 456)
+        const player = {
+            x: 50,
+            y: canvas.height - 80,
+            width: 45,
+            height: 45,
+            speed: 6,
+            dx: 0,
+            dy: 0,
+            jumping: false,
+            jumpPower: 0,
+            onGround: true
+        };
+
+        const gravity = 0.6;
+        const groundLevel = canvas.height - 80;
+
+        // Game objects
+        let guards = [];
+        let marbles = [];
+        let obstacles = [];
+        let particles = [];
+
+        // Create guard
+        function createGuard() {
+            guards.push({
+                x: canvas.width,
+                y: groundLevel,
+                width: 45,
+                height: 45,
+                speed: 3 + Math.random() * 2
+            });
+        }
+
+        // Create marble
+        function createMarble() {
+            marbles.push({
+                x: canvas.width,
+                y: groundLevel - 30,
+                size: 30,
+                speed: 2.5
+            });
+        }
+
+        // Create obstacle
+        function createObstacle() {
+            obstacles.push({
+                x: canvas.width,
+                y: groundLevel,
+                width: 40,
+                height: 60,
+                speed: 4
+            });
+        }
+
+        // Create particles
+        function createParticles(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 7 + 2,
+                    speedX: (Math.random() - 0.5) * 12,
+                    speedY: (Math.random() - 0.5) * 12 - 5,
+                    color: color || '#F7A1C4',
+                    life: 1
+                });
+            }
+        }
+
+        // Draw player
+        function drawPlayer() {
+            // Green tracksuit
+            ctx.fillStyle = isRedLight && player.dx !== 0 ? '#E71D27' : '#00A878';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Player number 456
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('456', player.x + player.width / 2, player.y + player.height / 2 + 5);
+        }
+
+        // Draw guards
+        function drawGuards() {
+            guards.forEach(guard => {
+                // Pink guard suit
+                ctx.fillStyle = '#F7A1C4';
+                ctx.fillRect(guard.x, guard.y, guard.width, guard.height);
+                
+                // Mask
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(guard.x + guard.width / 2, guard.y + 15, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Geometric shape on mask (triangle)
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(guard.x + guard.width / 2, guard.y + 8);
+                ctx.lineTo(guard.x + guard.width / 2 - 6, guard.y + 18);
+                ctx.lineTo(guard.x + guard.width / 2 + 6, guard.y + 18);
+                ctx.closePath();
+                ctx.fill();
+            });
+        }
+
+        // Draw marbles
+        function drawMarbles() {
+            marbles.forEach(marble => {
+                ctx.fillStyle = '#00A878';
+                ctx.beginPath();
+                ctx.arc(marble.x, marble.y, marble.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            });
+        }
+
+        // Draw obstacles
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = '#E71D27';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+        }
+
+        // Draw particles
+        function drawParticles() {
+            particles.forEach((particle, index) => {
+                ctx.fillStyle = particle.color;
+                ctx.globalAlpha = particle.life;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.speedY += 0.4; // Gravity
+                particle.life -= 0.018;
+                
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // Draw red/green light indicator
+        function drawLightIndicator() {
+            const lightSize = 50;
+            const margin = 30;
+            
+            ctx.fillStyle = isRedLight ? '#E71D27' : '#00A878';
+            ctx.beginPath();
+            ctx.arc(canvas.width - margin - lightSize / 2, margin + lightSize / 2, lightSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowColor = isRedLight ? '#E71D27' : '#00A878';
+            ctx.shadowBlur = 20;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(isRedLight ? 'RED' : 'GREEN', canvas.width - margin - lightSize / 2, margin + lightSize / 2 + 5);
+        }
+
+        // Check collision
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+
+        // Update game
+        function update() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw ground line
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, groundLevel + player.height);
+            ctx.lineTo(canvas.width, groundLevel + player.height);
+            ctx.stroke();
+
+            // Red/Green light logic
+            lightTimer++;
+            if (lightTimer > 180) { // 3 seconds
+                isRedLight = !isRedLight;
+                lightTimer = 0;
+            }
+
+            // Check if player moved during red light
+            if (isRedLight && player.dx !== 0) {
+                lives--;
+                updateLives();
+                createParticles(player.x + player.width / 2, player.y + player.height / 2, '#E71D27', 25);
+                player.x = 50;
+                player.y = groundLevel;
+                
+                if (lives <= 0) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Update player
+            if (!isRedLight) {
+                player.x += player.dx;
+            }
+            
+            // Jumping
+            if (player.jumping) {
+                player.y += player.jumpPower;
+                player.jumpPower += gravity;
+                
+                if (player.y >= groundLevel) {
+                    player.y = groundLevel;
+                    player.jumping = false;
+                    player.onGround = true;
+                    player.jumpPower = 0;
+                }
+            }
+
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+            // Update guards
+            guards.forEach((guard, index) => {
+                guard.x -= guard.speed;
+                
+                if (guard.x + guard.width < 0) {
+                    guards.splice(index, 1);
+                    score += 50;
+                    updateScore();
+                }
+                
+                if (checkCollision(player, guard)) {
+                    lives--;
+                    updateLives();
+                    createParticles(guard.x, guard.y, '#F7A1C4', 20);
+                    guards.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            // Update marbles
+            marbles.forEach((marble, index) => {
+                marble.x -= marble.speed;
+                
+                if (marble.x + marble.size < 0) {
+                    marbles.splice(index, 1);
+                }
+                
+                if (player.x < marble.x + marble.size &&
+                    player.x + player.width > marble.x - marble.size &&
+                    player.y < marble.y + marble.size &&
+                    player.y + player.height > marble.y - marble.size) {
+                    score += 100;
+                    updateScore();
+                    createParticles(marble.x, marble.y, '#00A878', 20);
+                    marbles.splice(index, 1);
+                }
+            });
+
+            // Update obstacles
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= obstacle.speed;
+                
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(index, 1);
+                }
+                
+                if (checkCollision(player, obstacle)) {
+                    lives--;
+                    updateLives();
+                    createParticles(obstacle.x, obstacle.y, '#E71D27', 25);
+                    obstacles.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            // Spawn objects
+            if (Math.random() < 0.015) createGuard();
+            if (Math.random() < 0.01) createMarble();
+            if (Math.random() < 0.012) createObstacle();
+
+            // Draw everything
+            drawPlayer();
+            drawGuards();
+            drawMarbles();
+            drawObstacles();
+            drawParticles();
+            drawLightIndicator();
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') player.dx = -player.speed;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') player.dx = player.speed;
+            if ((e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && player.onGround) {
+                player.jumping = true;
+                player.onGround = false;
+                player.jumpPower = -12;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
+                player.dx = 0;
+            }
+        });
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('squidGameHighScore', highscore);
+                document.getElementById('highscore').textContent = highscore;
+            }
+            if (score > 0 && score % 500 === 0) {
+                level++;
+                document.getElementById('level').textContent = level;
+            }
+        }
+
+        function updateLives() {
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                update();
+            }
+        }
+
+        function pauseGame() {
+            gameRunning = !gameRunning;
+            if (gameRunning) update();
+        }
+
+        function resetGame() {
+            cancelAnimationFrame(animationId);
+            score = 0;
+            lives = 3;
+            level = 1;
+            guards = [];
+            marbles = [];
+            obstacles = [];
+            particles = [];
+            player.x = 50;
+            player.y = groundLevel;
+            player.dx = 0;
+            player.dy = 0;
+            player.jumping = false;
+            player.onGround = true;
+            isRedLight = false;
+            lightTimer = 0;
+            updateScore();
+            updateLives();
+            document.getElementById('level').textContent = level;
+            gameRunning = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#E71D27';
+            ctx.font = 'bold 65px Black Han Sans';
+            ctx.textAlign = 'center';
+            ctx.fillText('ELIMINATED', canvas.width / 2, canvas.height / 2 - 50);
+            ctx.fillStyle = '#F7A1C4';
+            ctx.font = 'bold 30px Noto Sans KR';
+            ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`Best Score: ${highscore}`, canvas.width / 2, canvas.height / 2 + 65);
+            ctx.fillStyle = '#00A878';
+            ctx.font = 'bold 26px Black Han Sans';
+            ctx.fillText('무궁화 꽃이 피었습니다', canvas.width / 2, canvas.height / 2 + 115);
+        }
+
+        drawPlayer();
+        drawLightIndicator();
+    </script>
+</body>
+</html>

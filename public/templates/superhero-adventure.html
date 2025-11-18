@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superhero Adventure - Hero Training Arena</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&display=swap');
+
+        body {
+            font-family: 'Bebas Neue', cursive;
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.9) 0%, rgba(42, 82, 152, 0.9) 50%, rgba(126, 34, 206, 0.9) 100%),
+                        url('https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1920&q=80') center/cover fixed;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Comic Book Halftone Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px, 30px 30px;
+            background-position: 0 0, 25px 25px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Lightning Bolts Animation */
+        .lightning {
+            position: fixed;
+            width: 4px;
+            height: 150px;
+            background: linear-gradient(to bottom, #ffd700, #ffff00, transparent);
+            animation: lightning-strike 3s ease-in-out infinite;
+            opacity: 0;
+            z-index: 1;
+            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffff00;
+        }
+
+        .lightning:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .lightning:nth-child(2) { left: 30%; animation-delay: 1s; }
+        .lightning:nth-child(3) { left: 50%; animation-delay: 2s; }
+        .lightning:nth-child(4) { left: 70%; animation-delay: 1.5s; }
+        .lightning:nth-child(5) { left: 90%; animation-delay: 0.5s; }
+
+        @keyframes lightning-strike {
+            0%, 90%, 100% { opacity: 0; }
+            92%, 94%, 96% { opacity: 1; }
+            93%, 95% { opacity: 0.3; }
+        }
+
+        /* Hero Energy Orbs */
+        .energy-orb {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #00ffff, #0080ff, #0040ff);
+            box-shadow: 0 0 40px #00ffff, 0 0 80px #0080ff, inset 0 0 20px rgba(255,255,255,0.5);
+            animation: float-orb 6s ease-in-out infinite;
+            z-index: 1;
+            filter: blur(1px);
+        }
+
+        .energy-orb:nth-child(6) { top: 10%; left: 15%; animation-delay: 0s; }
+        .energy-orb:nth-child(7) { top: 60%; left: 80%; animation-delay: 1.5s; }
+        .energy-orb:nth-child(8) { top: 30%; left: 70%; animation-delay: 3s; }
+
+        @keyframes float-orb {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-30px) scale(1.1); opacity: 0.9; }
+        }
+
+        /* Comic Book Explosion Effects */
+        .explosion {
+            position: fixed;
+            font-size: 80px;
+            font-family: 'Bangers', cursive;
+            color: #ff0000;
+            text-shadow: 
+                3px 3px 0 #000,
+                6px 6px 0 #ffff00,
+                -2px -2px 0 #fff;
+            animation: explode 2s ease-out infinite;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .explosion:nth-child(9) { top: 20%; right: 10%; animation-delay: 0s; }
+        .explosion:nth-child(10) { bottom: 30%; left: 10%; animation-delay: 1s; }
+
+        .explosion::before {
+            content: '💥';
+        }
+
+        @keyframes explode {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 1; }
+            100% { transform: scale(2) rotate(360deg); opacity: 0; }
+        }
+
+        /* Flying Capes */
+        .cape {
+            position: fixed;
+            width: 100px;
+            height: 150px;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            clip-path: polygon(50% 0%, 100% 30%, 90% 100%, 50% 90%, 10% 100%, 0% 30%);
+            animation: cape-fly 8s linear infinite;
+            opacity: 0.4;
+            z-index: 1;
+        }
+
+        .cape:nth-child(11) { top: 40%; animation-delay: 0s; }
+        .cape:nth-child(12) { top: 60%; animation-delay: 3s; }
+
+        @keyframes cape-fly {
+            0% { left: -150px; transform: rotate(-20deg); }
+            100% { left: 110%; transform: rotate(20deg); }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header with Comic Style */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 80px;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 
+                4px 4px 0 #000,
+                8px 8px 0 #ff0000,
+                12px 12px 0 #0080ff,
+                -2px -2px 0 #fff;
+            animation: hero-title 2s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes hero-title {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .subtitle {
+            font-size: 28px;
+            color: #00ffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 3px;
+        }
+
+        /* Comic Speech Bubble */
+        .speech-bubble {
+            position: relative;
+            background: #fff;
+            color: #000;
+            padding: 20px 30px;
+            border-radius: 20px;
+            border: 4px solid #000;
+            max-width: 600px;
+            margin: 30px auto;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #fff;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -38px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 24px solid transparent;
+            border-right: 24px solid transparent;
+            border-top: 34px solid #000;
+            z-index: -1;
+        }
+
+        /* Game Arena */
+        .game-arena {
+            background: rgba(0, 0, 0, 0.7);
+            border: 6px solid #ffd700;
+            border-radius: 30px;
+            padding: 40px;
+            margin: 40px 0;
+            position: relative;
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.5),
+                inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-arena::before {
+            content: '⚡';
+            position: absolute;
+            top: -30px;
+            left: 20px;
+            font-size: 60px;
+            animation: spark 1.5s ease-in-out infinite;
+        }
+
+        .game-arena::after {
+            content: '⚡';
+            position: absolute;
+            top: -30px;
+            right: 20px;
+            font-size: 60px;
+            animation: spark 1.5s ease-in-out infinite 0.75s;
+        }
+
+        @keyframes spark {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.3) rotate(180deg); opacity: 0.5; }
+        }
+
+        /* Canvas */
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: radial-gradient(circle at center, #1a1a2e, #0a0a0f);
+            border: 4px solid #00ffff;
+            border-radius: 15px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.6),
+                inset 0 0 50px rgba(0, 0, 0, 0.8);
+            cursor: crosshair;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Bangers', cursive;
+            font-size: 28px;
+            padding: 15px 40px;
+            border: 4px solid #000;
+            border-radius: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .btn-start:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .btn-pause:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        /* Score Board */
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px 40px;
+            text-align: center;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+            min-width: 200px;
+        }
+
+        .score-label {
+            font-size: 20px;
+            color: #fcd34d;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .score-value {
+            font-size: 48px;
+            color: #fff;
+            font-family: 'Bangers', cursive;
+            text-shadow: 3px 3px 0 #000;
+        }
+
+        /* Power-ups Display */
+        .powerups {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .powerup {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            min-width: 150px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .powerup-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .powerup-name {
+            font-size: 18px;
+            color: #00ffff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .instructions h2 {
+            font-family: 'Bangers', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .instructions ul {
+            list-style: none;
+            font-size: 20px;
+            line-height: 2;
+        }
+
+        .instructions li::before {
+            content: '⭐ ';
+            color: #ffd700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 50px;
+            }
+            
+            .subtitle {
+                font-size: 20px;
+            }
+            
+            .btn {
+                font-size: 20px;
+                padding: 12px 30px;
+            }
+            
+            .score-value {
+                font-size: 36px;
+            }
+
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    <div class="energy-orb"></div>
+    <div class="energy-orb"></div>
+    <div class="energy-orb"></div>
+    <div class="explosion"></div>
+    <div class="explosion"></div>
+    <div class="cape"></div>
+    <div class="cape"></div>
+
+    <div class="container">
+        <header>
+            <h1>⚡ SUPERHERO ARENA ⚡</h1>
+            <p class="subtitle">🦸 HERO TRAINING SIMULATOR 🦸</p>
+            <div class="speech-bubble">
+                "WITH GREAT POWER COMES GREAT RESPONSIBILITY!"
+            </div>
+        </header>
+
+        <div class="game-arena">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <div class="controls">
+                <button class="btn btn-start" onclick="startGame()">🚀 START MISSION</button>
+                <button class="btn btn-pause" onclick="pauseGame()">⏸️ PAUSE</button>
+                <button class="btn btn-reset" onclick="resetGame()">🔄 RESET</button>
+            </div>
+
+            <div class="scoreboard">
+                <div class="score-item">
+                    <div class="score-label">⭐ SCORE</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">💖 LIVES</div>
+                    <div class="score-value" id="lives">3</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">🏆 LEVEL</div>
+                    <div class="score-value" id="level">1</div>
+                </div>
+            </div>
+
+            <div class="powerups">
+                <div class="powerup">
+                    <div class="powerup-icon">⚡</div>
+                    <div class="powerup-name">SUPER SPEED</div>
+                </div>
+                <div class="powerup">
+                    <div class="powerup-icon">🛡️</div>
+                    <div class="powerup-name">SHIELD</div>
+                </div>
+                <div class="powerup">
+                    <div class="powerup-icon">💥</div>
+                    <div class="powerup-name">LASER VISION</div>
+                </div>
+                <div class="powerup">
+                    <div class="powerup-icon">⭐</div>
+                    <div class="powerup-name">INVINCIBILITY</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>🎮 HOW TO PLAY</h2>
+            <ul>
+                <li>Use ARROW KEYS or WASD to move your hero</li>
+                <li>Press SPACE to use your super power</li>
+                <li>Collect power-ups to gain special abilities</li>
+                <li>Defeat villains and save the city!</li>
+                <li>Avoid obstacles and enemy attacks</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameRunning = false;
+        let animationId;
+
+        // Hero object
+        const hero = {
+            x: 50,
+            y: canvas.height / 2,
+            width: 40,
+            height: 40,
+            speed: 5,
+            color: '#ef4444',
+            dx: 0,
+            dy: 0
+        };
+
+        // Enemies array
+        let enemies = [];
+        let powerups = [];
+        let particles = [];
+
+        // Create enemy
+        function createEnemy() {
+            const size = 30 + Math.random() * 20;
+            enemies.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - size),
+                width: size,
+                height: size,
+                speed: 2 + Math.random() * 3,
+                color: '#8b5cf6'
+            });
+        }
+
+        // Create powerup
+        function createPowerup() {
+            const types = ['⚡', '🛡️', '💥', '⭐'];
+            powerups.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - 30),
+                size: 30,
+                type: types[Math.floor(Math.random() * types.length)],
+                speed: 2
+            });
+        }
+
+        // Create particle effect
+        function createParticles(x, y) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 5 + 2,
+                    speedX: (Math.random() - 0.5) * 10,
+                    speedY: (Math.random() - 0.5) * 10,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    life: 1
+                });
+            }
+        }
+
+        // Draw hero
+        function drawHero() {
+            // Cape
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(hero.x - 10, hero.y, 10, hero.height);
+            
+            // Body
+            ctx.fillStyle = hero.color;
+            ctx.fillRect(hero.x, hero.y, hero.width, hero.height);
+            
+            // Head
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(hero.x + hero.width / 2, hero.y - 10, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(hero.x + hero.width / 2 - 5, hero.y - 12, 3, 0, Math.PI * 2);
+            ctx.arc(hero.x + hero.width / 2 + 5, hero.y - 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw enemies
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                
+                // Evil eyes
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(enemy.x + 10, enemy.y + 10, 5, 0, Math.PI * 2);
+                ctx.arc(enemy.x + enemy.width - 10, enemy.y + 10, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Draw powerups
+        function drawPowerups() {
+            powerups.forEach(powerup => {
+                ctx.font = `${powerup.size}px Arial`;
+                ctx.fillText(powerup.type, powerup.x, powerup.y);
+            });
+        }
+
+        // Draw particles
+        function drawParticles() {
+            particles.forEach((particle, index) => {
+                ctx.fillStyle = particle.color;
+                ctx.globalAlpha = particle.life;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.life -= 0.02;
+                
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // Update game
+        function update() {
+            if (!gameRunning) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid background
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // Update hero position
+            hero.x += hero.dx;
+            hero.y += hero.dy;
+
+            // Boundary check
+            if (hero.x < 0) hero.x = 0;
+            if (hero.x + hero.width > canvas.width) hero.x = canvas.width - hero.width;
+            if (hero.y < 0) hero.y = 0;
+            if (hero.y + hero.height > canvas.height) hero.y = canvas.height - hero.height;
+
+            // Update enemies
+            enemies.forEach((enemy, index) => {
+                enemy.x -= enemy.speed;
+                
+                // Remove off-screen enemies
+                if (enemy.x + enemy.width < 0) {
+                    enemies.splice(index, 1);
+                    score += 10;
+                    updateScore();
+                }
+                
+                // Collision detection
+                if (hero.x < enemy.x + enemy.width &&
+                    hero.x + hero.width > enemy.x &&
+                    hero.y < enemy.y + enemy.height &&
+                    hero.y + hero.height > enemy.y) {
+                    lives--;
+                    updateLives();
+                    createParticles(hero.x, hero.y);
+                    enemies.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            // Update powerups
+            powerups.forEach((powerup, index) => {
+                powerup.x -= powerup.speed;
+                
+                if (powerup.x + powerup.size < 0) {
+                    powerups.splice(index, 1);
+                }
+                
+                // Collision with hero
+                if (hero.x < powerup.x + powerup.size &&
+                    hero.x + hero.width > powerup.x &&
+                    hero.y < powerup.y + powerup.size &&
+                    hero.y + hero.height > powerup.y) {
+                    score += 50;
+                    updateScore();
+                    createParticles(powerup.x, powerup.y);
+                    powerups.splice(index, 1);
+                }
+            });
+
+            // Spawn enemies
+            if (Math.random() < 0.02) {
+                createEnemy();
+            }
+
+            // Spawn powerups
+            if (Math.random() < 0.005) {
+                createPowerup();
+            }
+
+            // Draw everything
+            drawHero();
+            drawEnemies();
+            drawPowerups();
+            drawParticles();
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                hero.dy = -hero.speed;
+            }
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                hero.dy = hero.speed;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                hero.dx = -hero.speed;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                hero.dx = hero.speed;
+            }
+            if (e.key === ' ') {
+                createParticles(hero.x + hero.width, hero.y + hero.height / 2);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+                hero.dy = 0;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
+                hero.dx = 0;
+            }
+        });
+
+        // Update UI
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            if (score > 0 && score % 200 === 0) {
+                level++;
+                document.getElementById('level').textContent = level;
+            }
+        }
+
+        function updateLives() {
+            document.getElementById('lives').textContent = lives;
+        }
+
+        // Game controls
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                update();
+            }
+        }
+
+        function pauseGame() {
+            gameRunning = !gameRunning;
+            if (gameRunning) {
+                update();
+            }
+        }
+
+        function resetGame() {
+            cancelAnimationFrame(animationId);
+            score = 0;
+            lives = 3;
+            level = 1;
+            enemies = [];
+            powerups = [];
+            particles = [];
+            hero.x = 50;
+            hero.y = canvas.height / 2;
+            hero.dx = 0;
+            hero.dy = 0;
+            updateScore();
+            updateLives();
+            document.getElementById('level').textContent = level;
+            gameRunning = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff0000';
+            ctx.font = 'bold 60px Bangers';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 30px Bebas Neue';
+            ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 30);
+            ctx.fillText('Press RESET to try again', canvas.width / 2, canvas.height / 2 + 70);
+        }
+
+        // Initial draw
+        drawHero();
+    </script>
+</body>
+</html>

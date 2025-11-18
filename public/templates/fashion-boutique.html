@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXE MODE - Fashion Boutique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Didot:wght@400;700&family=Montserrat:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(250, 247, 243, 0.98)),
+                        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80') center/cover fixed;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* Floating Fashion Icons */
+        .fashion-icon {
+            position: fixed;
+            font-size: 60px;
+            opacity: 0.08;
+            animation: float-fashion 20s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .fashion-icon:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .fashion-icon:nth-child(2) { top: 30%; right: 12%; animation-delay: 4s; }
+        .fashion-icon:nth-child(3) { top: 60%; left: 15%; animation-delay: 8s; }
+        .fashion-icon:nth-child(4) { top: 80%; right: 20%; animation-delay: 12s; }
+
+        @keyframes float-fashion {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-50px) rotate(15deg); }
+        }
+
+        /* Sparkle Effects */
+        .sparkle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            border-radius: 50%;
+            animation: sparkle-twinkle 3s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .sparkle:nth-child(5) { top: 15%; left: 20%; animation-delay: 0s; }
+        .sparkle:nth-child(6) { top: 45%; right: 25%; animation-delay: 1s; }
+        .sparkle:nth-child(7) { top: 75%; left: 30%; animation-delay: 2s; }
+
+        @keyframes sparkle-twinkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(3); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 100px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-family: 'Didot', serif;
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+        }
+
+        nav {
+            display: flex;
+            gap: 50px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ec4899;
+        }
+
+        .shop-btn {
+            padding: 12px 35px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shop-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(236, 72, 153, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 80px;
+            padding: 150px 100px 100px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content h1 {
+            font-family: 'Didot', serif;
+            font-size: 100px;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #6b7280;
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 700px;
+            background: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80') center/cover;
+            border-radius: 30px;
+            box-shadow: 0 40px 100px rgba(236, 72, 153, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-image::before {
+            content: '✨';
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 80px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Collections Section */
+        .collections {
+            padding: 150px 100px;
+            background: #fff;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            font-family: 'Didot', serif;
+            font-size: 70px;
+            text-align: center;
+            margin-bottom: 80px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .collection-card {
+            position: relative;
+            height: 600px;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.5s;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+        }
+
+        .collection-card:hover {
+            transform: translateY(-20px);
+            box-shadow: 0 30px 80px rgba(236, 72, 153, 0.3);
+        }
+
+        .collection-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s;
+        }
+
+        .collection-card:hover .collection-image {
+            transform: scale(1.1);
+        }
+
+        .collection-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            color: #fff;
+        }
+
+        .collection-name {
+            font-family: 'Didot', serif;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .collection-count {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.9;
+        }
+
+        /* Featured Products */
+        .featured {
+            padding: 150px 100px;
+            background: linear-gradient(135deg, #fdf2f8, #f5f3ff);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(236, 72, 153, 0.2);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 350px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 20px;
+            background: #ec4899;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 20px;
+        }
+
+        .product-info {
+            padding: 25px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Lookbook Section */
+        .lookbook {
+            padding: 150px 100px;
+            background: #fff;
+        }
+
+        .lookbook-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: 400px 400px;
+            gap: 30px;
+        }
+
+        .lookbook-item {
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lookbook-item:hover {
+            transform: scale(0.98);
+        }
+
+        .lookbook-item:nth-child(1) {
+            grid-row: span 2;
+        }
+
+        /* Newsletter */
+        .newsletter {
+            padding: 150px 100px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: #fff;
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            font-family: 'Didot', serif;
+            font-size: 70px;
+            margin-bottom: 30px;
+        }
+
+        .newsletter p {
+            font-size: 20px;
+            margin-bottom: 50px;
+            opacity: 0.95;
+        }
+
+        .newsletter-form {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .newsletter-btn {
+            padding: 18px 50px;
+            background: #fff;
+            color: #ec4899;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .newsletter-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        footer {
+            padding: 80px 100px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 50px;
+        }
+
+        .footer-logo {
+            font-family: 'Didot', serif;
+            font-size: 40px;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .footer-desc {
+            color: #9ca3af;
+            line-height: 1.8;
+        }
+
+        .footer-title {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #ec4899;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid #374151;
+            color: #6b7280;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 120px 30px 80px;
+            }
+
+            .hero-content h1 {
+                font-size: 55px;
+            }
+
+            .collections, .featured, .lookbook, .newsletter {
+                padding: 80px 30px;
+            }
+
+            .section-title {
+                font-size: 40px;
+            }
+
+            .collections-grid, .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lookbook-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+
+            .lookbook-item:nth-child(1) {
+                grid-row: span 1;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="fashion-icon">👗</div>
+    <div class="fashion-icon">👠</div>
+    <div class="fashion-icon">👜</div>
+    <div class="fashion-icon">💄</div>
+    <div class="sparkle"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle"></div>
+
+    <header>
+        <div class="logo">LUXE MODE</div>
+        <nav>
+            <a href="#collections">Collections</a>
+            <a href="#featured">Featured</a>
+            <a href="#lookbook">Lookbook</a>
+            <a href="#about">About</a>
+        </nav>
+        <button class="shop-btn">Shop Now</button>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>✨ Elevate Your Style</h1>
+            <p>Discover the latest trends and timeless classics in our curated fashion collection. Express yourself with confidence and elegance.</p>
+            <div class="hero-buttons">
+                <button class="shop-btn" style="padding: 18px 50px; font-size: 16px;">Explore Collection</button>
+            </div>
+        </div>
+        <div class="hero-image"></div>
+    </section>
+
+    <section class="collections" id="collections">
+        <h2 class="section-title">Shop By Collection</h2>
+        <div class="collections-grid">
+            <div class="collection-card">
+                <div class="collection-image" style="background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80')"></div>
+                <div class="collection-overlay">
+                    <h3 class="collection-name">Evening Wear</h3>
+                    <p class="collection-count">45 Items</p>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-image" style="background-image: url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80')"></div>
+                <div class="collection-overlay">
+                    <h3 class="collection-name">Casual Chic</h3>
+                    <p class="collection-count">62 Items</p>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-image" style="background-image: url('https://images.unsplash.com/photo-1544957992-20514f595d6f?w=800&q=80')"></div>
+                <div class="collection-overlay">
+                    <h3 class="collection-name">Accessories</h3>
+                    <p class="collection-count">38 Items</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured" id="featured">
+        <h2 class="section-title">Featured Products</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&q=80')">
+                    <span class="product-badge">New</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">Silk Evening Dress</h3>
+                    <p class="product-price">$299</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80')">
+                    <span class="product-badge">Sale</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">Designer Handbag</h3>
+                    <p class="product-price">$189</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=400&q=80')"></div>
+                <div class="product-info">
+                    <h3 class="product-name">Luxury Heels</h3>
+                    <p class="product-price">$249</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&q=80')">
+                    <span class="product-badge">Hot</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">Statement Blazer</h3>
+                    <p class="product-price">$329</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="lookbook" id="lookbook">
+        <h2 class="section-title">💫 Spring Lookbook 2025</h2>
+        <div class="lookbook-grid">
+            <div class="lookbook-item" style="background-image: url('https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=800&q=80')"></div>
+            <div class="lookbook-item" style="background-image: url('https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&q=80')"></div>
+            <div class="lookbook-item" style="background-image: url('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80')"></div>
+            <div class="lookbook-item" style="background-image: url('https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&q=80')"></div>
+            <div class="lookbook-item" style="background-image: url('https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=600&q=80')"></div>
+        </div>
+    </section>
+
+    <section class="newsletter">
+        <h2>💌 Join Our Fashion Community</h2>
+        <p>Get exclusive access to new arrivals, special offers, and styling tips</p>
+        <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email address" required>
+            <button type="submit" class="newsletter-btn">Subscribe</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <div class="footer-logo">LUXE MODE</div>
+                <p class="footer-desc">Redefining fashion with timeless elegance and contemporary style. Where luxury meets affordability.</p>
+            </div>
+            <div>
+                <h4 class="footer-title">Shop</h4>
+                <div class="footer-links">
+                    <a href="#">New Arrivals</a>
+                    <a href="#">Best Sellers</a>
+                    <a href="#">Sale</a>
+                    <a href="#">Gift Cards</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-title">Help</h4>
+                <div class="footer-links">
+                    <a href="#">Size Guide</a>
+                    <a href="#">Shipping Info</a>
+                    <a href="#">Returns</a>
+                    <a href="#">Contact Us</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-title">Follow Us</h4>
+                <div class="footer-links">
+                    <a href="#">Instagram</a>
+                    <a href="#">Pinterest</a>
+                    <a href="#">Facebook</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 LUXE MODE Fashion Boutique. All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

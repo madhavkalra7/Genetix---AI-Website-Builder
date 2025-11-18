@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizarding World - Hogwarts Spell Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap');
+
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, rgba(26, 0, 51, 0.85) 0%, rgba(45, 0, 82, 0.85) 30%, rgba(74, 0, 128, 0.85) 60%, rgba(26, 0, 51, 0.85) 100%),
+                        url('https://images.unsplash.com/photo-1551269901-5c5e14c25df7?w=1920&q=80') center/cover fixed;
+            color: #f4e4c1;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Magical Starry Sky */
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Flying Golden Snitch */
+        .snitch {
+            position: fixed;
+            font-size: 40px;
+            animation: snitch-fly 15s linear infinite;
+            z-index: 5;
+            filter: drop-shadow(0 0 10px #ffd700);
+        }
+
+        .snitch::before {
+            content: '🏅';
+        }
+
+        @keyframes snitch-fly {
+            0% { left: -50px; top: 10%; transform: rotate(0deg); }
+            25% { left: 30%; top: 70%; transform: rotate(180deg); }
+            50% { left: 70%; top: 20%; transform: rotate(360deg); }
+            75% { left: 40%; top: 80%; transform: rotate(540deg); }
+            100% { left: 110%; top: 50%; transform: rotate(720deg); }
+        }
+
+        /* Floating Candles */
+        .candle {
+            position: fixed;
+            width: 10px;
+            height: 60px;
+            background: linear-gradient(to bottom, #f4e4c1, #d4c4a1);
+            border-radius: 5px 5px 0 0;
+            animation: float-candle 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .candle::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 20px;
+            background: radial-gradient(circle, #ff6b00, #ffa500, transparent);
+            border-radius: 50% 50% 0 0;
+            animation: flicker 1.5s ease-in-out infinite;
+        }
+
+        @keyframes float-candle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .candle:nth-child(2) { left: 10%; top: 15%; animation-delay: 0s; }
+        .candle:nth-child(3) { left: 25%; top: 25%; animation-delay: 1s; }
+        .candle:nth-child(4) { left: 75%; top: 20%; animation-delay: 2s; }
+        .candle:nth-child(5) { left: 90%; top: 30%; animation-delay: 1.5s; }
+
+        /* Spell Particles */
+        .spell-particle {
+            position: fixed;
+            font-size: 30px;
+            animation: sparkle 3s ease-in-out infinite;
+            z-index: 2;
+            opacity: 0;
+        }
+
+        .spell-particle:nth-child(6) { left: 20%; top: 40%; animation-delay: 0s; }
+        .spell-particle:nth-child(7) { left: 60%; top: 50%; animation-delay: 1s; }
+        .spell-particle:nth-child(8) { left: 80%; top: 60%; animation-delay: 2s; }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.5) rotate(360deg); }
+        }
+
+        .spell-particle::before {
+            content: '✨';
+        }
+
+        /* Owl Flying */
+        .owl {
+            position: fixed;
+            font-size: 50px;
+            animation: owl-fly 20s linear infinite;
+            z-index: 3;
+        }
+
+        .owl::before {
+            content: '🦉';
+        }
+
+        @keyframes owl-fly {
+            0% { left: -100px; top: 10%; }
+            100% { left: 110%; top: 20%; }
+        }
+
+        /* Magical Fog */
+        .fog {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to top, rgba(138, 43, 226, 0.3), transparent);
+            animation: fog-move 10s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes fog-move {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header with Hogwarts Style */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 70px;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 40px rgba(255, 215, 0, 0.6),
+                3px 3px 6px rgba(0, 0, 0, 0.8);
+            animation: glow-title 3s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes glow-title {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6), 3px 3px 6px rgba(0, 0, 0, 0.8); }
+            50% { text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.8), 3px 3px 6px rgba(0, 0, 0, 0.8); }
+        }
+
+        .subtitle {
+            font-size: 26px;
+            color: #c4b5fd;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            letter-spacing: 4px;
+        }
+
+        /* Hogwarts Crest */
+        .crest {
+            width: 150px;
+            height: 150px;
+            margin: 30px auto;
+            background: linear-gradient(135deg, #7c2d12, #991b1b, #7c2d12);
+            border: 5px solid #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.5),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+            animation: rotate-crest 20s linear infinite;
+        }
+
+        @keyframes rotate-crest {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Spell Book */
+        .spell-book {
+            background: rgba(139, 69, 19, 0.9);
+            border: 8px solid #8b4513;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 800px;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.8),
+                inset 0 0 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .spell-book::before {
+            content: '📖';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 60px;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .spell-book h3 {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 32px;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .spell-book p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #f4e4c1;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Game Arena */
+        .game-arena {
+            background: rgba(26, 0, 51, 0.8);
+            border: 6px solid #9333ea;
+            border-radius: 30px;
+            padding: 40px;
+            margin: 40px 0;
+            position: relative;
+            box-shadow: 
+                0 0 50px rgba(147, 51, 234, 0.6),
+                inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-arena::before {
+            content: '⚡';
+            position: absolute;
+            top: -35px;
+            left: 30px;
+            font-size: 70px;
+            animation: lightning-bolt 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px #ffd700);
+        }
+
+        .game-arena::after {
+            content: '🔮';
+            position: absolute;
+            top: -35px;
+            right: 30px;
+            font-size: 70px;
+            animation: crystal-ball 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px #9333ea);
+        }
+
+        @keyframes lightning-bolt {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        @keyframes crystal-ball {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Canvas */
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: radial-gradient(circle at center, #1a0033, #0a001a);
+            border: 5px solid #9333ea;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 40px rgba(147, 51, 234, 0.8),
+                inset 0 0 60px rgba(0, 0, 0, 0.8);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><text y="18" font-size="20">🪄</text></svg>'), auto;
+        }
+
+        /* Wand Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 24px;
+            padding: 15px 40px;
+            border: 4px solid #9333ea;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-lumos {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a0033;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-lumos:hover {
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+        }
+
+        .btn-protego {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-protego:hover {
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+        }
+
+        .btn-expelliarmus {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-expelliarmus:hover {
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.8);
+        }
+
+        /* House Points */
+        .house-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .house {
+            background: rgba(0, 0, 0, 0.6);
+            border: 3px solid;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 0 25px;
+            transition: transform 0.3s;
+        }
+
+        .house:hover {
+            transform: translateY(-5px);
+        }
+
+        .house-gryffindor {
+            border-color: #dc2626;
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.5);
+        }
+
+        .house-slytherin {
+            border-color: #16a34a;
+            box-shadow: 0 0 25px rgba(22, 163, 74, 0.5);
+        }
+
+        .house-ravenclaw {
+            border-color: #3b82f6;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .house-hufflepuff {
+            border-color: #fbbf24;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.5);
+        }
+
+        .house-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .house-name {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .house-score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Spell List */
+        .spells {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .spell {
+            background: rgba(147, 51, 234, 0.3);
+            border: 3px solid #9333ea;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 180px;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .spell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
+        }
+
+        .spell-icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+            animation: spell-float 3s ease-in-out infinite;
+        }
+
+        @keyframes spell-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .spell-name {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 20px;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .spell-desc {
+            font-size: 14px;
+            color: #c4b5fd;
+        }
+
+        /* Instructions Scroll */
+        .instructions {
+            background: rgba(139, 69, 19, 0.8);
+            border: 6px solid #8b4513;
+            border-radius: 25px;
+            padding: 40px;
+            margin-top: 50px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .instructions::before {
+            content: '📜';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 70px;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.8));
+        }
+
+        .instructions h2 {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        .instructions ul {
+            list-style: none;
+            font-size: 19px;
+            line-height: 2.2;
+        }
+
+        .instructions li {
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: '🪄';
+            position: absolute;
+            left: 0;
+            font-size: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 45px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .btn {
+                font-size: 18px;
+                padding: 12px 25px;
+            }
+
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Generate stars dynamically with JavaScript */
+    </style>
+</head>
+<body>
+    <!-- Magical Background Effects -->
+    <div class="stars" id="stars"></div>
+    <div class="snitch"></div>
+    <div class="candle"></div>
+    <div class="candle"></div>
+    <div class="candle"></div>
+    <div class="candle"></div>
+    <div class="spell-particle"></div>
+    <div class="spell-particle"></div>
+    <div class="spell-particle"></div>
+    <div class="owl"></div>
+    <div class="fog"></div>
+
+    <div class="container">
+        <header>
+            <h1>🧙‍♂️ HOGWARTS SPELL CHALLENGE 🧙‍♀️</h1>
+            <p class="subtitle">⚡ THE WIZARDING WORLD AWAITS ⚡</p>
+            <div class="crest">🦁</div>
+        </header>
+
+        <div class="spell-book">
+            <h3>🔮 The Book of Spells 🔮</h3>
+            <p>"It is our choices, Harry, that show what we truly are, far more than our abilities."<br>
+            - Albus Dumbledore</p>
+        </div>
+
+        <div class="game-arena">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <div class="controls">
+                <button class="btn btn-lumos" onclick="startGame()">🪄 LUMOS (Start)</button>
+                <button class="btn btn-protego" onclick="pauseGame()">🛡️ PROTEGO (Pause)</button>
+                <button class="btn btn-expelliarmus" onclick="resetGame()">⚡ EXPELLIARMUS (Reset)</button>
+            </div>
+
+            <div class="house-points">
+                <div class="house house-gryffindor">
+                    <div class="house-icon">🦁</div>
+                    <div class="house-name">GRYFFINDOR</div>
+                    <div class="house-score" id="score">0</div>
+                </div>
+                <div class="house house-slytherin">
+                    <div class="house-icon">🐍</div>
+                    <div class="house-name">LEVEL</div>
+                    <div class="house-score" id="level">1</div>
+                </div>
+                <div class="house house-ravenclaw">
+                    <div class="house-icon">🦅</div>
+                    <div class="house-name">MAGIC POWER</div>
+                    <div class="house-score" id="lives">3</div>
+                </div>
+                <div class="house house-hufflepuff">
+                    <div class="house-icon">🦡</div>
+                    <div class="house-name">HIGH SCORE</div>
+                    <div class="house-score" id="highscore">0</div>
+                </div>
+            </div>
+
+            <div class="spells">
+                <div class="spell">
+                    <div class="spell-icon">⚡</div>
+                    <div class="spell-name">LUMOS</div>
+                    <div class="spell-desc">Light Spell</div>
+                </div>
+                <div class="spell">
+                    <div class="spell-icon">🛡️</div>
+                    <div class="spell-name">PROTEGO</div>
+                    <div class="spell-desc">Shield Charm</div>
+                </div>
+                <div class="spell">
+                    <div class="spell-icon">💫</div>
+                    <div class="spell-name">EXPECTO PATRONUM</div>
+                    <div class="spell-desc">Patronus Charm</div>
+                </div>
+                <div class="spell">
+                    <div class="spell-icon">🔥</div>
+                    <div class="spell-name">INCENDIO</div>
+                    <div class="spell-desc">Fire Spell</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>📖 WIZARD'S GUIDE</h2>
+            <ul>
+                <li>Use ARROW KEYS or WASD to move your wizard</li>
+                <li>Press SPACE to cast spells and defeat dark creatures</li>
+                <li>Collect magical artifacts for bonus points</li>
+                <li>Avoid Death Eaters and Dementors</li>
+                <li>Master all spells to become the greatest wizard!</li>
+                <li>Earn house points for your house</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let highscore = localStorage.getItem('hogwartsHighScore') || 0;
+        let gameRunning = false;
+        let animationId;
+
+        document.getElementById('highscore').textContent = highscore;
+
+        // Wizard object
+        const wizard = {
+            x: 50,
+            y: canvas.height / 2,
+            width: 40,
+            height: 40,
+            speed: 6,
+            dx: 0,
+            dy: 0
+        };
+
+        // Game objects
+        let darkCreatures = [];
+        let artifacts = [];
+        let spells = [];
+        let particles = [];
+
+        // Create dark creature
+        function createDarkCreature() {
+            const types = ['👻', '🦇', '💀', '🕷️'];
+            const size = 35 + Math.random() * 15;
+            darkCreatures.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - size),
+                width: size,
+                height: size,
+                speed: 2 + Math.random() * 3,
+                type: types[Math.floor(Math.random() * types.length)]
+            });
+        }
+
+        // Create magical artifact
+        function createArtifact() {
+            const types = ['🔮', '⚗️', '📜', '💎', '👑'];
+            artifacts.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - 30),
+                size: 35,
+                type: types[Math.floor(Math.random() * types.length)],
+                speed: 2.5
+            });
+        }
+
+        // Cast spell
+        function castSpell() {
+            spells.push({
+                x: wizard.x + wizard.width,
+                y: wizard.y + wizard.height / 2,
+                width: 30,
+                height: 10,
+                speed: 8,
+                color: `hsl(${Math.random() * 60 + 200}, 100%, 60%)`
+            });
+        }
+
+        // Create magical particles
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 6 + 2,
+                    speedX: (Math.random() - 0.5) * 12,
+                    speedY: (Math.random() - 0.5) * 12,
+                    color: color || `hsl(${Math.random() * 60 + 260}, 100%, 60%)`,
+                    life: 1
+                });
+            }
+        }
+
+        // Draw wizard
+        function drawWizard() {
+            // Wizard hat
+            ctx.fillStyle = '#9333ea';
+            ctx.beginPath();
+            ctx.moveTo(wizard.x + wizard.width / 2, wizard.y - 20);
+            ctx.lineTo(wizard.x, wizard.y);
+            ctx.lineTo(wizard.x + wizard.width, wizard.y);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Robe
+            ctx.fillStyle = '#1a0033';
+            ctx.fillRect(wizard.x, wizard.y, wizard.width, wizard.height);
+            
+            // Head
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(wizard.x + wizard.width / 2, wizard.y + 10, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wand
+            ctx.strokeStyle = '#8b4513';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(wizard.x + wizard.width, wizard.y + wizard.height / 2);
+            ctx.lineTo(wizard.x + wizard.width + 20, wizard.y + wizard.height / 2 - 10);
+            ctx.stroke();
+            
+            // Wand sparkle
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(wizard.x + wizard.width + 20, wizard.y + wizard.height / 2 - 10, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw dark creatures
+        function drawDarkCreatures() {
+            darkCreatures.forEach(creature => {
+                ctx.font = `${creature.width}px Arial`;
+                ctx.fillText(creature.type, creature.x, creature.y + creature.height);
+            });
+        }
+
+        // Draw artifacts
+        function drawArtifacts() {
+            artifacts.forEach(artifact => {
+                ctx.font = `${artifact.size}px Arial`;
+                ctx.fillText(artifact.type, artifact.x, artifact.y + artifact.size);
+            });
+        }
+
+        // Draw spells
+        function drawSpells() {
+            spells.forEach(spell => {
+                ctx.fillStyle = spell.color;
+                ctx.shadowColor = spell.color;
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(spell.x, spell.y, spell.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        // Draw particles
+        function drawParticles() {
+            particles.forEach((particle, index) => {
+                ctx.fillStyle = particle.color;
+                ctx.globalAlpha = particle.life;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.life -= 0.015;
+                
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // Check collision
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+
+        // Update game
+        function update() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw magical grid
+            ctx.strokeStyle = 'rgba(147, 51, 234, 0.15)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // Update wizard
+            wizard.x += wizard.dx;
+            wizard.y += wizard.dy;
+
+            if (wizard.x < 0) wizard.x = 0;
+            if (wizard.x + wizard.width > canvas.width) wizard.x = canvas.width - wizard.width;
+            if (wizard.y < 0) wizard.y = 0;
+            if (wizard.y + wizard.height > canvas.height) wizard.y = canvas.height - wizard.height;
+
+            // Update dark creatures
+            darkCreatures.forEach((creature, index) => {
+                creature.x -= creature.speed;
+                
+                if (creature.x + creature.width < 0) {
+                    darkCreatures.splice(index, 1);
+                }
+                
+                if (checkCollision(wizard, creature)) {
+                    lives--;
+                    updateLives();
+                    createParticles(creature.x, creature.y, '#ef4444');
+                    darkCreatures.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+
+            // Update spells
+            spells.forEach((spell, spellIndex) => {
+                spell.x += spell.speed;
+                
+                if (spell.x > canvas.width) {
+                    spells.splice(spellIndex, 1);
+                }
+                
+                darkCreatures.forEach((creature, creatureIndex) => {
+                    if (spell.x < creature.x + creature.width &&
+                        spell.x + spell.width > creature.x &&
+                        spell.y < creature.y + creature.height &&
+                        spell.y + spell.height / 2 > creature.y) {
+                        score += 25;
+                        updateScore();
+                        createParticles(creature.x, creature.y, '#9333ea');
+                        darkCreatures.splice(creatureIndex, 1);
+                        spells.splice(spellIndex, 1);
+                    }
+                });
+            });
+
+            // Update artifacts
+            artifacts.forEach((artifact, index) => {
+                artifact.x -= artifact.speed;
+                
+                if (artifact.x + artifact.size < 0) {
+                    artifacts.splice(index, 1);
+                }
+                
+                if (wizard.x < artifact.x + artifact.size &&
+                    wizard.x + wizard.width > artifact.x &&
+                    wizard.y < artifact.y + artifact.size &&
+                    wizard.y + wizard.height > artifact.y) {
+                    score += 100;
+                    updateScore();
+                    createParticles(artifact.x, artifact.y, '#ffd700');
+                    artifacts.splice(index, 1);
+                }
+            });
+
+            // Spawn objects
+            if (Math.random() < 0.02) createDarkCreature();
+            if (Math.random() < 0.008) createArtifact();
+
+            // Draw everything
+            drawWizard();
+            drawDarkCreatures();
+            drawArtifacts();
+            drawSpells();
+            drawParticles();
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') wizard.dy = -wizard.speed;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') wizard.dy = wizard.speed;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') wizard.dx = -wizard.speed;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') wizard.dx = wizard.speed;
+            if (e.key === ' ') {
+                castSpell();
+                createParticles(wizard.x + wizard.width, wizard.y + wizard.height / 2, '#3b82f6');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+                wizard.dy = 0;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
+                wizard.dx = 0;
+            }
+        });
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('hogwartsHighScore', highscore);
+                document.getElementById('highscore').textContent = highscore;
+            }
+            if (score > 0 && score % 300 === 0) {
+                level++;
+                document.getElementById('level').textContent = level;
+            }
+        }
+
+        function updateLives() {
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                update();
+            }
+        }
+
+        function pauseGame() {
+            gameRunning = !gameRunning;
+            if (gameRunning) update();
+        }
+
+        function resetGame() {
+            cancelAnimationFrame(animationId);
+            score = 0;
+            lives = 3;
+            level = 1;
+            darkCreatures = [];
+            artifacts = [];
+            spells = [];
+            particles = [];
+            wizard.x = 50;
+            wizard.y = canvas.height / 2;
+            wizard.dx = 0;
+            wizard.dy = 0;
+            updateScore();
+            updateLives();
+            document.getElementById('level').textContent = level;
+            gameRunning = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#9333ea';
+            ctx.font = 'bold 50px MedievalSharp';
+            ctx.textAlign = 'center';
+            ctx.fillText('MISCHIEF MANAGED!', canvas.width / 2, canvas.height / 2 - 40);
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 28px Cinzel';
+            ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`High Score: ${highscore}`, canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillText('Cast EXPELLIARMUS to try again', canvas.width / 2, canvas.height / 2 + 100);
+        }
+
+        drawWizard();
+    </script>
+</body>
+</html>

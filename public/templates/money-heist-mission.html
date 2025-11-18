@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA CASA DE PAPEL - The Ultimate Heist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Passion+One:wght@700&display=swap');
+
+        body {
+            font-family: 'Anton', sans-serif;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.92) 0%, rgba(45, 10, 10, 0.92) 50%, rgba(26, 26, 26, 0.92) 100%),
+                        url('https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1920&q=80') center/cover fixed;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Falling Money */
+        .money {
+            position: fixed;
+            font-size: 50px;
+            animation: money-fall linear infinite;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .money::before {
+            content: '💶';
+        }
+
+        @keyframes money-fall {
+            0% {
+                top: -100px;
+                transform: rotate(0deg);
+            }
+            100% {
+                top: 110%;
+                transform: rotate(360deg);
+            }
+        }
+
+        .money:nth-child(1) { left: 5%; animation-duration: 8s; animation-delay: 0s; }
+        .money:nth-child(2) { left: 15%; animation-duration: 10s; animation-delay: 2s; }
+        .money:nth-child(3) { left: 25%; animation-duration: 7s; animation-delay: 4s; }
+        .money:nth-child(4) { left: 35%; animation-duration: 9s; animation-delay: 1s; }
+        .money:nth-child(5) { left: 45%; animation-duration: 11s; animation-delay: 3s; }
+        .money:nth-child(6) { left: 55%; animation-duration: 8.5s; animation-delay: 5s; }
+        .money:nth-child(7) { left: 65%; animation-duration: 10.5s; animation-delay: 2.5s; }
+        .money:nth-child(8) { left: 75%; animation-duration: 9.5s; animation-delay: 4.5s; }
+        .money:nth-child(9) { left: 85%; animation-duration: 7.5s; animation-delay: 1.5s; }
+        .money:nth-child(10) { left: 95%; animation-duration: 8s; animation-delay: 3.5s; }
+
+        /* Alarm Lights */
+        .alarm-light {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff0000, transparent);
+            animation: alarm-flash 1s ease-in-out infinite;
+            z-index: 2;
+            opacity: 0.6;
+        }
+
+        .alarm-light:nth-child(11) { top: 50px; left: 50px; }
+        .alarm-light:nth-child(12) { top: 50px; right: 50px; animation-delay: 0.5s; }
+        .alarm-light:nth-child(13) { bottom: 50px; left: 50px; animation-delay: 0.25s; }
+        .alarm-light:nth-child(14) { bottom: 50px; right: 50px; animation-delay: 0.75s; }
+
+        @keyframes alarm-flash {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
+
+        /* Dali Masks Floating */
+        .dali-mask {
+            position: fixed;
+            font-size: 100px;
+            animation: mask-float 20s ease-in-out infinite;
+            z-index: 3;
+            opacity: 0.3;
+            filter: drop-shadow(0 0 15px #e71d27);
+        }
+
+        .dali-mask::before {
+            content: '🎭';
+        }
+
+        .dali-mask:nth-child(15) { animation-delay: 0s; }
+        .dali-mask:nth-child(16) { animation-delay: 5s; }
+        .dali-mask:nth-child(17) { animation-delay: 10s; }
+
+        @keyframes mask-float {
+            0% { left: -150px; top: 20%; transform: rotate(0deg); }
+            50% { left: 110%; top: 60%; transform: rotate(180deg); }
+            100% { left: -150px; top: 20%; transform: rotate(360deg); }
+        }
+
+        /* Red Smoke Effect */
+        .smoke {
+            position: fixed;
+            width: 100%;
+            height: 300px;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(231, 29, 39, 0.4), transparent);
+            animation: smoke-wave 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes smoke-wave {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 0.6; transform: translateY(-30px); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Passion One', cursive;
+            font-size: 85px;
+            color: #e71d27;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            text-shadow: 
+                0 0 30px rgba(231, 29, 39, 1),
+                5px 5px 10px rgba(0, 0, 0, 0.9),
+                10px 10px 20px rgba(0, 0, 0, 0.7);
+            animation: heist-title 2s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes heist-title {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(231, 29, 39, 1), 5px 5px 10px rgba(0, 0, 0, 0.9); }
+            50% { transform: scale(1.03); text-shadow: 0 0 50px rgba(231, 29, 39, 1), 5px 5px 10px rgba(0, 0, 0, 0.9); }
+        }
+
+        .subtitle {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 32px;
+            color: #ffd700;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.9);
+            letter-spacing: 6px;
+            margin-bottom: 30px;
+        }
+
+        /* Professor's Plan */
+        .plan-box {
+            background: rgba(139, 0, 0, 0.8);
+            border: 5px solid #e71d27;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 900px;
+            box-shadow: 
+                0 0 40px rgba(231, 29, 39, 0.7),
+                inset 0 0 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .plan-box::before {
+            content: '🎭';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            filter: drop-shadow(0 5px 15px rgba(231, 29, 39, 0.8));
+        }
+
+        .plan-box h2 {
+            font-family: 'Passion One', cursive;
+            font-size: 45px;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        .plan-box p {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 22px;
+            line-height: 1.8;
+            color: #fff;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .bella-ciao {
+            font-family: 'Passion One', cursive;
+            font-size: 35px;
+            color: #e71d27;
+            text-align: center;
+            margin: 20px 0;
+            animation: pulse-text 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Vault Door */
+        .vault-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 8px solid #333;
+            border-radius: 30px;
+            padding: 50px;
+            margin: 50px 0;
+            position: relative;
+            box-shadow: 
+                0 0 60px rgba(0, 0, 0, 0.9),
+                inset 0 0 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .vault-door {
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            background: radial-gradient(circle, #444, #222, #111);
+            border: 15px solid #666;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 
+                0 0 40px rgba(231, 29, 39, 0.5),
+                inset 0 0 40px rgba(0, 0, 0, 0.9);
+            animation: vault-spin 10s linear infinite;
+        }
+
+        @keyframes vault-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .vault-door::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #e71d27, #8b0000);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(231, 29, 39, 0.8);
+        }
+
+        .vault-door::after {
+            content: '💰';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+        }
+
+        /* Game Canvas */
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: radial-gradient(circle at center, #2a0a0a, #1a1a1a);
+            border: 6px solid #e71d27;
+            border-radius: 25px;
+            box-shadow: 
+                0 0 50px rgba(231, 29, 39, 0.8),
+                inset 0 0 60px rgba(0, 0, 0, 0.9);
+            cursor: crosshair;
+        }
+
+        /* Heist Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            padding: 20px 50px;
+            border: 5px solid #e71d27;
+            border-radius: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(231, 29, 39, 0.6);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #e71d27, #a71520);
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-start:hover {
+            box-shadow: 0 0 50px rgba(231, 29, 39, 1);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #1a1a1a;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-pause:hover {
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #111, #333);
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-reset:hover {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Team Stats */
+        .team-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(231, 29, 39, 0.3), rgba(139, 0, 0, 0.3));
+            border: 4px solid #e71d27;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(231, 29, 39, 0.5);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s linear infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 40px rgba(231, 29, 39, 0.8);
+        }
+
+        .stat-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+            animation: stat-bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes stat-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stat-label {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 24px;
+            color: #ffd700;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .stat-value {
+            font-family: 'Passion One', cursive;
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Team Members */
+        .team-members {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .member {
+            background: rgba(0, 0, 0, 0.7);
+            border: 4px solid #e71d27;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            min-width: 180px;
+            box-shadow: 0 0 25px rgba(231, 29, 39, 0.5);
+            transition: all 0.3s;
+        }
+
+        .member:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(231, 29, 39, 0.9);
+        }
+
+        .member-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .member-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 26px;
+            color: #e71d27;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .member-role {
+            font-family: 'Anton', sans-serif;
+            font-size: 16px;
+            color: #ffd700;
+            letter-spacing: 1px;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: rgba(0, 0, 0, 0.8);
+            border: 5px solid #e71d27;
+            border-radius: 25px;
+            padding: 50px;
+            margin-top: 60px;
+            box-shadow: 0 0 50px rgba(231, 29, 39, 0.6);
+        }
+
+        .instructions h2 {
+            font-family: 'Passion One', cursive;
+            font-size: 48px;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 35px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        .instructions ul {
+            list-style: none;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 22px;
+            line-height: 2.5;
+            letter-spacing: 2px;
+        }
+
+        .instructions li {
+            padding-left: 50px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: '💰';
+            position: absolute;
+            left: 0;
+            font-size: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 50px;
+            }
+            
+            .subtitle {
+                font-size: 22px;
+            }
+            
+            .btn {
+                font-size: 20px;
+                padding: 15px 30px;
+            }
+
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    <div class="money"></div>
+    
+    <div class="alarm-light"></div>
+    <div class="alarm-light"></div>
+    <div class="alarm-light"></div>
+    <div class="alarm-light"></div>
+    
+    <div class="dali-mask"></div>
+    <div class="dali-mask"></div>
+    <div class="dali-mask"></div>
+    
+    <div class="smoke"></div>
+
+    <div class="container">
+        <header>
+            <h1>🎭 LA CASA DE PAPEL 🎭</h1>
+            <p class="subtitle">💰 THE ULTIMATE HEIST MISSION 💰</p>
+            <div class="vault-door"></div>
+        </header>
+
+        <div class="plan-box">
+            <h2>THE PROFESSOR'S PLAN</h2>
+            <p>
+                "We are not a band of thieves. We are a family.<br>
+                We print our own money. We don't steal from anyone."
+            </p>
+            <div class="bella-ciao">♪ BELLA CIAO, BELLA CIAO ♪</div>
+        </div>
+
+        <div class="vault-container">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <div class="controls">
+                <button class="btn btn-start" onclick="startHeist()">🎭 START HEIST</button>
+                <button class="btn btn-pause" onclick="pauseHeist()">⏸️ PAUSE</button>
+                <button class="btn btn-reset" onclick="resetHeist()">🔄 RESET</button>
+            </div>
+
+            <div class="team-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-label">MONEY STOLEN</div>
+                    <div class="stat-value" id="score">€0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-label">TIME LEFT</div>
+                    <div class="stat-value" id="lives">3:00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-label">LEVEL</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👮</div>
+                    <div class="stat-label">BEST HEIST</div>
+                    <div class="stat-value" id="highscore">€0</div>
+                </div>
+            </div>
+
+            <div class="team-members">
+                <div class="member">
+                    <div class="member-icon">🧠</div>
+                    <div class="member-name">PROFESSOR</div>
+                    <div class="member-role">Mastermind</div>
+                </div>
+                <div class="member">
+                    <div class="member-icon">⚡</div>
+                    <div class="member-name">TOKYO</div>
+                    <div class="member-role">Leader</div>
+                </div>
+                <div class="member">
+                    <div class="member-icon">🎩</div>
+                    <div class="member-name">BERLIN</div>
+                    <div class="member-role">Second-in-Command</div>
+                </div>
+                <div class="member">
+                    <div class="member-icon">🔫</div>
+                    <div class="member-name">NAIROBI</div>
+                    <div class="member-role">Quality Control</div>
+                </div>
+                <div class="member">
+                    <div class="member-icon">💻</div>
+                    <div class="member-name">RIO</div>
+                    <div class="member-role">Hacker</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>🎯 HEIST INSTRUCTIONS</h2>
+            <ul>
+                <li>Use ARROW KEYS or WASD to navigate through the vault</li>
+                <li>Collect money bags (💰) to increase your loot</li>
+                <li>Avoid police officers (👮) and security cameras (📷)</li>
+                <li>Press SPACE to use smoke bombs and evade capture</li>
+                <li>Complete the heist before time runs out</li>
+                <li>The plan must be followed precisely - "No es un atraco, es una guerra"</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let timeLeft = 180; // 3 minutes
+        let level = 1;
+        let highscore = localStorage.getItem('heistHighScore') || 0;
+        let gameRunning = false;
+        let animationId;
+        let timerInterval;
+
+        document.getElementById('highscore').textContent = '€' + highscore;
+
+        // Player (heist member)
+        const player = {
+            x: 50,
+            y: canvas.height / 2,
+            width: 45,
+            height: 45,
+            speed: 7,
+            dx: 0,
+            dy: 0
+        };
+
+        // Game objects
+        let moneyBags = [];
+        let police = [];
+        let smokeBombs = [];
+        let particles = [];
+
+        // Create money bag
+        function createMoneyBag() {
+            moneyBags.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - 40),
+                size: 40,
+                speed: 2.5 + Math.random() * 2,
+                value: 1000
+            });
+        }
+
+        // Create police
+        function createPolice() {
+            police.push({
+                x: canvas.width,
+                y: Math.random() * (canvas.height - 50),
+                width: 45,
+                height: 45,
+                speed: 2 + Math.random() * 2.5
+            });
+        }
+
+        // Create smoke bomb
+        function createSmokeBomb() {
+            smokeBombs.push({
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2,
+                radius: 10,
+                maxRadius: 120,
+                expanding: true
+            });
+        }
+
+        // Create particles
+        function createParticles(x, y, color, count = 20) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 8 + 3,
+                    speedX: (Math.random() - 0.5) * 15,
+                    speedY: (Math.random() - 0.5) * 15,
+                    color: color || `hsl(${Math.random() * 60}, 100%, 50%)`,
+                    life: 1
+                });
+            }
+        }
+
+        // Draw player
+        function drawPlayer() {
+            // Red jumpsuit
+            ctx.fillStyle = '#e71d27';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Dali mask
+            ctx.font = '40px Arial';
+            ctx.fillText('🎭', player.x + 2, player.y + 35);
+        }
+
+        // Draw money bags
+        function drawMoneyBags() {
+            moneyBags.forEach(bag => {
+                ctx.font = `${bag.size}px Arial`;
+                ctx.fillText('💰', bag.x, bag.y + bag.size);
+            });
+        }
+
+        // Draw police
+        function drawPolice() {
+            police.forEach(cop => {
+                ctx.font = '45px Arial';
+                ctx.fillText('👮', cop.x, cop.y + cop.height);
+            });
+        }
+
+        // Draw smoke bombs
+        function drawSmokeBombs() {
+            smokeBombs.forEach((bomb, index) => {
+                ctx.fillStyle = `rgba(128, 128, 128, ${1 - bomb.radius / bomb.maxRadius})`;
+                ctx.beginPath();
+                ctx.arc(bomb.x, bomb.y, bomb.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (bomb.expanding) {
+                    bomb.radius += 8;
+                    if (bomb.radius >= bomb.maxRadius) {
+                        bomb.expanding = false;
+                    }
+                } else {
+                    bomb.radius -= 2;
+                    if (bomb.radius <= 0) {
+                        smokeBombs.splice(index, 1);
+                    }
+                }
+            });
+        }
+
+        // Draw particles
+        function drawParticles() {
+            particles.forEach((particle, index) => {
+                ctx.fillStyle = particle.color;
+                ctx.globalAlpha = particle.life;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.speedY += 0.3; // Gravity
+                particle.life -= 0.02;
+                
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // Check collision
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+
+        // Check if police is in smoke
+        function isInSmoke(cop) {
+            return smokeBombs.some(bomb => {
+                const dx = cop.x + cop.width / 2 - bomb.x;
+                const dy = cop.y + cop.height / 2 - bomb.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return distance < bomb.radius;
+            });
+        }
+
+        // Update game
+        function update() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw vault grid
+            ctx.strokeStyle = 'rgba(231, 29, 39, 0.2)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < canvas.width; i += 60) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 60) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // Update player
+            player.x += player.dx;
+            player.y += player.dy;
+
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+            if (player.y < 0) player.y = 0;
+            if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+
+            // Update money bags
+            moneyBags.forEach((bag, index) => {
+                bag.x -= bag.speed;
+                
+                if (bag.x + bag.size < 0) {
+                    moneyBags.splice(index, 1);
+                }
+                
+                if (player.x < bag.x + bag.size &&
+                    player.x + player.width > bag.x &&
+                    player.y < bag.y + bag.size &&
+                    player.y + player.height > bag.y) {
+                    score += bag.value;
+                    updateScore();
+                    createParticles(bag.x, bag.y, '#ffd700', 25);
+                    moneyBags.splice(index, 1);
+                }
+            });
+
+            // Update police
+            police.forEach((cop, index) => {
+                if (!isInSmoke(cop)) {
+                    cop.x -= cop.speed;
+                }
+                
+                if (cop.x + cop.width < 0) {
+                    police.splice(index, 1);
+                    score += 500; // Bonus for evading
+                    updateScore();
+                }
+                
+                if (checkCollision(player, cop) && !isInSmoke(cop)) {
+                    timeLeft -= 10; // Time penalty
+                    updateTime();
+                    createParticles(cop.x, cop.y, '#e71d27', 20);
+                    police.splice(index, 1);
+                }
+            });
+
+            // Spawn objects
+            if (Math.random() < 0.025) createMoneyBag();
+            if (Math.random() < 0.015) createPolice();
+
+            // Draw everything
+            drawPlayer();
+            drawMoneyBags();
+            drawPolice();
+            drawSmokeBombs();
+            drawParticles();
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        // Timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (gameRunning && timeLeft > 0) {
+                    timeLeft--;
+                    updateTime();
+                    if (timeLeft <= 0) {
+                        gameOver();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTime() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('lives').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') player.dy = -player.speed;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') player.dy = player.speed;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') player.dx = -player.speed;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') player.dx = player.speed;
+            if (e.key === ' ') {
+                createSmokeBomb();
+                createParticles(player.x + player.width / 2, player.y + player.height / 2, '#888', 15);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+                player.dy = 0;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
+                player.dx = 0;
+            }
+        });
+
+        function updateScore() {
+            document.getElementById('score').textContent = '€' + score;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('heistHighScore', highscore);
+                document.getElementById('highscore').textContent = '€' + highscore;
+            }
+            if (score > 0 && score % 10000 === 0) {
+                level++;
+                document.getElementById('level').textContent = level;
+            }
+        }
+
+        function startHeist() {
+            if (!gameRunning) {
+                gameRunning = true;
+                startTimer();
+                update();
+            }
+        }
+
+        function pauseHeist() {
+            gameRunning = !gameRunning;
+            if (gameRunning) {
+                startTimer();
+                update();
+            } else {
+                clearInterval(timerInterval);
+            }
+        }
+
+        function resetHeist() {
+            cancelAnimationFrame(animationId);
+            clearInterval(timerInterval);
+            score = 0;
+            timeLeft = 180;
+            level = 1;
+            moneyBags = [];
+            police = [];
+            smokeBombs = [];
+            particles = [];
+            player.x = 50;
+            player.y = canvas.height / 2;
+            player.dx = 0;
+            player.dy = 0;
+            updateScore();
+            updateTime();
+            document.getElementById('level').textContent = level;
+            gameRunning = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#e71d27';
+            ctx.font = 'bold 60px Passion One';
+            ctx.textAlign = 'center';
+            ctx.fillText('HEIST COMPLETE!', canvas.width / 2, canvas.height / 2 - 50);
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 32px Bebas Neue';
+            ctx.fillText(`Total Loot: €${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`Best Heist: €${highscore}`, canvas.width / 2, canvas.height / 2 + 70);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 24px Anton';
+            ctx.fillText('BELLA CIAO! 🎭', canvas.width / 2, canvas.height / 2 + 120);
+        }
+
+        drawPlayer();
+    </script>
+</body>
+</html>

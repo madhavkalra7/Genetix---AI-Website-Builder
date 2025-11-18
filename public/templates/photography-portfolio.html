@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUDIO NOIR - Photography Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;600;900&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Cursor Effect */
+        .cursor-spotlight {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+            z-index: 9999;
+            mix-blend-mode: screen;
+        }
+
+        /* Grain Texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.05"/></svg>');
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(13, 13, 13, 0.95), transparent);
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 4px;
+        }
+
+        nav {
+            display: flex;
+            gap: 50px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            transition: opacity 0.3s;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+        }
+
+        .hero-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape-circle {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: 20%;
+            left: 10%;
+            animation: float-shape 20s ease-in-out infinite;
+        }
+
+        .shape-square {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transform: rotate(45deg);
+            bottom: 15%;
+            right: 10%;
+            animation: float-shape 25s ease-in-out infinite;
+        }
+
+        @keyframes float-shape {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-50px) rotate(180deg); }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            opacity: 0.7;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 130px;
+            font-weight: 700;
+            letter-spacing: 10px;
+            margin-bottom: 30px;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            max-width: 600px;
+            margin: 0 auto 50px;
+            line-height: 1.8;
+            opacity: 0.8;
+        }
+
+        .cta-btn {
+            padding: 18px 50px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .cta-btn:hover::before {
+            left: 0;
+        }
+
+        .cta-btn:hover {
+            color: #0d0d0d;
+        }
+
+        /* Portfolio Grid */
+        .portfolio {
+            padding: 150px 80px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 80px;
+            text-align: center;
+            margin-bottom: 100px;
+            letter-spacing: 5px;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .portfolio-item {
+            position: relative;
+            overflow: hidden;
+            background: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        .portfolio-item:nth-child(1) {
+            grid-column: span 7;
+            grid-row: span 2;
+        }
+
+        .portfolio-item:nth-child(2) {
+            grid-column: span 5;
+        }
+
+        .portfolio-item:nth-child(3) {
+            grid-column: span 5;
+        }
+
+        .portfolio-item:nth-child(4) {
+            grid-column: span 4;
+            grid-row: span 2;
+        }
+
+        .portfolio-item:nth-child(5) {
+            grid-column: span 8;
+        }
+
+        .portfolio-item:nth-child(6) {
+            grid-column: span 6;
+        }
+
+        .portfolio-item:nth-child(7) {
+            grid-column: span 6;
+        }
+
+        .portfolio-item:nth-child(8) {
+            grid-column: span 8;
+            grid-row: span 2;
+        }
+
+        .portfolio-item:nth-child(9) {
+            grid-column: span 4;
+        }
+
+        .portfolio-item:nth-child(10) {
+            grid-column: span 4;
+        }
+
+        .portfolio-item:hover {
+            transform: scale(0.98);
+        }
+
+        .portfolio-image {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            transition: all 0.5s;
+        }
+
+        .portfolio-item:hover .portfolio-image {
+            transform: scale(1.05);
+        }
+
+        .portfolio-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            opacity: 0;
+            transition: opacity 0.5s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px;
+        }
+
+        .portfolio-item:hover .portfolio-overlay {
+            opacity: 1;
+        }
+
+        .portfolio-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .portfolio-category {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        /* About Section */
+        .about {
+            padding: 150px 80px;
+            background: #0a0a0a;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: center;
+        }
+
+        .about-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+        }
+
+        .about-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 70px;
+            margin-bottom: 40px;
+            line-height: 1.2;
+        }
+
+        .about-content p {
+            font-size: 18px;
+            font-weight: 300;
+            line-height: 2;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 150px 80px;
+            background: #0d0d0d;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 60px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            padding: 60px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .service-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .service-icon {
+            font-size: 60px;
+            margin-bottom: 30px;
+        }
+
+        .service-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .service-description {
+            font-size: 16px;
+            font-weight: 300;
+            line-height: 1.8;
+            opacity: 0.7;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 150px 80px;
+            background: #0a0a0a;
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 80px;
+            margin-bottom: 50px;
+        }
+
+        .contact-info {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 60px;
+        }
+
+        .contact-email {
+            font-size: 40px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .social-links a {
+            font-size: 14px;
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .social-links a:hover {
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 80px;
+            background: #000;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-text {
+            font-size: 12px;
+            letter-spacing: 3px;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 60px;
+            }
+
+            .section-title {
+                font-size: 50px;
+            }
+
+            .portfolio {
+                padding: 80px 30px;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .portfolio-item,
+            .portfolio-item:nth-child(1),
+            .portfolio-item:nth-child(2),
+            .portfolio-item:nth-child(3),
+            .portfolio-item:nth-child(4),
+            .portfolio-item:nth-child(5),
+            .portfolio-item:nth-child(6),
+            .portfolio-item:nth-child(7),
+            .portfolio-item:nth-child(8),
+            .portfolio-item:nth-child(9),
+            .portfolio-item:nth-child(10) {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+
+            .about {
+                grid-template-columns: 1fr;
+                padding: 80px 30px;
+            }
+
+            .services, .contact {
+                padding: 80px 30px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-spotlight" id="spotlight"></div>
+
+    <header>
+        <div class="logo">STUDIO NOIR</div>
+        <nav>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-shapes">
+            <div class="shape-circle"></div>
+            <div class="shape-square"></div>
+        </div>
+        <div class="hero-content">
+            <p class="hero-subtitle">Visual Storytelling</p>
+            <h1>STUDIO NOIR</h1>
+            <p class="hero-description">Capturing moments that transcend time through the lens of artistry and emotion</p>
+            <button class="cta-btn">View Portfolio</button>
+        </div>
+    </section>
+
+    <section class="portfolio" id="portfolio">
+        <h2 class="section-title">Selected Works</h2>
+        <div class="portfolio-grid">
+            <div class="portfolio-item">
+                <div class="portfolio-image">📸</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Urban Landscape</h3>
+                    <p class="portfolio-category">Architecture</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🌃</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">City Lights</h3>
+                    <p class="portfolio-category">Street Photography</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">👤</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Portraits</h3>
+                    <p class="portfolio-category">Editorial</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🎨</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Abstract Forms</h3>
+                    <p class="portfolio-category">Fine Art</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🌿</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Natural Beauty</h3>
+                    <p class="portfolio-category">Nature</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">💍</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Timeless Moments</h3>
+                    <p class="portfolio-category">Wedding</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🏢</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Corporate Vision</h3>
+                    <p class="portfolio-category">Commercial</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🎭</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Performance Art</h3>
+                    <p class="portfolio-category">Event</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🌅</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Golden Hour</h3>
+                    <p class="portfolio-category">Landscape</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <div class="portfolio-image">🖤</div>
+                <div class="portfolio-overlay">
+                    <h3 class="portfolio-title">Monochrome</h3>
+                    <p class="portfolio-category">Black & White</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about" id="about">
+        <div class="about-image">📷</div>
+        <div class="about-content">
+            <h2>The Art of<br>Photography</h2>
+            <p>For over a decade, Studio Noir has been at the forefront of contemporary photography, blending technical precision with artistic vision.</p>
+            <p>Our approach is rooted in storytelling, capturing not just images, but emotions, narratives, and the essence of moments that matter.</p>
+            <p>Every project is a collaboration, a journey to create something truly unique and timeless.</p>
+        </div>
+    </section>
+
+    <section class="services" id="services">
+        <h2 class="section-title">Services</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">📸</div>
+                <h3 class="service-title">Portrait Photography</h3>
+                <p class="service-description">Professional portrait sessions that capture your unique personality and style</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💼</div>
+                <h3 class="service-title">Commercial Work</h3>
+                <p class="service-description">High-end commercial photography for brands, products, and advertising campaigns</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💍</div>
+                <h3 class="service-title">Wedding & Events</h3>
+                <p class="service-description">Capturing your special moments with elegance and artistic vision</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏛️</div>
+                <h3 class="service-title">Architecture</h3>
+                <p class="service-description">Showcasing buildings and spaces through stunning architectural photography</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎨</div>
+                <h3 class="service-title">Fine Art</h3>
+                <p class="service-description">Limited edition fine art prints and custom commissioned work</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📚</div>
+                <h3 class="service-title">Editorial</h3>
+                <p class="service-description">Editorial photography for magazines, publications, and media outlets</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <h2>Let's Create Together</h2>
+        <p class="contact-info">Available for projects worldwide</p>
+        <div class="contact-email">HELLO@STUDIONOIR.COM</div>
+        <div class="social-links">
+            <a href="#">Instagram</a>
+            <a href="#">Behance</a>
+            <a href="#">Pinterest</a>
+            <a href="#">LinkedIn</a>
+        </div>
+    </section>
+
+    <footer>
+        <p class="footer-text">© 2025 STUDIO NOIR PHOTOGRAPHY. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        // Cursor spotlight effect
+        const spotlight = document.getElementById('spotlight');
+        document.addEventListener('mousemove', (e) => {
+            spotlight.style.left = e.clientX + 'px';
+            spotlight.style.top = e.clientY + 'px';
+        });
+    </script>
+</body>
+</html>

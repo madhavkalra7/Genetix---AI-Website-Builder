@@ -203,6 +203,352 @@ Layout: Centered content, pixelated spacing (multiples of 8px), retro arcade fee
 Components: Pixel-perfect rendering, 3D block shadows (inset highlights/lowlights), bouncing animations, spinning coins
 Special: Main game canvas area with character preview, supports platformer mechanics (jumping, scrolling, collision)
 `
+  },
+  {
+    id: "superhero-adventure",
+    name: "Superhero Arena",
+    description: "Comic book style superhero game with lightning bolts, flying capes, and epic hero vs villain battles",
+    thumbnail: "https://dummyimage.com/400x300/1e3c72/ffd700&text=Superhero+Arena",
+    templateFile: "/templates/superhero-adventure.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Comic Book Superhero
+- Hero: "SUPERHERO ARENA" title with Bangers comic font, bold multi-layer text shadows (black+red+blue+white)
+- Background: Blue-purple gradient (#1e3c72 → #7e22ce), 5 lightning bolt strikes, 3 floating energy orbs, 2 flying capes, comic explosions
+- Speech Bubble: "WITH GREAT POWER COMES GREAT RESPONSIBILITY" - CSS-only triangular tail
+- Game Canvas: 900x600px with golden border, hero character (40x40 red body with cape), enemies, power-ups (⚡🛡️💥⭐)
+- Mechanics: WASD/Arrow movement, collision detection, particle explosions, score tracking, lives system, level progression
+- Scoreboard: Purple gradient cards showing Score, Lives, Level - Bangers font numbers
+- Buttons: 3D comic style with ripple animation (Start Mission, Pause, Reset)
+Color Scheme: Gold (#ffd700) primary, blue gradient background, cyan (#00ffff) tech elements, red/black shadows
+Typography: Bangers for headings, Bebas Neue for body, bold comic book text shadows
+Layout: Centered game arena, comic halftone pattern texture, full-screen background animations
+Components: Lightning strike animation, energy orb floating, cape flying, explosion scaling, spark rotation, particle system
+Special: Canvas-based game with hero movement, enemy spawning, power-up collection, comic visual effects
+`
+  },
+  {
+    id: "harry-potter-magic",
+    name: "Wizarding World Challenge",
+    description: "Hogwarts themed magical game with spell casting, floating candles, golden snitches, and wizard duels",
+    thumbnail: "https://dummyimage.com/400x300/1a0033/ffd700&text=Wizarding+World",
+    templateFile: "/templates/harry-potter-magic.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Harry Potter Wizarding World
+- Hero: "HOGWARTS SPELL CHALLENGE" with MedievalSharp font, gold color (#ffd700), glowing text animation
+- Background: Purple-dark gradient (#1a0033 → #4a0080), 200 twinkling stars, floating candles with flickering flames, flying owl, magic fog
+- Magical Effects: Flying golden snitch (🏅), spell particles (✨), floating wand cursor (🪄), Hogwarts crest rotating
+- Spell Book: Brown leather texture with gold border, quotes from Dumbledore
+- Game Canvas: 900x600px purple border, wizard character with pointed hat and wand, dark creatures (👻🦇💀🕷️), magical artifacts (🔮⚗️📜💎👑)
+- House Points: 4 cards for Gryffindor (🦁 red), Slytherin (🐍 green), Ravenclaw (🦅 blue), Hufflepuff (🦡 yellow)
+- Spells Display: Lumos (⚡), Protego (🛡️), Expecto Patronum (💫), Incendio (🔥) with floating animations
+- Mechanics: Arrow/WASD movement, SPACE to cast spells, collect artifacts, avoid enemies, particle effects on collisions
+Color Scheme: Gold (#ffd700) accents, purple (#9333ea) magic, dark stone (#1a0033) background, cream text (#f4e4c1)
+Typography: Cinzel/MedievalSharp medieval fonts, large elegant headings, magic-themed styling
+Layout: Centered game arena, magic grid background, medieval scroll instructions
+Components: Star twinkling, candle floating, snitch flying, spell sparkle, mask floating, fog wave, particle magic
+Special: Wand cursor, wizard vs dark creatures, spell casting system, high score tracking with localStorage
+`
+  },
+  {
+    id: "money-heist-mission",
+    name: "La Casa de Papel Heist",
+    description: "Money Heist inspired game with Dali masks, falling euros, vault door, and bank heist mission",
+    thumbnail: "https://dummyimage.com/400x300/1a1a1a/e71d27&text=Money+Heist",
+    templateFile: "/templates/money-heist-mission.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: La Casa de Papel Bank Heist
+- Hero: "LA CASA DE PAPEL" with Passion One font, red (#e71d27) glowing title, "BELLA CIAO" anthem text
+- Background: Dark gradient (#1a1a1a → #2d0a0a), 10 falling money bills (💶), 4 alarm lights flashing red, 3 floating Dali masks (🎭), red smoke
+- Vault Door: 200px spinning circular vault with radial gradient, golden center with money icon (💰)
+- Professor's Plan: Brown box with gold border, famous quote about family, "BELLA CIAO" in pulsing red text
+- Game Canvas: 900x600px red border, player in red jumpsuit with Dali mask, police officers (👮), money bags (💰), smoke bombs
+- Team Members: Professor (🧠), Tokyo (⚡), Berlin (🎩), Nairobi (🔫), Rio (💻) with roles
+- Stats: Money Stolen (€), Time Left (countdown timer), Level, Best Heist - displayed in red gradient cards with shine effect
+- Mechanics: Arrow/WASD movement, SPACE for smoke bombs, collect money, avoid police, time limit (3 minutes)
+Color Scheme: Red (#e71d27) primary, gold (#ffd700) money, black background, white highlights
+Typography: Bebas Neue and Anton bold fonts, Passion One for titles, uppercase styling, wide letter-spacing
+Layout: Centered vault container, heist grid background, dramatic spacing
+Components: Money fall animation, alarm flash, mask floating, smoke wave, vault spin, shine effect, particle system
+Special: 3-minute timer countdown, smoke bomb mechanic to hide from police, euro currency display, localStorage for best heist
+`
+  },
+  {
+    id: "squid-game-challenge",
+    name: "Squid Game Survival",
+    description: "Korean Squid Game themed with red light green light, pink guards, player 456, and survival challenges",
+    thumbnail: "https://dummyimage.com/400x300/f8f9fa/e71d27&text=Squid+Game",
+    templateFile: "/templates/squid-game-challenge.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Squid Game Korean Survival
+- Hero: Korean title "오징어 게임" (Ojingeo Geim) + "SQUID GAME CHALLENGE" with Black Han Sans font, red/green colors
+- Background: Light gradient (#f8f9fa → #dee2e6), geometric shapes (circle, triangle, square) in green/pink/red, pink guards walking (💂)
+- Special Elements: Giant piggy bank (🏦) with fill animation, red light green light doll (👧) turning head animation
+- Prize Box: Green gradient background, "₩45,600,000,000" in gold (#ffd700), "456 PLAYERS • 6 GAMES • 1 WINNER"
+- Game Canvas: 900x600px black border, player 456 in green tracksuit, pink guards with geometric masks, obstacles, marbles (🔮)
+- Red/Green Light: Circular indicator (50px) showing current light state, affects movement - stop on red or eliminated
+- Player Stats: 4 cards numbered (456, 001, 067, 218) showing Score, Lives, Level, Best - with Korean aesthetic
+- Games List: 6 cards for Red Light (🚦), Honeycomb (🍬), Tug of War (🪢), Marbles (🔮), Glass Bridge (🌉), Squid Game (🦑) with Korean names
+- Mechanics: Arrow/WASD movement, SPACE to jump, freeze on red light, collect marbles, avoid guards and obstacles
+Color Scheme: Green (#00A878) tracksuits, pink (#F7A1C4) guards, red (#E71D27) elimination, black/white contrast
+Typography: Black Han Sans for titles, Noto Sans KR for Korean text, bold uppercase, wide spacing
+Layout: Centered game arena, geometric shapes background, clean Korean design
+Components: Shape floating, guard walking, piggy filling, doll turning, light blinking, stat bouncing, shine gradient
+Special: Red light green light mechanic (movement penalty), player numbering system (456), Korean language integration, survival gameplay
+`
+  },
+  {
+    id: "fitness-gym",
+    name: "Iron Fitness",
+    description: "Dark energetic fitness gym website with orange fire accents, training programs, and membership tiers",
+    thumbnail: "https://dummyimage.com/400x300/000000/ff4500&text=Iron+Fitness",
+    templateFile: "/templates/fitness-gym.html",
+    category: "Fitness",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Dark Energetic Fitness Gym
+- Hero: Full-screen (100vh) black background with orange fire accents, "IRON FITNESS" title (120px Bebas Neue) with pulse glow animation
+- Background Effects: Scan line animation moving vertically, 3 horizontal energy lines scaling/fading, repeating gradient patterns
+- Animations: 3 floating weights (🏋️💪⚡) rotating 180deg over 15s, pulse glow on title, scan lines translating
+- Stats Section: 4 metrics (5000+ Members, 50+ Trainers, 100+ Programs, 24/7 Access) with 80px numbers in Bebas Neue
+- Programs Grid: 6 cards in auto-fit grid (min 300px) - Strength Training (💪), HIIT Cardio (🔥), Yoga (🧘), Boxing (🥊), CrossFit (🏃), Nutrition (🍎)
+- Trainers: 4 elite coaches (Alex Strong, Sara Power, Zen Master, Mike Fighter) with large emoji icons and overlay info
+- Membership Plans: 3 tiers with feature lists
+  - Basic $29/month: Gym access 6am-10pm, basic equipment, locker room, monthly assessment
+  - Pro $59/month (POPULAR): 24/7 access, all classes, trainer 2x/month, nutrition plan, sauna
+  - Elite $99/month: VIP access, unlimited trainer, custom meals, recovery, guest passes, events
+- Buttons: Orange gradient CTAs with shine effect animation
+Color Scheme: Black (#000) background, orange fire (#ff4500) primary, white text, red accents
+Typography: Bebas Neue for titles/numbers, Montserrat for body text, uppercase headings
+Layout: Full-width sections, centered content, dramatic spacing, intense energy
+Components: Scan line effect, energy flow lines, floating weights, pulse animation, card elevation on hover, shine effects
+Special: Energetic fitness theme with intense visual effects, membership tier system with feature comparisons
+`
+  },
+  {
+    id: "luxury-hotel",
+    name: "Le Grandeur",
+    description: "Five-star luxury hotel with elegant gold accents, premium rooms, world-class amenities, and sophisticated design",
+    thumbnail: "https://dummyimage.com/400x300/f5f5f0/d4af37&text=Le+Grandeur",
+    templateFile: "/templates/luxury-hotel.html",
+    category: "Hospitality",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Luxury Hotel Elegance
+- Fixed Header: Glass morphism with blur, "LE GRANDEUR" logo (32px Playfair Display gold), nav links (Rooms, Amenities, Gallery, Book Now)
+- Hero: Full-screen (100vh) parallax background, shimmer dot pattern moving, 4 floating ornaments (🏛️👑💎🌟) rotating 180deg
+- Hero Content: "Welcome to Paradise" subtitle, "Le Grandeur" title (100px gold), description, primary button with ripple effect
+- Welcome Section: 2-column grid (1fr 1fr, 100px gap), left "A Legacy of Excellence" text, right large castle emoji (🏰 200px) in gradient box
+- Rooms Section: 3 luxury cards in auto-fit grid (min 400px)
+  - Deluxe Suite $450/night (🛏️): Panoramic views, king bed, marble bathroom, balcony
+  - Royal Suite $850/night (👑): Separate living, premium amenities, butler service
+  - Presidential Suite $1,500/night (💎): Private pool, dining room, penthouse views
+- Amenities Grid: 6 world-class services (Fine Dining 🍽️, Spa 💆, Pool 🏊, Sports 🎾, Entertainment 🎭, Concierge 🚗)
+- Gallery: Masonry grid 4 columns, first item 2x2 (150px emoji), others 1x1 (80px), gradient backgrounds, hover scale
+- Booking CTA: Full-width gold (#d4af37) section, white text, "Ready for Your Escape?" (70px), secondary button
+- Footer: Dark (#1a1a1a) with gold logo (40px), copyright text
+Color Scheme: Gold (#d4af37) primary, cream (#f5f5f0) background, white, dark accents
+Typography: Playfair Display serif (elegant headings 60-100px), Lato sans-serif (body), sophisticated letter-spacing
+Layout: Fixed parallax, centered content, elegant spacing, 2-column grids
+Components: Ornament float/rotate, shimmer translate, card elevation, button ripple, gallery scale, parallax scrolling
+Special: Luxury hotel aesthetic with premium room pricing, sophisticated animations, elegant typography system
+`
+  },
+  {
+    id: "music-festival",
+    name: "Neon Beats Festival",
+    description: "Vibrant music festival website with neon colors, sound waves, spinning vinyls, and event schedule",
+    thumbnail: "https://dummyimage.com/400x300/0a0a0a/ff0080&text=Neon+Beats",
+    templateFile: "/templates/music-festival.html",
+    category: "Entertainment",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Neon Music Festival
+- Hero: Full-screen centered content, "JUNE 15-17, 2025" date (24px pink neon pulse), "NEON BEATS" title (150px Righteous) with rainbow gradient
+- Background: Fixed gradient animation (45deg pink→purple→blue→cyan) shifting 400% over 15s, opacity 0.15
+- Sound Wave Bars: 10 bars at bottom (12px width) bouncing 30-120px height with staggered delays, pink-purple gradient
+- Floating Elements: 5 music notes (🎵🎶) floating up 0→100% with rotation, 2 spinning vinyl records (200px) with radial black/pink gradient
+- Lineup Grid: 6 headliner cards (auto-fit min 350px) - Neon Pulse (🎤 EDM), Thunder Wave (🎸 Rock), Bass Drop (🎧 Dubstep), Synth Dreams (🎹 Synthwave), Jazz Fusion (🎺), Techno Tribe (🎼 House)
+- Schedule Timeline: 3 days (Friday/Saturday/Sunday) with time slots showing artist, time (32px Righteous purple), stage name
+- Tickets Section: 3 tiers with featured middle card
+  - General $199: 3-day access, main stage, vendors, merchandise
+  - VIP $499 (BEST VALUE badge): All VIP perks, lounge, meet & greet, premium merch, fast track
+  - Platinum $999: All VIP + backstage, private viewing, luxury amenities, concierge, after parties, parking
+- Animations: Gradient shifting, wave bouncing, note floating, vinyl spinning, card elevation, neon pulse, button shine
+Color Scheme: Pink (#ff0080) primary, purple (#7928ca), blue (#0070f3), cyan (#00dfd8), black (#0a0a0a) background
+Typography: Righteous for titles (comic bold), Rubik for body (300-900 weights), uppercase styling, wide letter-spacing
+Layout: Centered content (max-width 1600px, padding 50px), full-width sections, dramatic spacing
+Components: Neon text pulse, wave bars, floating notes, spinning vinyls, gradient animation, ticket badges, timeline slots
+Special: Music festival theme with sound visualization, event scheduling system, ticket tier comparisons with badge highlights
+`
+  },
+  {
+    id: "photography-portfolio",
+    name: "Studio Noir",
+    description: "Elegant black & white photography portfolio with masonry gallery, cursor spotlight, and minimal aesthetic",
+    thumbnail: "https://dummyimage.com/400x300/0d0d0d/ffffff&text=Studio+Noir",
+    templateFile: "/templates/photography-portfolio.html",
+    category: "Photography",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Minimal Photography Portfolio
+- Fixed Header: Glass morphism blur, "STUDIO NOIR" logo (32px Cormorant Garamond), nav (Portfolio, About, Services, Contact)
+- Cursor Effect: 500px spotlight following mouse with radial gradient, mix-blend-mode screen, opacity transitions
+- Grain Texture: Fixed SVG noise filter overlay (0.05 opacity) for film photography aesthetic
+- Hero: Full-screen centered, "Visual Storytelling" subtitle (14px, 8px spacing), "STUDIO NOIR" title (130px Cormorant serif), tagline, CTA button
+- Background Shapes: 400px circle (border only) floating/rotating 20s, 300px square (border) rotating 45deg floating 25s
+- Portfolio Grid: 12-column masonry layout with varied spans - 10 items with different sizes (1st item: span 7 rows 2, 4th item: span 4 rows 2, 8th item: span 8 rows 2)
+- Portfolio Items: Gradient backgrounds (#2a2a2a→#1a1a1a), large emoji placeholders (80px), min-height 400px, hover scale 0.98 & image scale 1.05
+- Overlay: Black gradient (to top), opacity 0→1 on hover, title (32px Cormorant), category (12px uppercase)
+- About Section: 2-column grid (1fr 1fr, 100px gap), left 3:4 aspect ratio image (📷 150px), right "The Art of Photography" (70px)
+- Services Grid: 6 cards (auto-fit min 350px) - Portrait (📸), Commercial (💼), Wedding (💍), Architecture (🏛️), Fine Art (🎨), Editorial (📚)
+- Contact: Centered, "Let's Create Together" (80px Cormorant), email (40px bold), social links (Instagram, Behance, Pinterest, LinkedIn)
+Color Scheme: Black (#0d0d0d) background, white (#fff) text, subtle grays, minimal contrast
+Typography: Cormorant Garamond serif (elegant headings 32-130px), Montserrat sans-serif (body 300-900), letter-spacing emphasis
+Layout: Fixed header, centered sections (max-width 1800px, padding 80px), asymmetric masonry grid, white space focus
+Components: Cursor spotlight JS, grain texture, shape floating, portfolio overlay fade, card hover effects, service borders
+Special: Black & white photography aesthetic, masonry portfolio layout with varied sizes, minimal elegant design, cursor spotlight interaction
+`
+  },
+  {
+    id: "travel-agency",
+    name: "Wanderlust",
+    description: "Adventure travel agency with destination showcases, real travel images, and booking system",
+    thumbnail: "https://dummyimage.com/400x300/3b82f6/ffffff&text=Wanderlust",
+    templateFile: "/templates/travel-agency.html",
+    category: "Travel",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Adventure Travel Agency
+- Background: Real travel scene (Unsplash photo-1488646953014-85cb44e25828) with dark overlay (rgba 0,0,0,0.6)
+- Fixed Header: Translucent black (0.95) with blur, "WANDERLUST" gradient logo (blue #3b82f6 → cyan #06b6d4), nav links, CTA button
+- Floating Elements: 3 clouds (☁️ 80px) drifting left-right 35-45s opacity 0.3, airplane (✈️ 60px) flying 25s rotated -10deg
+- Wave Effect: Bottom 200px blue gradient moving 8s ease-in-out scaleY + translateX
+- Hero: Full-screen centered, "🌍 Explore The World" (120px Playfair Display), "Your Adventure Begins Here" (28px), fade-in-up staggered 0.3s/0.6s
+- Destinations Grid: Auto-fit minmax(400px, 1fr), 6 cards 500px height rounded 20px
+  - Paris Eiffel Tower $1,299 (Unsplash photo-1502602898657-3e91760cbb34)
+  - Bali Tropical Beach $899 (photo-1493976040374-85c8e12f0c0e)
+  - New York Skyline $1,499 (photo-1549144511-f099e773c147)
+  - Tokyo Modern City $1,599 (photo-1528164344705-47542687000d)
+  - Dubai Architecture $1,799 (photo-1523906834658-6e24ef2386f9)
+  - Maldives Overwater $2,299 (photo-1516483638261-f4dbaf036963)
+- Card Hover: Elevation (translateY -15px), image zoom (scale 1.1), overlay slides up, book button
+- Features: 6 cards (🌟💼🏆✈️🛡️📞) with bouncing icons (translateY -15px over 2s), hover cyan shadow
+- Testimonials: Customer review slider, centered layout
+- Newsletter: Blue gradient CTA, email input + subscribe button
+- Footer: Dark background, logo, links, copyright
+Color Scheme: Blue gradient (#3b82f6 → #06b6d4) primary, white text, dark overlays
+Typography: Playfair Display serif (elegant 120px titles), Poppins sans-serif (body 300-900)
+Layout: Full-screen hero, auto-fit grids, responsive 768px breakpoint
+Components: Cloud drift, airplane fly, wave motion, fade-in-up, card elevation, image zoom, bouncing icons
+Special: Real Unsplash destination images with gradient overlays, travel pricing display, adventure theme
+`
+  },
+  {
+    id: "medical-clinic",
+    name: "MediCare Plus",
+    description: "Professional medical clinic with doctor profiles, real medical images, and appointment booking",
+    thumbnail: "https://dummyimage.com/400x300/06b6d4/ffffff&text=MediCare",
+    templateFile: "/templates/medical-clinic.html",
+    category: "Healthcare",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Professional Medical Clinic
+- Background: Real medical facility (Unsplash photo-1519494026892-80bbd2d6fd0d) with light overlay (rgba 255,255,255,0.95)
+- Fixed Header: White translucent (0.95) with blur, "⚕️ MediCare Plus" logo, nav links, appointment button
+- Floating Elements: 4 medical icons (💊🩺❤️⚕️ 50px) rotating 180deg over 20s opacity 0.1, 2 pulse circles (300px) expanding scale 1.5 fade 4s
+- Hero: 2-column grid (1fr 1fr, gap 80px)
+  - Left: "Your Health is Our Priority" (70px Merriweather), "Priority" in cyan, description, schedule button, stats (15K+ Patients, 50+ Doctors, 25+ Years)
+  - Right: Real doctor consultation (Unsplash photo-1631217868264-e5b90bb7e133) 600px rounded 30px with pulsing 🏥 icon
+- Services: 6 cards auto-fit minmax(350px) - Cardiology (❤️), Neurology (🧠), Orthopedics (🦴), Pediatrics (👶), Laboratory (🔬), Emergency (🚑)
+- Card Hover: White background, cyan border, elevation (translateY -10px), shadow
+- Doctors: 3 cards (300px width) with real photos
+  - Dr. Sarah Johnson Cardiologist (Unsplash photo-1612349317150-e413f6a5b16d)
+  - Dr. Michael Chen Neurologist (photo-1622253692010-333f2da6031d)
+  - Dr. Emily Rodriguez Pediatrician (photo-1594824476967-48c8b964273f)
+- Testimonials: 3 patient reviews with emoji avatars (👨👩👴), left cyan border (5px)
+- Contact: Cyan gradient section, white text, "📞 Get In Touch" (60px), 3 items (📍📞✉️)
+- Footer: Dark (#0f172a) with cyan logo
+Color Scheme: Cyan (#06b6d4) primary, white/light gray (#f8fafc) backgrounds, dark text (#1e293b #0f172a)
+Typography: Merriweather serif (elegant 60-70px titles), Inter sans-serif (body 300-800)
+Layout: Fixed header, 2-column hero, auto-fit grids, gradient backgrounds
+Components: Medical icon float/rotate, pulse circles, hero icon pulse, card elevation, doctor hover
+Special: Real Unsplash medical/doctor images, professional healthcare aesthetic, stats display, clean design
+`
+  },
+  {
+    id: "law-firm",
+    name: "Sterling & Associates",
+    description: "Professional law firm with practice areas, real attorney images, and consultation booking",
+    thumbnail: "https://dummyimage.com/400x300/cba65a/0f172a&text=Law+Firm",
+    templateFile: "/templates/law-firm.html",
+    category: "Legal",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Professional Corporate Law Firm
+- Background: Real office/legal environment (Unsplash photo-1589829545856-d10d557cf95f) with dark overlay (rgba 15,23,42,0.97 / rgba 30,41,59,0.97)
+- Fixed Header: Dark background (rgba 15,23,42,0.95) with blur, "⚖️ STERLING & ASSOCIATES" logo (gold #cba65a), nav, consult button
+- Floating Elements: Giant justice scale (⚖️ 120px) center balancing 6s rotate(-5deg to 5deg), 3 legal symbols (📜🏛️⚖️ 40px) floating 25s translateY -30px
+- Hero: "Excellence in Legal Representation" (90px Playfair Display gold), description, CTA button, stats (98% Success, 500+ Cases Won)
+- Practice Areas: 6 cards auto-fit minmax(350px) with shine effect on hover
+  - Corporate Law (💼), Civil Litigation (🏛️), Real Estate (🏠), Family Law (👨‍👩‍👧), Criminal Defense (⚡), Tax Law (💰)
+- Card Hover: Gold border, elevation (translateY -10px), shadow, shine sweep animation (left -100% to 100%)
+- Attorneys: 3 profiles with real photos
+  - James Sterling Senior Partner (Unsplash photo-1556157382-97eda2f9e2bf)
+  - Victoria Hayes Partner (photo-1573496359142-b8d87734a5a2)
+  - Michael Torres Partner (photo-1507003211169-0a1dd7228f2d)
+- Achievements: 4 stats (30+ Years, 500+ Cases, 98% Success, 1000+ Clients) with 60px gold numbers (Playfair)
+- Contact Form: 2-column grid with gold gradient background (linear #cba65a → #b8954e), inputs + textarea + submit button
+- Footer: Dark (#0f172a) with gold logo, copyright
+Color Scheme: Gold (#cba65a) accents, navy/dark (#0f172a #1e293b) backgrounds, cream (#f8fafc) text
+Typography: Playfair Display serif (elegant 70-90px titles), Lato sans-serif (body), uppercase styling
+Layout: Fixed header, full-screen hero, contained sections, elegant professional spacing
+Components: Justice scale balance, legal symbol floating, practice card shine sweep, attorney elevation, form grid
+Special: Real Unsplash attorney/office images, corporate professional aesthetic, justice theme, consultation form
+`
+  },
+  {
+    id: "fashion-boutique",
+    name: "Luxe Mode",
+    description: "Trendy fashion boutique with collections, real fashion images, and online shopping",
+    thumbnail: "https://dummyimage.com/400x300/ec4899/ffffff&text=Luxe+Mode",
+    templateFile: "/templates/fashion-boutique.html",
+    category: "Fashion",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Trendy Modern Fashion Boutique
+- Background: Real fashion scene (Unsplash photo-1490481651871-ab68de25d43d) with light overlay (rgba 255,255,255,0.98 / rgba 250,247,243,0.98)
+- Fixed Header: White translucent (0.97) with blur, "LUXE MODE" gradient logo (pink #ec4899 → purple #8b5cf6), nav, shop button
+- Floating Elements: 4 fashion icons (👗👠👜💄 60px) floating 20s translateY(-50px) + rotate(15deg), 3 sparkles (4px dots) twinkling scale(0 to 3)
+- Hero: 2-column grid (1fr 1fr, gap 80px)
+  - Left: "✨ Elevate Your Style" (100px Didot serif gradient), description, explore button
+  - Right: Real fashion model (Unsplash photo-1483985988355-763728e1935b) 700px rounded 30px with ✨ pulsing top-right
+- Collections Grid: 3 cards in repeat(3, 1fr)
+  - Evening Wear (45 items - Unsplash photo-1515886657613-9f3515b0c78f)
+  - Casual Chic (62 items - photo-1469334031218-e382a71b716b)
+  - Accessories (38 items - photo-1544957992-20514f595d6f)
+- Card Hover: Elevation (translateY -20px), image zoom (scale 1.1), overlay slides up
+- Featured Products: 4 cards repeat(4, 1fr) with real fashion images
+  - Silk Evening Dress $299 (Unsplash photo-1595777457583-95e059d581b8) NEW badge
+  - Designer Handbag $189 (photo-1591047139829-d91aecb6caea) SALE badge
+  - Luxury Heels $249 (photo-1551488831-00ddcb6c6bd3)
+  - Statement Blazer $329 (photo-1509631179647-0177331693ae) HOT badge
+- Lookbook: Masonry grid (2fr 1fr 1fr, 400px rows) with real fashion photos spanning different sizes
+- Newsletter: Pink-purple gradient (#ec4899 → #8b5cf6), white text, email form with rounded inputs
+- Footer: Dark (#1a1a1a) with gradient logo, 4-column grid (About, Shop, Help, Follow Us)
+Color Scheme: Pink (#ec4899) primary, purple (#8b5cf6) secondary, white/cream backgrounds, minimal black
+Typography: Didot serif (elegant 70-100px titles), Montserrat sans-serif (body 300-700), letter-spacing focus
+Layout: Fixed header, 2-column hero, 3-4 column grids, masonry lookbook, rounded borders (15-30px)
+Components: Fashion icon float/rotate, sparkle twinkle, hero image pulse, collection zoom, product badges, lookbook hover
+Special: Real Unsplash fashion/model images, trendy boutique aesthetic, product pricing with badges, masonry lookbook layout
+`
   }
 ];
 

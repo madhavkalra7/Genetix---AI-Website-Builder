@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare Plus - Medical Clinic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Merriweather:wght@700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(240, 249, 255, 0.98)),
+                        url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80') center/cover fixed;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Floating Medical Icons */
+        .float-icon {
+            position: fixed;
+            font-size: 50px;
+            opacity: 0.1;
+            animation: float-medical 20s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .float-icon:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .float-icon:nth-child(2) { top: 30%; right: 15%; animation-delay: 3s; }
+        .float-icon:nth-child(3) { top: 60%; left: 20%; animation-delay: 6s; }
+        .float-icon:nth-child(4) { top: 80%; right: 25%; animation-delay: 9s; }
+
+        @keyframes float-medical {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-40px) rotate(180deg); }
+        }
+
+        /* Pulse Animation */
+        .pulse-circle {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.1), transparent);
+            animation: pulse-expand 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .pulse-circle:nth-child(5) { top: 20%; right: 10%; animation-delay: 0s; }
+        .pulse-circle:nth-child(6) { bottom: 20%; left: 10%; animation-delay: 2s; }
+
+        @keyframes pulse-expand {
+            0%, 100% { transform: scale(1); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 80px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-family: 'Merriweather', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #06b6d4;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #475569;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #06b6d4;
+        }
+
+        .appointment-btn {
+            padding: 12px 30px;
+            background: #06b6d4;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .appointment-btn:hover {
+            background: #0891b2;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 80px;
+            padding: 150px 80px 100px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 70px;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .hero-content h1 .highlight {
+            color: #06b6d4;
+        }
+
+        .hero-content p {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: #06b6d4;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 600px;
+            background: url('https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80') center/cover;
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .hero-image::before {
+            content: '🏥';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            font-size: 100px;
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Services Section */
+        .services {
+            padding: 150px 80px;
+            background: #fff;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            font-family: 'Merriweather', serif;
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 80px;
+            color: #0f172a;
+        }
+
+        .section-title .highlight {
+            color: #06b6d4;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .service-card {
+            padding: 50px 40px;
+            background: #f8fafc;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            border-color: #06b6d4;
+            background: #fff;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(6, 182, 212, 0.15);
+        }
+
+        .service-icon {
+            font-size: 70px;
+            margin-bottom: 30px;
+            display: block;
+        }
+
+        .service-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+
+        .service-desc {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #64748b;
+        }
+
+        /* Doctors Section */
+        .doctors {
+            padding: 150px 80px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        }
+
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 50px;
+        }
+
+        .doctor-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 25px 70px rgba(6, 182, 212, 0.2);
+        }
+
+        .doctor-image {
+            width: 100%;
+            height: 350px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .doctor-info {
+            padding: 30px;
+        }
+
+        .doctor-name {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .doctor-specialty {
+            font-size: 16px;
+            color: #06b6d4;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .doctor-desc {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .doctor-rating {
+            font-size: 20px;
+            color: #fbbf24;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 150px 80px;
+            background: #fff;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            padding: 40px;
+            background: #f8fafc;
+            border-radius: 20px;
+            border-left: 5px solid #06b6d4;
+        }
+
+        .testimonial-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #475569;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .author-info h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .author-info p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 150px 80px;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: #fff;
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 60px;
+            margin-bottom: 30px;
+        }
+
+        .contact p {
+            font-size: 22px;
+            margin-bottom: 50px;
+            opacity: 0.95;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            text-align: center;
+        }
+
+        .contact-item-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .contact-item h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .contact-item p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 80px;
+            background: #0f172a;
+            color: #fff;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'Merriweather', serif;
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #06b6d4;
+        }
+
+        .footer-text {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 120px 30px 80px;
+            }
+
+            .hero-content h1 {
+                font-size: 45px;
+            }
+
+            .services, .doctors, .testimonials, .contact {
+                padding: 80px 30px;
+            }
+
+            .section-title {
+                font-size: 40px;
+            }
+
+            .services-grid, .doctors-grid, .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="float-icon">💊</div>
+    <div class="float-icon">🩺</div>
+    <div class="float-icon">❤️</div>
+    <div class="float-icon">⚕️</div>
+    <div class="pulse-circle"></div>
+    <div class="pulse-circle"></div>
+
+    <header>
+        <div class="logo">
+            ⚕️ MediCare Plus
+        </div>
+        <nav>
+            <a href="#services">Services</a>
+            <a href="#doctors">Doctors</a>
+            <a href="#testimonials">Reviews</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <button class="appointment-btn">Book Appointment</button>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Your Health is Our <span class="highlight">Priority</span></h1>
+            <p>Experience world-class healthcare with our team of dedicated professionals. We provide comprehensive medical services with compassion and expertise.</p>
+            <button class="appointment-btn" style="padding: 18px 50px; font-size: 18px;">Schedule Consultation</button>
+            
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">15K+</div>
+                    <div class="stat-label">Happy Patients</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Expert Doctors</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">25+</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image"></div>
+    </section>
+
+    <section class="services" id="services">
+        <h2 class="section-title">Our <span class="highlight">Services</span></h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <span class="service-icon">❤️</span>
+                <h3 class="service-title">Cardiology</h3>
+                <p class="service-desc">Comprehensive heart care with advanced diagnostic and treatment options</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🧠</span>
+                <h3 class="service-title">Neurology</h3>
+                <p class="service-desc">Expert neurological care for brain and nervous system conditions</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🦴</span>
+                <h3 class="service-title">Orthopedics</h3>
+                <p class="service-desc">Advanced treatment for bone, joint, and muscle conditions</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">👶</span>
+                <h3 class="service-title">Pediatrics</h3>
+                <p class="service-desc">Specialized care for infants, children, and adolescents</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🔬</span>
+                <h3 class="service-title">Laboratory</h3>
+                <p class="service-desc">State-of-the-art diagnostic testing and analysis</p>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🚑</span>
+                <h3 class="service-title">Emergency Care</h3>
+                <p class="service-desc">24/7 emergency services with rapid response team</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="doctors" id="doctors">
+        <h2 class="section-title">Meet Our <span class="highlight">Doctors</span></h2>
+        <div class="doctors-grid">
+            <div class="doctor-card">
+                <div class="doctor-image" style="background-image: url('https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&q=80')"></div>
+                <div class="doctor-info">
+                    <h3 class="doctor-name">Dr. Sarah Johnson</h3>
+                    <p class="doctor-specialty">Cardiologist</p>
+                    <p class="doctor-desc">15+ years of experience in cardiovascular medicine. Board certified specialist.</p>
+                    <div class="doctor-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-image" style="background-image: url('https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&q=80')"></div>
+                <div class="doctor-info">
+                    <h3 class="doctor-name">Dr. Michael Chen</h3>
+                    <p class="doctor-specialty">Neurologist</p>
+                    <p class="doctor-desc">Expert in treating neurological disorders with innovative approaches.</p>
+                    <div class="doctor-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+            <div class="doctor-card">
+                <div class="doctor-image" style="background-image: url('https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=600&q=80')"></div>
+                <div class="doctor-info">
+                    <h3 class="doctor-name">Dr. Emily Rodriguez</h3>
+                    <p class="doctor-specialty">Pediatrician</p>
+                    <p class="doctor-desc">Compassionate care for children with 12 years of pediatric experience.</p>
+                    <div class="doctor-rating">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+        <h2 class="section-title">Patient <span class="highlight">Testimonials</span></h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text">"The care I received at MediCare Plus was exceptional. The staff was professional, caring, and went above and beyond to ensure my comfort and recovery."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👨</div>
+                    <div class="author-info">
+                        <h4>James Wilson</h4>
+                        <p>Cardiology Patient</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Dr. Rodriguez is amazing with my children. She's patient, thorough, and always takes time to answer our questions. Highly recommend!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👩</div>
+                    <div class="author-info">
+                        <h4>Maria Garcia</h4>
+                        <p>Parent of Two</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"The emergency care team saved my life. Their quick response and expert treatment made all the difference. Forever grateful!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👴</div>
+                    <div class="author-info">
+                        <h4>Robert Thompson</h4>
+                        <p>Emergency Patient</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <h2>📞 Get In Touch</h2>
+        <p>We're here to help you 24/7. Reach out anytime.</p>
+        <div class="contact-info">
+            <div class="contact-item">
+                <div class="contact-item-icon">📍</div>
+                <h3>Address</h3>
+                <p>123 Medical Center Drive<br>New York, NY 10001</p>
+            </div>
+            <div class="contact-item">
+                <div class="contact-item-icon">📞</div>
+                <h3>Phone</h3>
+                <p>+1 (555) 123-4567<br>24/7 Emergency: 911</p>
+            </div>
+            <div class="contact-item">
+                <div class="contact-item-icon">✉️</div>
+                <h3>Email</h3>
+                <p>info@medicareplus.com<br>appointments@medicareplus.com</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-logo">⚕️ MediCare Plus</div>
+        <p class="footer-text">© 2025 MediCare Plus Medical Clinic. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

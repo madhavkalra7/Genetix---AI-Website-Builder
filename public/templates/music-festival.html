@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON BEATS - Music Festival 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Righteous&family=Rubik:wght@300;400;700;900&display=swap');
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(45deg, #ff0080, #7928ca, #0070f3, #00dfd8);
+            background-size: 400% 400%;
+            animation: gradient-shift 15s ease infinite;
+            opacity: 0.15;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Sound Wave Bars */
+        .soundwave {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .wave-bar {
+            width: 12px;
+            background: linear-gradient(to top, #ff0080, #7928ca);
+            border-radius: 10px 10px 0 0;
+            animation: wave-bounce 0.8s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(9) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(10) { animation-delay: 0.1s; }
+
+        @keyframes wave-bounce {
+            0%, 100% { height: 30px; }
+            50% { height: 120px; }
+        }
+
+        /* Floating Music Notes */
+        .music-note {
+            position: fixed;
+            font-size: 40px;
+            opacity: 0;
+            animation: float-note 8s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .music-note:nth-child(11) { left: 10%; animation-delay: 0s; }
+        .music-note:nth-child(12) { left: 30%; animation-delay: 2s; }
+        .music-note:nth-child(13) { left: 50%; animation-delay: 4s; }
+        .music-note:nth-child(14) { left: 70%; animation-delay: 6s; }
+        .music-note:nth-child(15) { left: 90%; animation-delay: 1s; }
+
+        @keyframes float-note {
+            0% { bottom: 0; opacity: 0; transform: rotate(0deg); }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { bottom: 100%; opacity: 0; transform: rotate(360deg); }
+        }
+
+        /* Spinning Vinyl Records */
+        .vinyl {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #000 30%, #ff0080 31%, #ff0080 35%, #000 36%, #000 65%, #ff0080 66%, #ff0080 70%, #000 71%);
+            border-radius: 50%;
+            animation: spin-vinyl 4s linear infinite;
+            z-index: 2;
+            opacity: 0.2;
+        }
+
+        .vinyl:nth-child(16) { top: 10%; left: 5%; }
+        .vinyl:nth-child(17) { top: 60%; right: 10%; animation-duration: 6s; }
+
+        @keyframes spin-vinyl {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 50px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 20px;
+        }
+
+        .festival-date {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff0080;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-bottom: 30px;
+            animation: neon-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes neon-pulse {
+            0%, 100% { text-shadow: 0 0 20px #ff0080, 0 0 40px #ff0080; }
+            50% { text-shadow: 0 0 40px #ff0080, 0 0 80px #ff0080, 0 0 120px #ff0080; }
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 150px;
+            background: linear-gradient(135deg, #ff0080, #7928ca, #0070f3, #00dfd8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 10px;
+            margin-bottom: 30px;
+            animation: title-glow 3s ease-in-out infinite;
+            text-shadow: 0 0 100px rgba(255, 0, 128, 0.5);
+        }
+
+        @keyframes title-glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .hero-tagline {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+        }
+
+        .hero-cta {
+            padding: 25px 70px;
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            border: 3px solid transparent;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(255, 0, 128, 0.6);
+            transition: all 0.3s;
+        }
+
+        .hero-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .hero-cta:hover::before {
+            left: 100%;
+        }
+
+        .hero-cta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 80px rgba(255, 0, 128, 1);
+        }
+
+        /* Lineup Section */
+        .lineup {
+            padding: 150px 0;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .section-title {
+            font-family: 'Righteous', cursive;
+            font-size: 90px;
+            text-align: center;
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 100px;
+        }
+
+        .lineup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 50px;
+        }
+
+        .artist-card {
+            background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(121, 40, 202, 0.1));
+            border: 2px solid transparent;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .artist-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #ff0080, #7928ca, #0070f3) 1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .artist-card:hover::before {
+            opacity: 1;
+        }
+
+        .artist-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 80px rgba(255, 0, 128, 0.4);
+        }
+
+        .artist-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.6));
+        }
+
+        .artist-name {
+            font-family: 'Righteous', cursive;
+            font-size: 42px;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+
+        .artist-genre {
+            font-size: 18px;
+            color: #ff0080;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+
+        /* Schedule Section */
+        .schedule {
+            padding: 150px 0;
+            background: #000;
+        }
+
+        .schedule-timeline {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .day-section {
+            margin-bottom: 80px;
+        }
+
+        .day-title {
+            font-family: 'Righteous', cursive;
+            font-size: 50px;
+            color: #00dfd8;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 0 0 30px rgba(0, 223, 216, 0.6);
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            padding: 30px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, rgba(255, 0, 128, 0.1), transparent);
+            border-left: 5px solid #ff0080;
+            transition: all 0.3s;
+        }
+
+        .time-slot:hover {
+            background: linear-gradient(90deg, rgba(255, 0, 128, 0.2), transparent);
+            transform: translateX(10px);
+        }
+
+        .slot-time {
+            font-family: 'Righteous', cursive;
+            font-size: 32px;
+            color: #7928ca;
+            min-width: 150px;
+        }
+
+        .slot-artist {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .slot-stage {
+            font-size: 16px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-left: auto;
+        }
+
+        /* Tickets Section */
+        .tickets {
+            padding: 150px 0;
+            background: linear-gradient(135deg, rgba(255, 0, 128, 0.15), rgba(121, 40, 202, 0.15));
+        }
+
+        .tickets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 50px;
+        }
+
+        .ticket-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ff0080;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .ticket-card.featured {
+            border-color: #00dfd8;
+            transform: scale(1.08);
+        }
+
+        .ticket-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 30px 80px rgba(255, 0, 128, 0.5);
+        }
+
+        .ticket-badge {
+            position: absolute;
+            top: 20px;
+            right: -10px;
+            background: #00dfd8;
+            color: #000;
+            padding: 8px 30px;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            transform: rotate(5deg);
+        }
+
+        .ticket-type {
+            font-family: 'Righteous', cursive;
+            font-size: 40px;
+            color: #fff;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+
+        .ticket-price {
+            font-family: 'Righteous', cursive;
+            font-size: 70px;
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 40px;
+        }
+
+        .ticket-features {
+            list-style: none;
+            margin-bottom: 50px;
+        }
+
+        .ticket-features li {
+            padding: 15px 0;
+            font-size: 18px;
+            color: #aaa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ticket-features li::before {
+            content: '⚡';
+            margin-right: 10px;
+            color: #ff0080;
+        }
+
+        .ticket-btn {
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ticket-btn:hover {
+            box-shadow: 0 10px 40px rgba(255, 0, 128, 0.8);
+            transform: translateY(-5px);
+        }
+
+        /* Footer */
+        footer {
+            padding: 80px 50px;
+            background: #000;
+            text-align: center;
+            border-top: 3px solid #ff0080;
+        }
+
+        .footer-logo {
+            font-family: 'Righteous', cursive;
+            font-size: 50px;
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+        }
+
+        .footer-text {
+            font-size: 16px;
+            color: #666;
+            letter-spacing: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 70px;
+            }
+
+            .section-title {
+                font-size: 50px;
+            }
+
+            .lineup-grid, .tickets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .time-slot {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .slot-stage {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <!-- Sound Wave Bars -->
+    <div class="soundwave">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+    </div>
+
+    <!-- Floating Music Notes -->
+    <div class="music-note">🎵</div>
+    <div class="music-note">🎶</div>
+    <div class="music-note">🎵</div>
+    <div class="music-note">🎶</div>
+    <div class="music-note">🎵</div>
+
+    <!-- Spinning Vinyls -->
+    <div class="vinyl"></div>
+    <div class="vinyl"></div>
+
+    <div class="container">
+        <section class="hero">
+            <div class="festival-date">JUNE 15-17, 2025</div>
+            <h1>NEON BEATS</h1>
+            <p class="hero-tagline">Music Festival</p>
+            <button class="hero-cta">Get Your Tickets</button>
+        </section>
+
+        <section class="lineup">
+            <h2 class="section-title">HEADLINERS</h2>
+            <div class="lineup-grid">
+                <div class="artist-card">
+                    <div class="artist-icon">🎤</div>
+                    <h3 class="artist-name">NEON PULSE</h3>
+                    <p class="artist-genre">Electronic / EDM</p>
+                </div>
+                <div class="artist-card">
+                    <div class="artist-icon">🎸</div>
+                    <h3 class="artist-name">THUNDER WAVE</h3>
+                    <p class="artist-genre">Rock / Alternative</p>
+                </div>
+                <div class="artist-card">
+                    <div class="artist-icon">🎧</div>
+                    <h3 class="artist-name">BASS DROP</h3>
+                    <p class="artist-genre">Dubstep / Bass</p>
+                </div>
+                <div class="artist-card">
+                    <div class="artist-icon">🎹</div>
+                    <h3 class="artist-name">SYNTH DREAMS</h3>
+                    <p class="artist-genre">Synthwave / Retro</p>
+                </div>
+                <div class="artist-card">
+                    <div class="artist-icon">🎺</div>
+                    <h3 class="artist-name">JAZZ FUSION</h3>
+                    <p class="artist-genre">Jazz / Fusion</p>
+                </div>
+                <div class="artist-card">
+                    <div class="artist-icon">🎼</div>
+                    <h3 class="artist-name">TECHNO TRIBE</h3>
+                    <p class="artist-genre">Techno / House</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="schedule">
+            <h2 class="section-title">SCHEDULE</h2>
+            <div class="schedule-timeline">
+                <div class="day-section">
+                    <h3 class="day-title">DAY 1 - FRIDAY</h3>
+                    <div class="time-slot">
+                        <div class="slot-time">6:00 PM</div>
+                        <div class="slot-artist">OPENING ACT</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">8:00 PM</div>
+                        <div class="slot-artist">SYNTH DREAMS</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">10:00 PM</div>
+                        <div class="slot-artist">NEON PULSE</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                </div>
+
+                <div class="day-section">
+                    <h3 class="day-title">DAY 2 - SATURDAY</h3>
+                    <div class="time-slot">
+                        <div class="slot-time">5:00 PM</div>
+                        <div class="slot-artist">JAZZ FUSION</div>
+                        <div class="slot-stage">Sunset Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">7:30 PM</div>
+                        <div class="slot-artist">THUNDER WAVE</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">10:00 PM</div>
+                        <div class="slot-artist">BASS DROP</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                </div>
+
+                <div class="day-section">
+                    <h3 class="day-title">DAY 3 - SUNDAY</h3>
+                    <div class="time-slot">
+                        <div class="slot-time">6:00 PM</div>
+                        <div class="slot-artist">SPECIAL GUESTS</div>
+                        <div class="slot-stage">Electronic Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">8:30 PM</div>
+                        <div class="slot-artist">TECHNO TRIBE</div>
+                        <div class="slot-stage">Main Stage</div>
+                    </div>
+                    <div class="time-slot">
+                        <div class="slot-time">11:00 PM</div>
+                        <div class="slot-artist">GRAND FINALE</div>
+                        <div class="slot-stage">All Stages</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tickets">
+            <h2 class="section-title">TICKETS</h2>
+            <div class="tickets-grid">
+                <div class="ticket-card">
+                    <h3 class="ticket-type">GENERAL</h3>
+                    <div class="ticket-price">$199</div>
+                    <ul class="ticket-features">
+                        <li>3-Day Access</li>
+                        <li>Main Stage Access</li>
+                        <li>Food & Drink Vendors</li>
+                        <li>Festival Merchandise</li>
+                    </ul>
+                    <button class="ticket-btn">Buy Now</button>
+                </div>
+
+                <div class="ticket-card featured">
+                    <div class="ticket-badge">BEST VALUE</div>
+                    <h3 class="ticket-type">VIP</h3>
+                    <div class="ticket-price">$499</div>
+                    <ul class="ticket-features">
+                        <li>3-Day VIP Access</li>
+                        <li>All Stage Access</li>
+                        <li>VIP Lounge & Bar</li>
+                        <li>Meet & Greet</li>
+                        <li>Premium Merchandise</li>
+                        <li>Fast Track Entry</li>
+                    </ul>
+                    <button class="ticket-btn">Buy Now</button>
+                </div>
+
+                <div class="ticket-card">
+                    <h3 class="ticket-type">PLATINUM</h3>
+                    <div class="ticket-price">$999</div>
+                    <ul class="ticket-features">
+                        <li>All VIP Benefits</li>
+                        <li>Backstage Access</li>
+                        <li>Private Viewing Area</li>
+                        <li>Luxury Amenities</li>
+                        <li>Dedicated Concierge</li>
+                        <li>Exclusive After Parties</li>
+                        <li>Premium Parking</li>
+                    </ul>
+                    <button class="ticket-btn">Buy Now</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-logo">NEON BEATS</div>
+        <p class="footer-text">© 2025 NEON BEATS FESTIVAL. ALL RIGHTS RESERVED.</p>
+    </footer>
+</body>
+</html>
