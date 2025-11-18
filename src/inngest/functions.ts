@@ -38,7 +38,7 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const { previousMessages, projectTechStack } = await step.run("get-project-data", async () => {
+    const { previousMessages, projectTechStack, previousFiles } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
 
       // Get project info including techStack
@@ -47,15 +47,34 @@ export const codeAgentFunction = inngest.createFunction(
         select: { techStack: true }
       });
 
+      // Get ALL messages for complete conversation history (not just 5)
       const messages=await prisma.message.findMany({
         where: {
           projectId: event.data.projectId,
         },
+        include: {
+          fragments: true, // Include fragments to get previous code
+        },
+        orderBy: {
+          createdAt: "asc", // Get in chronological order
+        },
+      });
+      
+      // Get the most recent fragment to provide current code context
+      const latestFragment = await prisma.fragment.findFirst({
+        where: {
+          message: {
+            projectId: event.data.projectId,
+          }
+        },
         orderBy: {
           createdAt: "desc",
         },
-        take:5,
+        select: {
+          files: true,
+        }
       });
+
       for(const message of messages) {
         formattedMessages.push({
           type: "text",
@@ -63,16 +82,18 @@ export const codeAgentFunction = inngest.createFunction(
           content: message.content,
         });
       }
+      
       return {
-        previousMessages: formattedMessages.reverse(),
-        projectTechStack: project?.techStack || "react-nextjs"
+        previousMessages: formattedMessages,
+        projectTechStack: project?.techStack || "react-nextjs",
+        previousFiles: (latestFragment?.files as { [path: string]: string }) || {}
       };
     });
 
     const state=createState<AgentState>(
       {
       summary:"",
-      files:{},
+      files: previousFiles, // Initialize with previous files so agent can see existing code
       },
       {
         messages:previousMessages,
@@ -204,6 +225,42 @@ export const codeAgentFunction = inngest.createFunction(
       }
     });
 
+    // ✅ CRITICAL: Pre-load existing files into sandbox
+    await step.run("preload-existing-files", async () => {
+      if (previousFiles && Object.keys(previousFiles).length > 0) {
+        try {
+          const sandbox = await getSandbox(sandboxId);
+          console.log(`📦 Pre-loading ${Object.keys(previousFiles).length} existing files into sandbox...`);
+          
+          for (const [filePath, content] of Object.entries(previousFiles)) {
+            // For all blob-based projects (HTML/Vue/Angular/Svelte), ensure simple paths
+            let targetPath = filePath;
+            const isBlobProject = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(projectTechStack);
+            
+            if (isBlobProject && !filePath.startsWith("/home/user/")) {
+              // Use simple path for blob-based projects
+              targetPath = filePath;
+              console.log(`📝 ${projectTechStack} project: Using path ${targetPath}`);
+            }
+            
+            await sandbox.files.write(targetPath, content);
+            console.log(`✅ Pre-loaded: ${targetPath} (${content.length} chars)`);
+          }
+          
+          console.log("✅ All existing files successfully pre-loaded into sandbox");
+          
+          // For blob-based projects, list files to verify
+          const isBlobProject = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(projectTechStack);
+          if (isBlobProject) {
+            const lsResult = await sandbox.commands.run("ls -la /home/user/*.{html,css,js} 2>/dev/null || echo 'checking...'");
+            console.log(`📁 ${projectTechStack} files in /home/user:`, lsResult.stdout);
+          }
+        } catch (error) {
+          console.error("❌ Failed to pre-load existing files:", error);
+        }
+      }
+    });
+
   // ✅ OpenRouter-powered Agent
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
@@ -244,6 +301,12 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
     console.log("🚀 Starting agent network with prompt:", event.data.value);
+    
+    // Check if there are existing files to provide context
+    if (previousFiles && Object.keys(previousFiles).length > 0) {
+      console.log(`📂 Found existing project files (${Object.keys(previousFiles).length} files)`);
+      console.log("📜 Existing files:", Object.keys(previousFiles).join(", "));
+    }
     
     // Extract keywords and fetch relevant images
     const keywords = extractKeywords(event.data.value);
@@ -329,6 +392,56 @@ export const codeAgentFunction = inngest.createFunction(
     
     // Enhance prompt with local image paths
     let enhancedPrompt = event.data.value;
+    
+    // Add context about existing files if any
+    if (previousFiles && Object.keys(previousFiles).length > 0) {
+      const fileList = Object.keys(previousFiles);
+      enhancedPrompt = `📂 EXISTING PROJECT CONTEXT:\n`;
+      enhancedPrompt += `You are working on an EXISTING project with ${fileList.length} files.\n`;
+      enhancedPrompt += `Current files: ${fileList.join(", ")}\n`;
+      
+      // Special handling for all blob-based projects (HTML, Vue, Angular, Svelte)
+      const isBlobProject = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(projectTechStack);
+      if (isBlobProject) {
+        const projectTypeLabel = {
+          "html-css-js": "HTML/CSS/JS",
+          "vue-nuxt": "Vue/Nuxt",
+          "angular": "Angular",
+          "svelte-kit": "Svelte/SvelteKit"
+        }[projectTechStack] || projectTechStack.toUpperCase();
+        
+        enhancedPrompt += `\n⚠️ ${projectTypeLabel} PROJECT - SPECIAL INSTRUCTIONS:\n`;
+        enhancedPrompt += `- All files are in /home/user/ directory\n`;
+        enhancedPrompt += `- Use simple filenames: "index.html", "style.css", "app.js"\n`;
+        enhancedPrompt += `- NO subdirectories, NO /home/user/ prefix in file paths\n`;
+        enhancedPrompt += `- Files are served via HTTP server on port 3000\n`;
+        enhancedPrompt += `- Images should use simple filenames: "image-1.jpg", "image-2.jpg"\n`;
+        enhancedPrompt += `- When using readFiles or createOrUpdateFiles, use SIMPLE paths only\n\n`;
+      }
+      
+      enhancedPrompt += `\n🔍 EXISTING FILE CONTENTS:\n`;
+      enhancedPrompt += `=================================================================\n`;
+      
+      // Show actual file contents so agent knows what exists
+      fileList.forEach(filePath => {
+        const content = previousFiles[filePath];
+        const preview = content.length > 500 ? content.substring(0, 500) + "...(truncated)" : content;
+        enhancedPrompt += `\n📄 FILE: ${filePath}\n`;
+        enhancedPrompt += `\`\`\`\n${preview}\n\`\`\`\n`;
+      });
+      
+      enhancedPrompt += `=================================================================\n\n`;
+      enhancedPrompt += `⚠️ CRITICAL INSTRUCTIONS FOR MODIFICATIONS:\n`;
+      enhancedPrompt += `1. The files shown above ALREADY EXIST in the sandbox\n`;
+      enhancedPrompt += `2. You can use readFiles(['${fileList[0]}']) to see the complete current version\n`;
+      enhancedPrompt += `3. ONLY modify what the user asked for - keep everything else intact\n`;
+      enhancedPrompt += `4. If user says "add sound" or "add feature X", ADD it to existing code\n`;
+      enhancedPrompt += `5. DO NOT rebuild from scratch - use createOrUpdateFiles to modify existing files\n`;
+      enhancedPrompt += `6. Preserve all existing features, UI, and functionality\n`;
+      enhancedPrompt += `7. The existing file paths are: ${fileList.join(", ")}\n`;
+      enhancedPrompt += `8. Use these EXACT file paths when reading or updating files\n\n`;
+      enhancedPrompt += `=== USER'S NEW REQUEST ===\n${event.data.value}\n\n`;
+    }
     
     // Load template HTML if template is selected
     let templateHTML = "";
@@ -466,12 +579,13 @@ export const codeAgentFunction = inngest.createFunction(
     const sandboxUrl = await step.run("get-sandbox-url", async () => {
       const sandbox = await getSandbox(sandboxId);
       
-      // For HTML/CSS/JS projects, start a simple HTTP server
-      if (projectTechStack === "html-css-js") {
+      // For all blob-based projects, start a simple HTTP server
+      const isBlobProject = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(projectTechStack);
+      if (isBlobProject) {
         try {
           // Check if files exist in home directory
           const lsResult = await sandbox.commands.run("ls -la /home/user/*.html 2>/dev/null || echo 'no-files'");
-          console.log("📁 Files in /home/user:", lsResult.stdout);
+          console.log(`📁 ${projectTechStack} files in /home/user:`, lsResult.stdout);
           
           // Install http-server globally if not present
           await sandbox.commands.run("npm install -g http-server 2>/dev/null || true", { timeoutMs: 30000 });
