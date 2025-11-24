@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Properties - Luxury Real Estate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: #1e293b;
+            overflow-x: hidden;
+            background: #f8fafc;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 3rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #334155;
+            text-decoration: none;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #1e40af;
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 8rem 4rem 4rem;
+            gap: 4rem;
+            align-items: center;
+            background: linear-gradient(to right, #f8fafc 50%, #f1f5f9 50%);
+        }
+        
+        .hero-content h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            line-height: 1.1;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: slideUp 1s ease forwards;
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            color: #64748b;
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+            opacity: 0;
+            animation: slideUp 1s ease 0.2s forwards;
+        }
+        
+        .search-bar {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 1rem;
+            max-width: 500px;
+            opacity: 0;
+            animation: slideUp 1s ease 0.4s forwards;
+        }
+        
+        .search-bar input {
+            border: none;
+            flex: 1;
+            padding: 0.5rem 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .search-btn {
+            background: #1e40af;
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            background: #1e3a8a;
+        }
+        
+        /* 3D Card Carousel */
+        .hero-visual {
+            position: relative;
+            height: 600px;
+            perspective: 1000px;
+        }
+        
+        .property-card-3d {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            transform: rotateY(-10deg) rotateX(5deg);
+            transition: transform 0.5s;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .property-card-3d:hover {
+            transform: rotateY(0) rotateX(0) scale(1.02);
+        }
+        
+        .card-image {
+            height: 70%;
+            background: #cbd5e1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-image::after {
+            content: '🏰';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10rem;
+            opacity: 0.5;
+        }
+        
+        .price-tag {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: #fbbf24;
+            color: #000;
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .card-details {
+            padding: 2rem;
+        }
+        
+        .card-details h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Stats Section */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 4rem;
+            background: #1e40af;
+            color: #fff;
+            margin-top: -4rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #fbbf24;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Listings Grid */
+        .listings {
+            padding: 6rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-bottom: 3rem;
+        }
+        
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #1e293b;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .listing-card {
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .listing-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .listing-img {
+            height: 250px;
+            background: #e2e8f0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .listing-info {
+            padding: 1.5rem;
+        }
+        
+        .listing-price {
+            color: #1e40af;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .listing-features {
+            display: flex;
+            gap: 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        /* Floating Markers */
+        .marker {
+            position: absolute;
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: rotateY(-10deg) rotateX(5deg) translateY(0); }
+            50% { transform: rotateY(-10deg) rotateX(5deg) translateY(-20px); }
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🏢 PRIME PROPERTIES</div>
+        <nav>
+            <ul>
+                <li><a href="#properties">Properties</a></li>
+                <li><a href="#agents">Agents</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Find Your<br>Dream Home</h1>
+            <p>Discover exclusive luxury properties in the world's most sought-after locations.</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Search by location, property type...">
+                <button class="search-btn">Search</button>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="marker" style="top: 10%; right: 10%; animation-delay: 0s">📍</div>
+            <div class="marker" style="bottom: 20%; left: -5%; animation-delay: 1s">📍</div>
+            <div class="property-card-3d">
+                <div class="card-image">
+                    <span class="price-tag">$2,500,000</span>
+                </div>
+                <div class="card-details">
+                    <h3>The Grand Penthouse</h3>
+                    <p>Downtown Luxury District</p>
+                    <div class="listing-features">
+                        <span>3 Beds</span>
+                        <span>•</span>
+                        <span>2 Baths</span>
+                        <span>•</span>
+                        <span>2,500 sq ft</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="stats">
+        <div class="stat-item">
+            <span class="stat-number">1,200+</span>
+            <span>Premium Properties</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">$2.5B+</span>
+            <span>Volume Sold</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">98%</span>
+            <span>Client Satisfaction</span>
+        </div>
+    </div>
+
+    <section id="properties" class="listings">
+        <div class="section-header">
+            <h2>Featured Listings</h2>
+            <a href="#" style="color: #1e40af; text-decoration: none; font-weight: 600;">View All Properties →</a>
+        </div>
+        <div class="grid">
+            <div class="listing-card">
+                <div class="listing-img">🏠</div>
+                <div class="listing-info">
+                    <span class="listing-price">$3,800,000</span>
+                    <h3>Oceanfront Villa</h3>
+                    <p style="color: #64748b;">Malibu, California</p>
+                    <div class="listing-features">
+                        <span>5 Beds</span>
+                        <span>4 Baths</span>
+                        <span>4,200 sq ft</span>
+                    </div>
+                </div>
+            </div>
+            <div class="listing-card">
+                <div class="listing-img">🏢</div>
+                <div class="listing-info">
+                    <span class="listing-price">$890,000</span>
+                    <h3>Modern City Condo</h3>
+                    <p style="color: #64748b;">Manhattan, New York</p>
+                    <div class="listing-features">
+                        <span>2 Beds</span>
+                        <span>2 Baths</span>
+                        <span>1,800 sq ft</span>
+                    </div>
+                </div>
+            </div>
+            <div class="listing-card">
+                <div class="listing-img">🏰</div>
+                <div class="listing-info">
+                    <span class="listing-price">$5,200,000</span>
+                    <h3>Historic Mansion</h3>
+                    <p style="color: #64748b;">Beverly Hills, California</p>
+                    <div class="listing-features">
+                        <span>6 Beds</span>
+                        <span>5 Baths</span>
+                        <span>6,000 sq ft</span>
+                    </div>
+                </div>
+            </div>
+            <div class="listing-card">
+                <div class="listing-img">🏡</div>
+                <div class="listing-info">
+                    <span class="listing-price">$1,200,000</span>
+                    <h3>Suburban Retreat</h3>
+                    <p style="color: #64748b;">Austin, Texas</p>
+                    <div class="listing-features">
+                        <span>4 Beds</span>
+                        <span>3 Baths</span>
+                        <span>3,100 sq ft</span>
+                    </div>
+                </div>
+            </div>
+            <div class="listing-card">
+                <div class="listing-img">🏙️</div>
+                <div class="listing-info">
+                    <span class="listing-price">$2,100,000</span>
+                    <h3>Skyline Penthouse</h3>
+                    <p style="color: #64748b;">Chicago, Illinois</p>
+                    <div class="listing-features">
+                        <span>3 Beds</span>
+                        <span>3 Baths</span>
+                        <span>2,800 sq ft</span>
+                    </div>
+                </div>
+            </div>
+            <div class="listing-card">
+                <div class="listing-img">🌴</div>
+                <div class="listing-info">
+                    <span class="listing-price">$4,500,000</span>
+                    <h3>Tropical Estate</h3>
+                    <p style="color: #64748b;">Miami, Florida</p>
+                    <div class="listing-features">
+                        <span>5 Beds</span>
+                        <span>6 Baths</span>
+                        <span>5,500 sq ft</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="agents" style="padding: 6rem 4rem; background: #fff;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div class="section-header">
+                <h2>Meet Our Agents</h2>
+                <p style="max-width: 500px; text-align: right; color: #64748b;">Our team of experienced real estate professionals is dedicated to helping you find your perfect home.</p>
+            </div>
+            <div class="grid">
+                <div style="text-align: center;">
+                    <div style="width: 200px; height: 200px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 4rem;">👨‍💼</div>
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem;">James Sterling</h3>
+                    <p style="color: #1e40af; font-weight: 600; margin-bottom: 1rem;">Senior Broker</p>
+                    <p style="color: #64748b;">15+ years of experience in luxury real estate markets.</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 200px; height: 200px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 4rem;">👩‍💼</div>
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem;">Victoria Hayes</h3>
+                    <p style="color: #1e40af; font-weight: 600; margin-bottom: 1rem;">Luxury Specialist</p>
+                    <p style="color: #64748b;">Specializing in waterfront properties and high-end estates.</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 200px; height: 200px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 4rem;">👨‍💼</div>
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem;">Michael Torres</h3>
+                    <p style="color: #1e40af; font-weight: 600; margin-bottom: 1rem;">Commercial Agent</p>
+                    <p style="color: #64748b;">Expert in investment properties and commercial developments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" style="padding: 6rem 4rem; background: #f8fafc;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 3rem; text-align: center; margin-bottom: 4rem;">Our Services</h2>
+            <div class="grid">
+                <div style="background: #fff; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem;">🏠</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Buying</h3>
+                    <p style="color: #64748b;">Comprehensive guidance through the entire home buying process, from search to closing.</p>
+                </div>
+                <div style="background: #fff; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem;">🏷️</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Selling</h3>
+                    <p style="color: #64748b;">Strategic marketing and expert negotiation to get you the best price for your property.</p>
+                </div>
+                <div style="background: #fff; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem;">📊</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Valuation</h3>
+                    <p style="color: #64748b;">Accurate property valuation based on current market trends and comparable sales.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" style="padding: 6rem 4rem; background: #1e40af; color: #fff;">
+        <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1.5rem;">Ready to Find Your Dream Home?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Contact us today to schedule a consultation with one of our luxury real estate experts.</p>
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem;">
+                <button style="background: #fbbf24; color: #1e293b; border: none; padding: 1rem 3rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; cursor: pointer;">Contact Us</button>
+                <button style="background: transparent; color: #fff; border: 2px solid #fff; padding: 1rem 3rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; cursor: pointer;">View Listings</button>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 4rem; opacity: 0.8;">
+                <div>
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📞</div>
+                    <p>(555) 123-4567</p>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">✉️</div>
+                    <p>info@primeproperties.com</p>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📍</div>
+                    <p>Beverly Hills, CA</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background: #0f172a; color: #94a3b8; padding: 3rem 4rem; text-align: center;">
+        <p>&copy; 2025 Prime Properties. All rights reserved.</p>
+    </footer>

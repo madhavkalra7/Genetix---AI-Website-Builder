@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural AI - Future Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0f 100%);
+        }
+        
+        .canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #0ea5e9;
+        }
+        
+        .demo-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid #0ea5e9;
+            color: #0ea5e9;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-btn:hover {
+            background: #0ea5e9;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 1000px;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #0ea5e9, #7c3aed, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 5s linear infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Holographic Cards */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .holo-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .holo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(14, 165, 233, 0.3), transparent 30%);
+            animation: rotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .holo-card:hover::before {
+            opacity: 1;
+        }
+        
+        .holo-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(14, 165, 233, 0.5);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .holo-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        
+        .holo-card p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* Terminal Section */
+        .terminal-section {
+            padding: 4rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .terminal {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            font-family: monospace;
+            box-shadow: 0 0 50px rgba(14, 165, 233, 0.1);
+        }
+        
+        .terminal-header {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .red { background: #ef4444; }
+        .yellow { background: #eab308; }
+        .green { background: #22c55e; }
+        
+        .code-line {
+            color: #22c55e;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .cursor {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Floating Icons */
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .float-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.5;
+            animation: float 10s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -20px); }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="neural-bg">
+        <canvas id="neuralCanvas" class="canvas-container"></canvas>
+    </div>
+
+    <header>
+        <div class="logo">🤖 NEURAL AI</div>
+        <nav>
+            <ul>
+                <li><a href="#solutions">Solutions</a></li>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+        </nav>
+        <button class="demo-btn">Initialize Demo</button>
+    </header>
+
+    <section class="hero">
+        <div class="floating-icons">
+            <span class="float-icon" style="top: 20%; left: 10%; animation-delay: 0s">🧠</span>
+            <span class="float-icon" style="top: 60%; right: 15%; animation-delay: 2s">⚡</span>
+            <span class="float-icon" style="top: 30%; right: 25%; animation-delay: 4s">🔮</span>
+            <span class="float-icon" style="bottom: 20%; left: 20%; animation-delay: 1s">💡</span>
+        </div>
+        <div class="hero-content">
+            <h1>THE FUTURE OF<br>INTELLIGENCE</h1>
+            <p>Advanced neural networks processing data at the speed of thought. Experience the next generation of AI.</p>
+            <button class="demo-btn" style="font-size: 1.2rem; padding: 1rem 3rem;">Start Processing</button>
+        </div>
+    </section>
+
+    <div class="tech-grid" id="solutions">
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">🤖</span>
+                <h3>Machine Learning</h3>
+                <p>Self-evolving algorithms that adapt to your business needs in real-time. Our models learn from your data to provide increasingly accurate predictions and automations.</p>
+            </div>
+        </div>
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">👁️</span>
+                <h3>Computer Vision</h3>
+                <p>Advanced image recognition and processing with 99.9% accuracy. Detect objects, faces, and anomalies in real-time video streams with sub-millisecond latency.</p>
+            </div>
+        </div>
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">💬</span>
+                <h3>Natural Language</h3>
+                <p>Human-like understanding and generation of text across 50+ languages. Power your customer support and content generation with state-of-the-art NLP models.</p>
+            </div>
+        </div>
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">📊</span>
+                <h3>Predictive Analytics</h3>
+                <p>Forecast trends and behaviors with unprecedented precision. Turn historical data into actionable future insights to drive strategic decision making.</p>
+            </div>
+        </div>
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">🧠</span>
+                <h3>Deep Learning</h3>
+                <p>Multi-layered neural networks capable of solving complex, non-linear problems. Unlock patterns in your data that traditional algorithms miss.</p>
+            </div>
+        </div>
+        <div class="holo-card">
+            <div class="card-content">
+                <span class="icon">⚙️</span>
+                <h3>Automation</h3>
+                <p>End-to-end process automation driven by intelligent agents. Reduce manual workload by 80% while increasing accuracy and throughput.</p>
+            </div>
+        </div>
+    </div>
+
+    <section id="technology" class="terminal-section" style="padding: 8rem 2rem;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(to right, #0ea5e9, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CORE TECHNOLOGY</h2>
+            <p style="color: #94a3b8; max-width: 600px; margin: 0 auto;">Built on our proprietary Neural Core™ architecture, delivering industry-leading performance and scalability.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div id="typewriter"></div>
+                <span class="cursor">_</span>
+            </div>
+            <div>
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Real-Time Processing</h3>
+                    <p style="color: #94a3b8;">Process millions of data points per second with our distributed edge computing network.</p>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Quantum Ready</h3>
+                    <p style="color: #94a3b8;">Future-proof architecture designed to integrate seamlessly with quantum computing processors.</p>
+                </div>
+                <div>
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; color: #fff;">Military-Grade Security</h3>
+                    <p style="color: #94a3b8;">End-to-end encryption and zero-trust architecture ensuring your data remains sovereign.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" style="padding: 8rem 2rem; max-width: 1200px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 3rem; margin-bottom: 1rem; color: #fff;">ENTERPRISE PRICING</h2>
+            <p style="color: #94a3b8;">Scalable solutions for businesses of all sizes.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div class="holo-card" style="text-align: center;">
+                <div class="card-content">
+                    <h3 style="font-size: 1.5rem; color: #0ea5e9;">STARTER</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 1rem 0; color: #fff;">$99<span style="font-size: 1rem; color: #94a3b8;">/mo</span></div>
+                    <ul style="list-style: none; text-align: left; margin-bottom: 2rem; color: #94a3b8; line-height: 2;">
+                        <li>✓ 1M API Calls</li>
+                        <li>✓ Basic Models</li>
+                        <li>✓ Community Support</li>
+                        <li>✓ 99.9% Uptime</li>
+                    </ul>
+                    <button class="demo-btn" style="width: 100%;">Get Started</button>
+                </div>
+            </div>
+            
+            <div class="holo-card" style="text-align: center; border-color: #7c3aed; box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);">
+                <div class="card-content">
+                    <div style="position: absolute; top: 0; right: 0; background: #7c3aed; color: #fff; padding: 0.2rem 1rem; font-size: 0.8rem; font-weight: 700;">POPULAR</div>
+                    <h3 style="font-size: 1.5rem; color: #7c3aed;">PROFESSIONAL</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 1rem 0; color: #fff;">$299<span style="font-size: 1rem; color: #94a3b8;">/mo</span></div>
+                    <ul style="list-style: none; text-align: left; margin-bottom: 2rem; color: #94a3b8; line-height: 2;">
+                        <li>✓ 10M API Calls</li>
+                        <li>✓ Advanced Models</li>
+                        <li>✓ Priority Support</li>
+                        <li>✓ Dedicated GPU</li>
+                    </ul>
+                    <button class="demo-btn" style="width: 100%; background: rgba(124, 58, 237, 0.2); border-color: #7c3aed; color: #fff;">Get Started</button>
+                </div>
+            </div>
+            
+            <div class="holo-card" style="text-align: center;">
+                <div class="card-content">
+                    <h3 style="font-size: 1.5rem; color: #ec4899;">ENTERPRISE</h3>
+                    <div style="font-size: 3rem; font-weight: 700; margin: 1rem 0; color: #fff;">CUSTOM</div>
+                    <ul style="list-style: none; text-align: left; margin-bottom: 2rem; color: #94a3b8; line-height: 2;">
+                        <li>✓ Unlimited API Calls</li>
+                        <li>✓ Custom Model Training</li>
+                        <li>✓ 24/7 Dedicated Support</li>
+                        <li>✓ On-Premise Deployment</li>
+                    </ul>
+                    <button class="demo-btn" style="width: 100%; border-color: #ec4899; color: #ec4899;">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="border-top: 1px solid rgba(255,255,255,0.1); padding: 4rem 2rem; background: rgba(10,10,15,0.9);">
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4rem;">
+            <div>
+                <div class="logo" style="margin-bottom: 1rem;">🤖 NEURAL AI</div>
+                <p style="color: #94a3b8;">Pioneering the future of artificial intelligence with ethical, scalable, and powerful neural networks.</p>
+            </div>
+            <div>
+                <h4 style="color: #fff; margin-bottom: 1rem; font-family: 'Orbitron', sans-serif;">PLATFORM</h4>
+                <ul style="list-style: none; color: #94a3b8; line-height: 2;">
+                    <li>Solutions</li>
+                    <li>Technology</li>
+                    <li>Pricing</li>
+                    <li>Documentation</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color: #fff; margin-bottom: 1rem; font-family: 'Orbitron', sans-serif;">COMPANY</h4>
+                <ul style="list-style: none; color: #94a3b8; line-height: 2;">
+                    <li>About Us</li>
+                    <li>Careers</li>
+                    <li>Blog</li>
+                    <li>Contact</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color: #fff; margin-bottom: 1rem; font-family: 'Orbitron', sans-serif;">CONNECT</h4>
+                <div style="display: flex; gap: 1rem;">
+                    <span style="font-size: 1.5rem; color: #94a3b8; cursor: pointer;">🐦</span>
+                    <span style="font-size: 1.5rem; color: #94a3b8; cursor: pointer;">💼</span>
+                    <span style="font-size: 1.5rem; color: #94a3b8; cursor: pointer;">🐙</span>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 4rem; color: #64748b; font-size: 0.9rem;">
+            &copy; 2025 Neural AI Inc. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Neural Network Animation
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.5 ? '#0ea5e9' : '#7c3aed';
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+        
+        function init() {
+            resize();
+            for (let i = 0; i < 60; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+                
+                // Connect particles
+                for (let j = index + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(14, 165, 233, ${1 - dist/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', resize);
+        init();
+        animate();
+
+        // Typewriter Effect
+        const text = [
+            "> Initializing neural core...",
+            "> Loading data sets...",
+            "> optimizing algorithms...",
+            "> SYSTEM READY",
+            "> Waiting for input..."
+        ];
+        
+        let lineIndex = 0;
+        let charIndex = 0;
+        const typeContainer = document.getElementById('typewriter');
+        
+        function type() {
+            if (lineIndex < text.length) {
+                if (charIndex === 0) {
+                    const line = document.createElement('div');
+                    line.className = 'code-line';
+                    typeContainer.appendChild(line);
+                }
+                
+                const currentLine = typeContainer.lastChild;
+                currentLine.textContent += text[lineIndex][charIndex];
+                charIndex++;
+                
+                if (charIndex >= text[lineIndex].length) {
+                    lineIndex++;
+                    charIndex = 0;
+                    setTimeout(type, 500);
+                } else {
+                    setTimeout(type, 50);
+                }
+            }
+        }
+        
+        setTimeout(type, 1000);
+    </script>
+</body>
+</html>

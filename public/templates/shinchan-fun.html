@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shinchan Fun World</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: #fff5d7;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(#ff6b6b 20%, transparent 20%), radial-gradient(#4ecdc4 20%, transparent 20%);
+            background-color: #fff5d7;
+            background-position: 0 0, 50px 50px;
+            background-size: 100px 100px;
+            opacity: 0.1;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: #ff6b6b;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #333;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 3px 3px 0 #333;
+            transform: rotate(-2deg);
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: #4ecdc4;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 2px solid #333;
+            box-shadow: 3px 3px 0 #333;
+            transition: transform 0.2s;
+        }
+        
+        nav a:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 #333;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero-content h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 5rem;
+            color: #ff6b6b;
+            text-shadow: 5px 5px 0 #333;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .hero-content p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: #fff;
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 3px solid #333;
+            box-shadow: 5px 5px 0 #4ecdc4;
+            margin-bottom: 2rem;
+        }
+        
+        .shinchan {
+            font-size: 150px;
+            display: inline-block;
+            animation: wiggle 3s infinite;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+        
+        .btn-fun {
+            background: #ffe66d;
+            color: #333;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            padding: 1rem 3rem;
+            border: 3px solid #333;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 5px 5px 0 #333;
+            transition: all 0.2s;
+        }
+        
+        .btn-fun:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 3px 3px 0 #333;
+            background: #fff;
+        }
+        
+        /* Features */
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #333;
+            text-shadow: 3px 3px 0 #ffe66d;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .card {
+            background: #fff;
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 8px 8px 0 #ff6b6b;
+            transition: transform 0.3s;
+        }
+        
+        .card:nth-child(2) { box-shadow: 8px 8px 0 #4ecdc4; }
+        .card:nth-child(3) { box-shadow: 8px 8px 0 #ffe66d; }
+        
+        .card:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+        
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card h3 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Friends Section */
+        .friends-section {
+            background: #4ecdc4;
+            padding: 4rem 2rem;
+            border-top: 4px solid #333;
+            border-bottom: 4px solid #333;
+        }
+        
+        .friend-card {
+            background: #fff;
+            border: 3px solid #333;
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .friend-card:hover {
+            transform: rotate(360deg);
+        }
+        
+        /* Gallery */
+        .gallery {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .polaroid {
+            background: #fff;
+            padding: 1rem 1rem 3rem 1rem;
+            display: inline-block;
+            margin: 1rem;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            transform: rotate(-3deg);
+            border: 1px solid #ccc;
+        }
+        
+        .polaroid:nth-child(even) {
+            transform: rotate(3deg);
+        }
+        
+        .polaroid-img {
+            width: 250px;
+            height: 200px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border: 2px solid #333;
+        }
+        
+        /* Footer */
+        footer {
+            background: #333;
+            color: #fff;
+            padding: 3rem;
+            text-align: center;
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        .shiro {
+            position: fixed;
+            bottom: 20px;
+            right: -100px;
+            font-size: 3rem;
+            animation: run 10s linear infinite;
+        }
+        
+        @keyframes run {
+            0% { right: -100px; transform: scaleX(1); }
+            40% { right: 100%; transform: scaleX(1); }
+            41% { transform: scaleX(-1); }
+            100% { right: -100px; transform: scaleX(-1); }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="shiro">🐶</div>
+
+    <header>
+        <div class="logo">🖍️ SHINCHAN</div>
+        <nav>
+            <ul>
+                <li><a href="#fun">Fun</a></li>
+                <li><a href="#friends">Friends</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="shinchan">👦🏻</div>
+            <h1>WELCOME TO KASUKABE!</h1>
+            <p>Action Kamen is waiting for you!</p>
+            <br>
+            <button class="btn-fun" onclick="document.getElementById('game-screen').scrollIntoView({behavior: 'smooth'})">Start Adventure</button>
+        </div>
+    </section>
+
+    <section id="fun" class="features">
+        <h2 class="section-title">Super Fun Activities</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Action Kamen</h3>
+                <p>Join the forces of justice and fight evil aliens!</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🍫</div>
+                <h3>Chocobi Time</h3>
+                <p>Collect all the dinosaur stickers from Chocobi snacks!</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🎒</div>
+                <h3>Kindergarten</h3>
+                <p>Play with friends at Futaba Kindergarten!</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="friends" class="friends-section">
+        <h2 class="section-title" style="color: #fff; text-shadow: 3px 3px 0 #333;">Kasukabe Defense Group</h2>
+        <div class="grid">
+            <div style="text-align: center;">
+                <div class="friend-card">👦🏻</div>
+                <h3>Shinchan</h3>
+            </div>
+            <div style="text-align: center;">
+                <div class="friend-card">👦🏽</div>
+                <h3>Kazama</h3>
+            </div>
+            <div style="text-align: center;">
+                <div class="friend-card">👧🏻</div>
+                <h3>Nene</h3>
+            </div>
+            <div style="text-align: center;">
+                <div class="friend-card">👦🏼</div>
+                <h3>Masao</h3>
+            </div>
+            <div style="text-align: center;">
+                <div class="friend-card">👦</div>
+                <h3>Bo-chan</h3>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="gallery">
+        <h2 class="section-title">Funny Moments</h2>
+        <div class="polaroid">
+            <div class="polaroid-img">🏠</div>
+            <h3>Sweet Home</h3>
+        </div>
+        <div class="polaroid">
+            <div class="polaroid-img">🍱</div>
+            <h3>Lunch Time</h3>
+        </div>
+        <div class="polaroid">
+            <div class="polaroid-img">🚲</div>
+            <h3>Misae's Bike</h3>
+        </div>
+    </section>
+
+    <section id="game-screen" class="features" style="background: #ffe66d; border-top: 4px solid #333; border-bottom: 4px solid #333; padding: 4rem 2rem;">
+        <h2 class="section-title">Chocobi Rush!</h2>
+        <div style="max-width: 800px; margin: 0 auto; background: #fff; border: 4px solid #333; border-radius: 20px; padding: 2rem; text-align: center; position: relative; overflow: hidden;">
+            <div style="font-family: 'Fredoka One'; font-size: 2rem; margin-bottom: 1rem; color: #ff6b6b;">
+                Collect the Stars! ⭐ <span id="star-score">0</span>
+            </div>
+            
+            <div style="height: 400px; background: #4ecdc4; border: 3px solid #333; border-radius: 10px; position: relative; overflow: hidden;">
+                <!-- Player -->
+                <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 4rem;">
+                    👦🏻
+                </div>
+                
+                <!-- Falling Items -->
+                <div style="position: absolute; top: -50px; left: 20%; font-size: 3rem; animation: fallItem 3s linear infinite;">⭐</div>
+                <div style="position: absolute; top: -50px; left: 50%; font-size: 3rem; animation: fallItem 4s linear infinite 1s;">🦖</div>
+                <div style="position: absolute; top: -50px; left: 80%; font-size: 3rem; animation: fallItem 2.5s linear infinite 0.5s;">⭐</div>
+            </div>
+            
+            <button class="btn-fun" style="margin-top: 2rem;" onclick="alert('YAY! Action Kamen is proud! ⚡')">PLAY NOW</button>
+        </div>
+        
+        <style>
+            @keyframes fallItem {
+                0% { top: -50px; transform: rotate(0deg); }
+                100% { top: 100%; transform: rotate(360deg); }
+            }
+        </style>
+    </section>
+
+    <footer>
+        <p>To be continued...</p>
+        <p style="font-size: 0.8rem; margin-top: 1rem;">&copy; 2025 Crayon Shinchan Fan Club</p>
+    </footer>
+</body>
+</html>

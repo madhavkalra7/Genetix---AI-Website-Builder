@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduLearn - Online Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 3rem;
+            background: #fff;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #4f46e5;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            padding: 8rem 4rem 4rem;
+            gap: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            z-index: -1;
+            border-bottom-left-radius: 100px;
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            line-height: 1.2;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #64748b;
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+        
+        /* Floating Elements */
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .float-item {
+            position: absolute;
+            font-size: 3rem;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 4rem;
+            margin-top: -4rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stat-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Courses */
+        .courses {
+            padding: 6rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            color: #1e293b;
+        }
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .course-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .course-img {
+            height: 200px;
+            background: #e2e8f0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .category-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        
+        .course-content {
+            padding: 1.5rem;
+        }
+        
+        .course-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        
+        .instructor {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .avatar {
+            width: 30px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 50%;
+        }
+        
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .rating {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        .price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        /* Progress Bar Animation */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4f46e5, #7c3aed);
+            width: 0;
+            transition: width 1.5s ease-out;
+        }
+        
+        /* Certificate */
+        .certificate-section {
+            background: #1e293b;
+            color: #fff;
+            padding: 6rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cert-card {
+            background: #fff;
+            color: #1e293b;
+            padding: 3rem;
+            max-width: 600px;
+            margin: 3rem auto;
+            border-radius: 10px;
+            border: 8px solid #fbbf24;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        
+        .cert-card:hover {
+            transform: rotateX(10deg) rotateY(10deg);
+        }
+        
+        .shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            100% { left: 200%; }
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🎓 EduLearn</div>
+        <nav>
+            <ul>
+                <li><a href="#courses">Courses</a></li>
+                <li><a href="#instructors">Instructors</a></li>
+                <li><a href="#paths">Learning Paths</a></li>
+            </ul>
+        </nav>
+        <button class="btn btn-primary">Get Started</button>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="floating-icons">
+            <div class="float-item" style="top: 20%; right: 10%; animation-delay: 0s">📚</div>
+            <div class="float-item" style="bottom: 30%; right: 40%; animation-delay: 1s">🎓</div>
+            <div class="float-item" style="top: 40%; left: 45%; animation-delay: 2s">💡</div>
+        </div>
+        
+        <div>
+            <h1>Learn Without<br><span style="color: #4f46e5">Limits</span></h1>
+            <p>Access 10,000+ courses from expert instructors. Master new skills and advance your career today.</p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary">Explore Courses</button>
+                <button class="btn" style="background: #fff; border: 1px solid #e2e8f0;">View Paths</button>
+            </div>
+        </div>
+        
+        <div style="position: relative;">
+            <div class="course-card" style="transform: rotate(-3deg); max-width: 400px; margin: 0 auto;">
+                <div class="course-img">💻</div>
+                <div class="course-content">
+                    <span class="category-badge">Web Development</span>
+                    <h3 class="course-title">Full Stack Bootcamp</h3>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 75%"></div>
+                    </div>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">75% Complete</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-number">50K+</span>
+            <span>Active Students</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">1,200+</span>
+            <span>Online Courses</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">500+</span>
+            <span>Expert Instructors</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">98%</span>
+            <span>Success Rate</span>
+        </div>
+    </div>
+
+    <section id="courses" class="courses">
+        <h2 class="section-title">Featured Courses</h2>
+        <div class="course-grid">
+            <div class="course-card">
+                <div class="course-img">📊</div>
+                <div class="course-content">
+                    <span class="category-badge">Data Science</span>
+                    <h3 class="course-title">Data Science Masterclass</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>Dr. Michael Ross</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.9 (2.5k)</span>
+                        <span class="price">$129</span>
+                    </div>
+                </div>
+            </div>
+            <div class="course-card">
+                <div class="course-img">🎨</div>
+                <div class="course-content">
+                    <span class="category-badge">Design</span>
+                    <h3 class="course-title">UI/UX Design Pro</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>Emily Parker</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.8 (1.8k)</span>
+                        <span class="price">$99</span>
+                    </div>
+                </div>
+            </div>
+            <div class="course-card">
+                <div class="course-img">📱</div>
+                <div class="course-content">
+                    <span class="category-badge">Marketing</span>
+                    <h3 class="course-title">Digital Marketing 2025</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>Sarah Chen</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.7 (3.2k)</span>
+                        <span class="price">$79</span>
+                    </div>
+                </div>
+            </div>
+            <div class="course-card">
+                <div class="course-img">💻</div>
+                <div class="course-content">
+                    <span class="category-badge">Development</span>
+                    <h3 class="course-title">React Native Mastery</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>David Kim</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.9 (1.5k)</span>
+                        <span class="price">$89</span>
+                    </div>
+                </div>
+            </div>
+            <div class="course-card">
+                <div class="course-img">💼</div>
+                <div class="course-content">
+                    <span class="category-badge">Business</span>
+                    <h3 class="course-title">Startup Strategy</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>Jessica Lee</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.8 (2.1k)</span>
+                        <span class="price">$119</span>
+                    </div>
+                </div>
+            </div>
+            <div class="course-card">
+                <div class="course-img">📷</div>
+                <div class="course-content">
+                    <span class="category-badge">Photography</span>
+                    <h3 class="course-title">Mastering Light</h3>
+                    <div class="instructor">
+                        <div class="avatar"></div>
+                        <span>Tom Wilson</span>
+                    </div>
+                    <div class="course-meta">
+                        <span class="rating">★ 4.6 (1.2k)</span>
+                        <span class="price">$69</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="instructors" style="padding: 6rem 4rem; background: #fff;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <h2 class="section-title">Learn from Experts</h2>
+            <div class="course-grid">
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem;"></div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Dr. Michael Ross</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Data Scientist at Google</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem;"></div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Emily Parker</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Senior Designer at Apple</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem;"></div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Sarah Chen</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">CMO at TechStart</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1.5rem;"></div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">David Kim</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Lead Engineer at Meta</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="paths" style="padding: 6rem 4rem; background: #f1f5f9;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 class="section-title">Learning Paths</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;">
+                <div style="background: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                    <h3 style="color: #4f46e5; margin-bottom: 1rem;">Web Development Path</h3>
+                    <ul style="list-style: none; color: #64748b; line-height: 2;">
+                        <li>✓ HTML & CSS Fundamentals</li>
+                        <li>✓ JavaScript Deep Dive</li>
+                        <li>✓ React & Redux</li>
+                        <li>✓ Node.js Backend</li>
+                    </ul>
+                    <button class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">Start Path</button>
+                </div>
+                <div style="background: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                    <h3 style="color: #4f46e5; margin-bottom: 1rem;">Data Science Path</h3>
+                    <ul style="list-style: none; color: #64748b; line-height: 2;">
+                        <li>✓ Python Programming</li>
+                        <li>✓ Data Analysis with Pandas</li>
+                        <li>✓ Machine Learning Basics</li>
+                        <li>✓ Deep Learning & AI</li>
+                    </ul>
+                    <button class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">Start Path</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="certificate-section">
+        <h2>Earn Recognized Certificates</h2>
+        <p style="opacity: 0.8; margin-top: 1rem;">Showcase your achievements with verified certificates upon completion.</p>
+        
+        <div class="cert-card">
+            <div class="shine"></div>
+            <h3 style="font-family: serif; font-size: 2rem; margin-bottom: 1rem;">Certificate of Completion</h3>
+            <p>This certifies that</p>
+            <h4 style="font-size: 1.5rem; margin: 1rem 0; color: #4f46e5;">Alex Johnson</h4>
+            <p>has successfully completed</p>
+            <h4 style="margin: 1rem 0;">Advanced Web Development</h4>
+            <div style="font-size: 3rem; margin-top: 2rem;">🏅</div>
+        </div>
+    </section>
+
+    <footer style="background: #1e293b; color: #fff; padding: 4rem 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4rem;">
+            <div>
+                <div class="logo" style="margin-bottom: 1rem; color: #fff;">🎓 EduLearn</div>
+                <p style="color: #94a3b8;">Empowering learners worldwide with accessible, high-quality education.</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem;">Courses</h4>
+                <ul style="list-style: none; color: #94a3b8; line-height: 2;">
+                    <li>Web Development</li>
+                    <li>Data Science</li>
+                    <li>Design</li>
+                    <li>Business</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem;">Company</h4>
+                <ul style="list-style: none; color: #94a3b8; line-height: 2;">
+                    <li>About Us</li>
+                    <li>Careers</li>
+                    <li>Blog</li>
+                    <li>Contact</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem;">Legal</h4>
+                <ul style="list-style: none; color: #94a3b8; line-height: 2;">
+                    <li>Terms of Service</li>
+                    <li>Privacy Policy</li>
+                    <li>Cookie Policy</li>
+                </ul>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 4rem; color: #64748b; font-size: 0.9rem;">
+            &copy; 2025 EduLearn Academy. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Animate progress bars on load
+        window.addEventListener('load', () => {
+            const bars = document.querySelectorAll('.progress-bar');
+            bars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

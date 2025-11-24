@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Things - The Upside Down</title>
+    <link href="https://fonts.googleapis.com/css2?family=Benguiat+ITC&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/itc-benguiat');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #050505;
+            color: #ff0000;
+            overflow-x: hidden;
+        }
+        
+        /* Upside Down Background */
+        .upside-down-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a0505 0%, #000 100%);
+        }
+        
+        .spores {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Ccircle cx="10" cy="10" r="0.5" fill="gray" opacity="0.5"/%3E%3Ccircle cx="50" cy="50" r="0.5" fill="white" opacity="0.3"/%3E%3C/svg%3E');
+            animation: float 30s linear infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes float {
+            from { background-position: 0 0; }
+            to { background-position: 100px -100px; }
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            mix-blend-mode: screen;
+        }
+        
+        .logo {
+            font-family: 'ITC Benguiat', serif;
+            font-size: 2rem;
+            color: transparent;
+            -webkit-text-stroke: 1px #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #ff0000;
+            animation: flicker 4s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+            52% { opacity: 0.4; }
+            54% { opacity: 1; }
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #ff0000;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #ff0000;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'ITC Benguiat', serif;
+            font-size: 6rem;
+            color: transparent;
+            -webkit-text-stroke: 2px #ff0000;
+            text-transform: uppercase;
+            line-height: 0.9;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            position: relative;
+        }
+        
+        h1::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #ff0000;
+            opacity: 0.1;
+            filter: blur(10px);
+            z-index: -1;
+        }
+        
+        .line {
+            width: 80%;
+            height: 2px;
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+            margin: 0 auto 3rem;
+        }
+        
+        .btn-retro {
+            background: transparent;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 1rem 3rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ff0000, inset 0 0 10px #ff0000;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px #ff0000;
+        }
+        
+        .btn-retro:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 30px #ff0000;
+        }
+        
+        /* Grid Section */
+        .grid-section {
+            padding: 6rem 4rem;
+            background: linear-gradient(to bottom, #000, #110000);
+            position: relative;
+        }
+        
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(transparent 95%, rgba(255, 0, 0, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 0, 0, 0.2) 95%);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: top;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .retro-card {
+            background: #000;
+            border: 1px solid #ff0000;
+            padding: 2rem;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        
+        .retro-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+        }
+        
+        .card-title {
+            font-family: 'ITC Benguiat', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-shadow: 0 0 5px #fff;
+        }
+        
+        .card-text {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        
+        /* Lights Section */
+        .lights-section {
+            padding: 4rem;
+            text-align: center;
+            background: #000;
+        }
+        
+        .lights-string {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .light {
+            width: 20px;
+            height: 40px;
+            border-radius: 50%;
+            background: #333;
+            position: relative;
+            animation: glow 2s infinite alternate;
+        }
+        
+        .light::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 10px;
+            background: #555;
+        }
+        
+        .light:nth-child(3n+1) { background: #ff0000; box-shadow: 0 0 20px #ff0000; animation-delay: 0s; }
+        .light:nth-child(3n+2) { background: #00ff00; box-shadow: 0 0 20px #00ff00; animation-delay: 0.5s; }
+        .light:nth-child(3n+3) { background: #0000ff; box-shadow: 0 0 20px #0000ff; animation-delay: 1s; }
+        
+        @keyframes glow {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        /* Footer */
+        footer {
+            padding: 3rem;
+            text-align: center;
+            border-top: 1px solid #ff0000;
+            background: #000;
+        }
+        
+        .vhs-text {
+            font-family: 'Roboto Mono', monospace;
+            color: #fff;
+            opacity: 0.5;
+            text-shadow: 2px 0 #ff0000, -2px 0 #0000ff;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="upside-down-bg"></div>
+    <div class="spores"></div>
+
+    <header>
+        <div class="logo">HAWKINS</div>
+        <nav>
+            <ul>
+                <li><a href="#lab">The Lab</a></li>
+                <li><a href="#arcade">Arcade</a></li>
+                <li><a href="#contact">Radio</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1 data-text="STRANGER THINGS">STRANGER<br>THINGS</h1>
+        <div class="line"></div>
+        <p style="max-width: 600px; margin-bottom: 3rem; font-size: 1.2rem; text-shadow: 0 0 5px #ff0000;">
+            Something is coming. Something hungry for blood. A shadow grows on the wall behind you, swallowing you in darkness.
+        </p>
+        <button class="btn-retro" onclick="document.getElementById('game-screen').scrollIntoView({behavior: 'smooth'})">Enter the Void</button>
+    </section>
+
+    <section id="lab" class="grid-section">
+        <div class="grid-bg"></div>
+        <div class="cards">
+            <div class="retro-card">
+                <h3 class="card-title">PROJECT MKULTRA</h3>
+                <p class="card-text">CLASSIFIED: Experimental subjects exhibiting telekinetic abilities. Handle with extreme caution.</p>
+            </div>
+            <div class="retro-card">
+                <h3 class="card-title">THE GATE</h3>
+                <p class="card-text">WARNING: High energy readings detected. Inter-dimensional breach imminent. Evacuate immediately.</p>
+            </div>
+            <div class="retro-card">
+                <h3 class="card-title">DEMOGORGON</h3>
+                <p class="card-text">ENTITY ANALYSIS: Predatory humanoid creature. Sensitive to blood. Weakness: Fire.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="arcade" class="lights-section">
+        <div class="lights-string">
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+            <div class="light"></div>
+        </div>
+        <h2 style="font-family: 'ITC Benguiat'; font-size: 3rem; color: #fff; text-shadow: 0 0 10px #fff; margin-bottom: 2rem;">R U N</h2>
+    </section>
+
+    <section id="game-screen" style="padding: 6rem 2rem; background: #0a0000; text-align: center; border-top: 4px solid #8b0000; position: relative; overflow: hidden;">
+        <!-- Upside Down Atmosphere -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #2a0000 0%, #000 100%); z-index: 0;"></div>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml;utf8,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.1%22/%3E%3C/svg%3E'); opacity: 0.3; animation: noise 0.5s steps(5) infinite; z-index: 1; pointer-events: none;"></div>
+        
+        <!-- Floating Spores -->
+        <div class="ash-particle" style="top: 20%; left: 20%; animation-delay: 0s;"></div>
+        <div class="ash-particle" style="top: 60%; left: 80%; animation-delay: 2s;"></div>
+        <div class="ash-particle" style="top: 40%; left: 50%; animation-delay: 4s;"></div>
+        <div class="ash-particle" style="top: 80%; left: 30%; animation-delay: 1s;"></div>
+        
+        <div style="position: relative; z-index: 10; max-width: 1000px; margin: 0 auto;">
+            <h2 style="font-family: 'ITC Benguiat'; font-size: 4rem; color: #ff0000; text-shadow: 0 0 20px #ff0000, 0 0 40px #8b0000; margin-bottom: 1rem; letter-spacing: 2px;">CLOSE THE GATE</h2>
+            <p style="color: #ffaaaa; font-family: 'Roboto Mono'; margin-bottom: 3rem; text-transform: uppercase; letter-spacing: 1px;">Focus your energy. Stop the Mind Flayer.</p>
+            
+            <!-- Game Interface -->
+            <div style="border: 2px solid #ff0000; padding: 20px; background: rgba(20, 0, 0, 0.8); box-shadow: 0 0 50px rgba(255, 0, 0, 0.3); position: relative;">
+                <!-- Vines -->
+                <div style="position: absolute; top: -20px; left: -20px; width: 100px; height: 100px; border-top: 5px solid #330000; border-left: 5px solid #330000; border-radius: 20px; pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; border-bottom: 5px solid #330000; border-right: 5px solid #330000; border-radius: 20px; pointer-events: none;"></div>
+                
+                <!-- Main Viewport -->
+                <div style="height: 500px; background: #000; position: relative; overflow: hidden; border: 1px solid #500;">
+                    <!-- The Gate -->
+                    <div class="gate-rift" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; background: radial-gradient(circle, #ff4400 0%, #550000 60%, transparent 70%); filter: blur(20px); opacity: 0.8; animation: pulseRift 3s infinite;"></div>
+                    
+                    <!-- Mind Flayer Silhouette -->
+                    <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 15rem; color: #000; text-shadow: 0 0 20px rgba(255,0,0,0.5); opacity: 0.9; animation: hoverMonster 6s ease-in-out infinite;">🕷️</div>
+                    
+                    <!-- Psychic Hand Overlay -->
+                    <div id="psychic-hand" style="position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); font-size: 10rem; opacity: 0.5; transition: all 0.2s; filter: drop-shadow(0 0 20px #ff0000);">✋</div>
+                    
+                    <!-- Health/Energy Bar -->
+                    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 60%; height: 10px; background: #300; border: 1px solid #f00;">
+                        <div id="energy-bar" style="width: 0%; height: 100%; background: #f00; box-shadow: 0 0 20px #f00; transition: width 0.1s;"></div>
+                    </div>
+                    <div style="position: absolute; top: 35px; left: 50%; transform: translateX(-50%); color: #f00; font-family: 'Roboto Mono'; font-size: 0.8rem;">PSYCHIC CONNECTION</div>
+                </div>
+                
+                <!-- Controls -->
+                <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 2rem; align-items: center;">
+                    <button class="btn-psychic" onmousedown="startChanneling()" onmouseup="stopChanneling()" onmouseleave="stopChanneling()" ontouchstart="startChanneling()" ontouchend="stopChanneling()">
+                        HOLD TO FOCUS
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .ash-particle {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: #fff;
+                border-radius: 50%;
+                opacity: 0.5;
+                animation: floatAsh 10s linear infinite;
+                pointer-events: none;
+                z-index: 5;
+            }
+            
+            @keyframes floatAsh {
+                0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+                20% { opacity: 0.8; }
+                80% { opacity: 0.8; }
+                100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+            }
+            
+            @keyframes pulseRift {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+                50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; filter: blur(30px); }
+            }
+            
+            @keyframes hoverMonster {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); }
+                50% { transform: translate(-50%, -60%) scale(1.05); }
+            }
+            
+            @keyframes noise {
+                0% { background-position: 0 0; }
+                100% { background-position: 100% 100%; }
+            }
+            
+            .btn-psychic {
+                background: transparent;
+                border: 2px solid #ff0000;
+                color: #ff0000;
+                padding: 1.5rem 4rem;
+                font-family: 'ITC Benguiat';
+                font-size: 1.5rem;
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+                transition: all 0.2s;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .btn-psychic:hover {
+                background: rgba(255, 0, 0, 0.1);
+                box-shadow: 0 0 40px rgba(255, 0, 0, 0.6);
+                text-shadow: 0 0 10px #ff0000;
+            }
+            
+            .btn-psychic:active {
+                transform: scale(0.95);
+            }
+            
+            .shake {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite;
+            }
+            
+            @keyframes shake {
+                10%, 90% { transform: translate3d(-1px, 0, 0); }
+                20%, 80% { transform: translate3d(2px, 0, 0); }
+                30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+                40%, 60% { transform: translate3d(4px, 0, 0); }
+            }
+        </style>
+        
+        <script>
+            let energy = 0;
+            let interval;
+            const hand = document.getElementById('psychic-hand');
+            const bar = document.getElementById('energy-bar');
+            const gameScreen = document.getElementById('game-screen');
+            
+            function startChanneling() {
+                hand.style.opacity = '1';
+                hand.style.transform = 'translateX(-50%) scale(1.2)';
+                gameScreen.classList.add('shake');
+                
+                interval = setInterval(() => {
+                    energy += 2;
+                    if (energy > 100) energy = 100;
+                    bar.style.width = energy + '%';
+                    
+                    // Visual feedback
+                    hand.style.filter = `drop-shadow(0 0 ${20 + energy}px #ff0000)`;
+                    
+                    if (energy >= 100) {
+                        clearInterval(interval);
+                        alert('GATE CLOSED! 🩸');
+                        energy = 0;
+                        bar.style.width = '0%';
+                        stopChanneling();
+                    }
+                }, 50);
+            }
+            
+            function stopChanneling() {
+                clearInterval(interval);
+                hand.style.opacity = '0.5';
+                hand.style.transform = 'translateX(-50%) scale(1)';
+                gameScreen.classList.remove('shake');
+                
+                // Decay energy
+                const decay = setInterval(() => {
+                    if (energy > 0) {
+                        energy -= 5;
+                        bar.style.width = energy + '%';
+                    } else {
+                        clearInterval(decay);
+                    }
+                }, 50);
+            }
+        </script>
+    </section>
+
+    <footer>
+        <div class="vhs-text">
+            HAWKINS POWER AND LIGHT &copy; 1983<br>
+            PLAY // REC // STOP
+        </div>
+    </footer>
+</body>
+</html>

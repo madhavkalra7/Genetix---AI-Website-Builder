@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pirates of the Caribbean - The Black Pearl</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Pirata+One&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #1a1a1a;
+            color: #e0d0b0;
+            overflow-x: hidden;
+        }
+        
+        /* Ocean Background */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%230f172a" fill-opacity="0.5" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"%3E%3C/path%3E%3C/svg%3E');
+            background-size: 50% 100%;
+            animation: wave 10s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            bottom: 10px;
+            opacity: 0.5;
+            animation: wave 15s linear infinite reverse;
+        }
+        
+        .wave:nth-child(3) {
+            bottom: 20px;
+            opacity: 0.2;
+            animation: wave 20s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Fog */
+        .fog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.4"/%3E%3C/svg%3E');
+            opacity: 0.3;
+            z-index: 0;
+            animation: fogMove 60s linear infinite;
+        }
+        
+        @keyframes fogMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 0; }
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 3rem;
+            background: rgba(20, 10, 5, 0.9);
+            border-bottom: 2px solid #8b4513;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+        }
+        
+        .logo {
+            font-family: 'Pirata One', cursive;
+            font-size: 2.5rem;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px #000;
+            letter-spacing: 2px;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #e0d0b0;
+            text-decoration: none;
+            font-family: 'Cinzel Decorative', cursive;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            text-transform: uppercase;
+        }
+        
+        nav a:hover {
+            color: #d4af37;
+            text-shadow: 0 0 10px #d4af37;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .ship {
+            font-size: 150px;
+            margin-bottom: 2rem;
+            animation: sway 5s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+        
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg) translateY(0); }
+            50% { transform: rotate(5deg) translateY(-20px); }
+        }
+        
+        h1 {
+            font-family: 'Pirata One', cursive;
+            font-size: 6rem;
+            color: #d4af37;
+            text-shadow: 4px 4px 0 #3e2723, 0 0 20px rgba(212, 175, 55, 0.5);
+            margin-bottom: 1rem;
+            letter-spacing: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1.8rem;
+            color: #e0d0b0;
+            margin-bottom: 3rem;
+            font-style: italic;
+            text-shadow: 2px 2px 4px #000;
+        }
+        
+        .btn-pirate {
+            background: url('data:image/svg+xml;utf8,%3Csvg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg"%3E%3Crect x="5" y="5" width="190" height="50" fill="%233e2723" stroke="%23d4af37" stroke-width="3" rx="5"/%3E%3C/svg%3E');
+            background-size: 100% 100%;
+            color: #d4af37;
+            padding: 1.5rem 3rem;
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .btn-pirate:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+        
+        /* Parchment Section */
+        .parchment-section {
+            background: #d2b48c;
+            padding: 6rem 4rem;
+            position: relative;
+            color: #3e2723;
+            margin: 4rem 2rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform: rotate(-1deg);
+        }
+        
+        .parchment-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.2"/%3E%3C/svg%3E');
+            pointer-events: none;
+        }
+        
+        .section-title {
+            font-family: 'Pirata One', cursive;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #3e2723;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            border: 2px solid #3e2723;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .card h3 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+        
+        /* Wanted Posters */
+        .wanted-section {
+            padding: 6rem 4rem;
+            text-align: center;
+        }
+        
+        .poster {
+            background: #f4e4bc;
+            padding: 2rem;
+            display: inline-block;
+            margin: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: rotate(2deg);
+            width: 300px;
+            border: 1px solid #8b4513;
+        }
+        
+        .poster:nth-child(even) {
+            transform: rotate(-2deg);
+        }
+        
+        .poster-img {
+            width: 100%;
+            height: 200px;
+            background: #3e2723;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: #d4af37;
+            border: 2px solid #000;
+        }
+        
+        .wanted-text {
+            font-family: 'Pirata One', cursive;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: #000;
+        }
+        
+        .reward {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.5rem;
+            color: #8b4513;
+            font-weight: 900;
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 0.5rem 0;
+            margin-top: 1rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: #0f0500;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-top: 2px solid #d4af37;
+        }
+        
+        .coins {
+            position: fixed;
+            top: -50px;
+            font-size: 24px;
+            z-index: 100;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(720deg); }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <div class="fog"></div>
+    <div id="coins-container"></div>
+
+    <header>
+        <div class="logo">☠️ The Black Pearl</div>
+        <nav>
+            <ul>
+                <li><a href="#adventure">Adventure</a></li>
+                <li><a href="#crew">The Crew</a></li>
+                <li><a href="#treasure">Treasure</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="ship">🏴‍☠️</div>
+        <h1>RULE THE SEAS</h1>
+        <p class="subtitle">"Not all treasure is silver and gold, mate."</p>
+        <button class="btn-pirate" onclick="document.getElementById('game-screen').scrollIntoView({behavior: 'smooth'})">Join the Crew</button>
+    </section>
+
+    <section id="adventure" class="parchment-section">
+        <h2 class="section-title">A Pirate's Life</h2>
+        <div class="grid">
+            <div class="card">
+                <span class="card-icon">⚔️</span>
+                <h3>Epic Battles</h3>
+                <p>Face the Royal Navy and legendary sea monsters in glorious combat.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">🗺️</span>
+                <h3>Uncharted Waters</h3>
+                <p>Navigate to the ends of the earth where the map ends and legends begin.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">🥃</span>
+                <h3>Infinite Rum</h3>
+                <p>The finest grog in the seven seas, always flowing and never gone.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="crew" class="wanted-section">
+        <h2 class="section-title" style="color: #d4af37; text-shadow: 2px 2px 4px #000;">Wanted Dead or Alive</h2>
+        
+        <div class="poster">
+            <div class="wanted-text">WANTED</div>
+            <div class="poster-img">🦜</div>
+            <h3>Captain Jack</h3>
+            <p>Crimes against the Crown</p>
+            <div class="reward">Reward: 10,000 Guineas</div>
+        </div>
+        
+        <div class="poster">
+            <div class="wanted-text">WANTED</div>
+            <div class="poster-img">🦑</div>
+            <h3>Davy Jones</h3>
+            <p>Terror of the Seas</p>
+            <div class="reward">Reward: Your Soul</div>
+        </div>
+        
+        <div class="poster">
+            <div class="wanted-text">WANTED</div>
+            <div class="poster-img">💀</div>
+            <h3>Barbossa</h3>
+            <p>Mutiny & Piracy</p>
+            <div class="reward">Reward: 5,000 Guineas</div>
+        </div>
+    </section>
+
+    <section id="game-screen" class="parchment-section" style="background: #2c1810; color: #d4af37; text-align: center; border: 4px solid #d4af37; box-shadow: inset 0 0 50px #000;">
+        <h2 class="section-title" style="color: #d4af37; text-shadow: 2px 2px 0 #000;">Battle Stations</h2>
+        <p style="margin-bottom: 2rem; font-size: 1.2rem;">Ready your cannons, Captain! The Royal Navy is approaching!</p>
+        
+        <div style="position: relative; width: 100%; max-width: 800px; height: 500px; margin: 0 auto; background: url('https://images.unsplash.com/photo-1500539272181-52075b98225e?q=80&w=1000&auto=format&fit=crop') center/cover; border: 10px solid #3e2723; border-radius: 10px; overflow: hidden;">
+            <!-- HUD -->
+            <div style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px; border: 2px solid #d4af37; color: #fff; font-family: 'Pirata One'; font-size: 1.5rem;">
+                SCORE: <span id="score">0</span>
+            </div>
+            <div style="position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px; border: 2px solid #d4af37; color: #fff; font-family: 'Pirata One'; font-size: 1.5rem;">
+                AMMO: ∞
+            </div>
+            
+            <!-- Crosshair -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid rgba(255,0,0,0.7); border-radius: 50%; pointer-events: none;">
+                <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(255,0,0,0.7);"></div>
+                <div style="position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(255,0,0,0.7);"></div>
+            </div>
+
+            <!-- Enemy Ship Target (Animated) -->
+            <div style="position: absolute; top: 40%; left: 30%; font-size: 4rem; animation: floatShip 4s infinite ease-in-out; cursor: crosshair;" onclick="this.style.display='none'; document.getElementById('score').innerText = parseInt(document.getElementById('score').innerText) + 100; setTimeout(() => this.style.display='block', 2000);">
+                ⛵
+            </div>
+            
+            <!-- Fire Button -->
+            <button style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 1rem 3rem; font-size: 2rem; font-family: 'Pirata One'; background: #ef4444; color: #fff; border: 4px solid #7f1d1d; cursor: pointer; box-shadow: 0 5px 0 #7f1d1d;" onclick="alert('BOOM! 💣')">
+                FIRE!
+            </button>
+        </div>
+        
+        <style>
+            @keyframes floatShip {
+                0%, 100% { transform: translate(0, 0); }
+                50% { transform: translate(20px, -10px); }
+            }
+        </style>
+    </section>
+
+    <section id="treasure" class="parchment-section" style="transform: rotate(1deg); background: #e6d2b5;">
+        <h2 class="section-title">The Captain's Code</h2>
+        <div style="max-width: 800px; margin: 0 auto; font-size: 1.2rem; line-height: 1.8;">
+            <p style="margin-bottom: 1rem;">1. Every man has a vote in affairs of moment; has equal title to fresh provisions, or strong liquors.</p>
+            <p style="margin-bottom: 1rem;">2. No man to game at cards or dice for money.</p>
+            <p style="margin-bottom: 1rem;">3. The lights and candles to be put out at eight o'clock at night.</p>
+            <p style="margin-bottom: 1rem;">4. To keep their piece, pistols, and cutlass clean and fit for service.</p>
+            <p style="font-style: italic; margin-top: 2rem; text-align: right;">- Bartholomew Roberts</p>
+        </div>
+    </section>
+
+    <footer>
+        <div style="font-family: 'Pirata One', cursive; font-size: 2rem; color: #d4af37; margin-bottom: 1rem;">The Black Pearl</div>
+        <p style="color: #8b4513;">&copy; 1720 Caribbean Piracy Co. All rights reserved.</p>
+        <div style="margin-top: 2rem; font-size: 1.5rem;">
+            <span style="margin: 0 1rem;">⚓</span>
+            <span style="margin: 0 1rem;">⚔️</span>
+            <span style="margin: 0 1rem;">☠️</span>
+        </div>
+    </footer>
+
+    <script>
+        // Falling coins
+        const container = document.getElementById('coins-container');
+        const coins = ['🪙', '💰', '💎'];
+        
+        for (let i = 0; i < 20; i++) {
+            const coin = document.createElement('div');
+            coin.className = 'coins';
+            coin.textContent = coins[Math.floor(Math.random() * coins.length)];
+            coin.style.left = Math.random() * 100 + '%';
+            coin.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            coin.style.animationDelay = Math.random() * 5 + 's';
+            container.appendChild(coin);
+        }
+    </script>
+</body>
+</html>

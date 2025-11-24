@@ -549,7 +549,277 @@ Layout: Fixed header, 2-column hero, 3-4 column grids, masonry lookbook, rounded
 Components: Fashion icon float/rotate, sparkle twinkle, hero image pulse, collection zoom, product badges, lookbook hover
 Special: Real Unsplash fashion/model images, trendy boutique aesthetic, product pricing with badges, masonry lookbook layout
 `
-  }
+  },
+  {
+    id: "ai-tech-startup",
+    name: "AI Tech Startup",
+    description: "Futuristic AI startup with neural network animations, particle effects, and holographic UI elements",
+    thumbnail: "https://dummyimage.com/400x300/0ea5e9/ffffff&text=AI+Tech",
+    templateFile: "/templates/ai-tech-startup.html",
+    category: "Technology",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Futuristic AI Tech Startup
+- Background: Deep dark gradient (#0a0a0f → #1a1a2e), 60 floating particles (white/cyan/purple dots 2-4px) with connection lines when close
+- Fixed Header: Glass morphism (rgba 10,10,15,0.8) with blur-xl, "🤖 NEURAL AI" gradient logo (cyan #0ea5e9 → purple #7c3aed), nav links, demo button
+- Hero: Full-screen centered, "The Future of Intelligence" (120px Orbitron font) gradient text (cyan → purple → pink), neural network animation background
+- Neural Network: 15 nodes (40px circles) connected by animated lines with data packets traveling, pulsing glow effects
+- Floating Elements: 5 AI icons (🧠💡⚡🔮🎯 80px) with orbital rotation paths, 3 holographic panels (300px) with code snippets scrolling
+- Tech Grid: 6 cards auto-fit minmax(350px) with glass morphism
+  - Machine Learning (🤖), Natural Language (💬), Computer Vision (👁️), Predictive Analytics (📊), Deep Learning (🧠), Automation (⚙️)
+- Card Effects: Holographic border (conic gradient rotating), elevation on hover, inner glow (box-shadow cyan/purple)
+- Features Section: 3 columns with animated counters (99.9% Accuracy, 10M+ Predictions, 50ms Response Time)
+- Demo Section: Terminal-style interface with typing animation, green text on black, cursor blink
+- Pricing: 3 tiers (Starter $99, Pro $299, Enterprise Custom) with AI feature lists
+- Animations: Particle float/connect (15s), neural pulse (2s), holographic rotate (8s), data packet travel (3s), counter increment, typing effect
+Color Scheme: Cyan (#0ea5e9) primary, purple (#7c3aed) secondary, pink (#ec4899) accents, dark (#0a0a0f) background, white text
+Typography: Orbitron futuristic (120px titles), Space Grotesk (body 300-700), monospace for code, uppercase headings
+Layout: Full-screen hero, contained sections (max-width 1600px), centered content, sci-fi spacing
+Components: Particle system with connections, neural network visualization, holographic panels, glass morphism cards, terminal interface
+Special: AI/ML theme with particle physics, neural network animations, holographic UI effects, sci-fi aesthetic
+`
+  },
+  {
+    id: "coffee-shop-cozy",
+    name: "The Daily Grind",
+    description: "Warm cozy coffee shop with steam animations, floating coffee beans, and vintage aesthetic",
+    thumbnail: "https://dummyimage.com/400x300/8b4513/fffaf0&text=Coffee+Shop",
+    templateFile: "/templates/coffee-shop-cozy.html",
+    category: "Food & Beverage",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Warm Cozy Coffee Shop
+- Background: Cream to light brown gradient (#fffaf0 → #f5e6d3), coffee stain texture (SVG), wood grain pattern
+- Fixed Header: Semi-transparent brown (rgba 139,69,19,0.9) with blur, "☕ THE DAILY GRIND" logo (Pacifico script font), nav links
+- Floating Elements: 12 coffee beans (☕ 30px) falling slowly like snow, 3 steam clouds rising from cups (white opacity 0.6 wavey paths)
+- Hero: Full-screen, vintage coffee shop illustration background, "Fresh Roasted Daily" (100px Lobster font brown), "Since 1995" subtitle
+- Coffee Cup Animation: Large steaming cup (200px ☕) center with 5 steam waves rising (translateY -100px + fade), cup gentle rotation ±5deg
+- Menu Section: 3 categories (Coffee ☕, Pastries 🥐, Specials ✨) with handwritten font style
+- Signature Drinks Grid: 6 cards repeat(3, 1fr) with vintage paper texture backgrounds
+  - Espresso $3.50 (☕), Cappuccino $4.50 (🍵), Latte $4.75 (🥛), Mocha $5.00 (🍫), Americano $3.75 (☕), Cold Brew $4.25 (🧊)
+- Card Design: Brown kraft paper texture, handwritten text, coffee ring stains, bean decorations
+- Atmosphere: "Cozy Corner" section with armchair emoji (🛋️ 80px), bookshelf (📚), plants (🪴), warm lighting description
+- Barista Picks: 3 featured items with polaroid-style frames, tilted angles (-3deg, 2deg, -2deg)
+- Hours Display: Chalkboard aesthetic (dark background, chalk font), "OPEN 7AM - 8PM" with decorative borders
+- Footer: Dark brown (#3e2723) with cream text, coffee bean pattern, social icons
+- Animations: Beans falling (12s linear infinite), steam rising (4s ease-out), cup wiggle (6s), card tilt on hover, bean spin
+Color Scheme: Brown (#8b4513) primary, cream (#fffaf0) backgrounds, dark brown (#3e2723) text, warm accents
+Typography: Pacifico script (logo 48px), Lobster (titles 80-100px), Lato (body), handwritten style labels
+Layout: Fixed header, full-screen hero, 3-column grids, polaroid gallery, cozy spacing
+Components: Coffee bean fall animation, steam rise effect, cup rotation, paper texture overlays, polaroid frames, chalkboard style
+Special: Coffee shop ambiance with vintage aesthetic, handwritten menu style, steam and bean animations, warm color palette
+`
+  },
+  {
+    id: "real-estate-luxury-modern",
+    name: "Prime Properties",
+    description: "Modern luxury real estate with property showcase, parallax effects, and virtual tour animations",
+    thumbnail: "https://dummyimage.com/400x300/1e40af/fbbf24&text=Real+Estate",
+    templateFile: "/templates/real-estate-luxury.html",
+    category: "Real Estate",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Modern Luxury Real Estate
+- Background: Real skyline photo (Unsplash photo-1449844908441-8829872d2607) with parallax scrolling, gradient overlay (rgba 30,64,175,0.85)
+- Fixed Header: White translucent (0.95) with blur, "🏢 PRIME PROPERTIES" navy logo, search bar, listings/agents/contact nav
+- Hero: 2-column grid (1fr 1fr, gap 60px)
+  - Left: "Find Your Dream Home" (90px Playfair Display), "Luxury Living Starts Here" subtitle, search form (location, type, price range)
+  - Right: Featured property carousel with real images, price overlay ($2.5M in gold), 3D card rotation on hover
+- Floating Elements: 3 location markers (📍 50px) pulsing with ripple effect, 2 keys (🔑 40px) rotating, building icons floating
+- Stats Section: 4 animated counters with gold numbers (1,200+ Properties, $2.5B+ Sales, 500+ Agents, 98% Satisfaction)
+- Properties Grid: Auto-fit minmax(450px, 1fr) with featured listings
+  - Penthouse $2.5M (Unsplash photo-1512917774080-9991f1c4c750) - 3 bed, 2 bath, 2,500 sq ft, Downtown
+  - Villa $3.8M (photo-1613490493576-7fde63acd811) - 5 bed, 4 bath, 4,200 sq ft, Beachfront
+  - Mansion $5.2M (photo-1600596542815-ffad4c1539a9) - 6 bed, 5 bath, 6,000 sq ft, Hills
+  - Condo $890K (photo-1545324418-cc1a3fa10c00) - 2 bed, 2 bath, 1,800 sq ft, City Center
+- Property Cards: Real images with gradient overlay (to top black 0.7), parallax on scroll, info panel slides up on hover
+- Virtual Tour: 360° icon (🔄) with "Take Virtual Tour" button, VR headset compatibility badge
+- Amenities Icons: 15 features (🏊 Pool, 🏋️ Gym, 🅿️ Parking, 🔒 Security, 🌳 Garden, 🎾 Tennis, etc.) with pulse animation
+- Agent Section: 3 top agents with professional photos, sales records, contact buttons
+- Map Integration: Interactive map placeholder with property markers (gold pins pulsing)
+- Mortgage Calculator: Form with sliders for price/down payment/interest, live calculation display
+- Footer: Navy (#1e40af) with gold accents, 4-column grid (Properties, Services, Company, Contact)
+- Animations: Parallax scrolling (background), marker pulse, key rotation, card 3D transform, counter increment, amenity pulse, property slide
+Color Scheme: Navy (#1e40af) primary, gold (#fbbf24) accents, white/light backgrounds, dark overlays
+Typography: Playfair Display serif (elegant 70-90px titles), Montserrat sans-serif (body 300-700), professional spacing
+Layout: Fixed header, 2-column hero, auto-fit property grids, parallax backgrounds, polished spacing
+Components: Parallax scroll effect, 3D card rotation, marker pulse, counter animation, property carousel, info panel slide, map markers
+Special: Real estate luxury theme with property showcase, virtual tour features, mortgage calculator, parallax effects, professional polish
+`
+  },
+  {
+    id: "crypto-exchange-neon",
+    name: "CryptoVault Exchange",
+    description: "Neon cyberpunk cryptocurrency exchange with live charts, blockchain visualization, and trading interface",
+    thumbnail: "https://dummyimage.com/400x300/0a0a0a/10b981&text=Crypto+Exchange",
+    templateFile: "/templates/crypto-exchange.html",
+    category: "Finance",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Neon Cyberpunk Cryptocurrency Exchange
+- Background: Pitch black (#0a0a0a), 40 hexagon grid elements (border only) with pulse animation, 15 blockchain blocks floating
+- Fixed Header: Dark glass (rgba 10,10,10,0.9) with blur, "₿ CRYPTOVAULT" neon green logo, Markets/Trade/Wallet/About nav, Connect Wallet button
+- Hero: Full-screen trading terminal aesthetic, "The Future of Finance" (110px Rajdhani bold) neon gradient (green #10b981 → cyan #06b6d4)
+- Blockchain Visualization: 20 connected blocks (60px cubes) with 3D perspective, data flow lines animating between them (glowing particles)
+- Price Tickers: Top bar with scrolling crypto prices - Bitcoin ₿$45,230 ↑2.5%, Ethereum Ξ$3,120 ↑1.8%, Solana ◎$98 ↓0.5% (live updating animation)
+- Chart Section: Large candlestick chart placeholder with green/red bars, SVG line drawing animation, volume bars at bottom
+- Crypto Cards Grid: 6 major cryptocurrencies in repeat(3, 1fr)
+  - Bitcoin (₿) $45,230 +2.5% (green up arrow, coin spinning)
+  - Ethereum (Ξ) $3,120 +1.8% (purple gradient)
+  - Solana (◎) $98 -0.5% (red down arrow)
+  - Cardano (₳) $0.52 +3.2% (blue)
+  - Polkadot (●) $7.85 +1.1% (pink)
+  - Chainlink (⬢) $15.20 +4.5% (blue)
+- Card Effects: Neon border (box-shadow green/red based on profit/loss), hover elevation, price number flicker, coin icon rotation
+- Trading Interface: Mock terminal with buy/sell buttons (green/red), amount input, sliders, order book display
+- Features Grid: 6 cards (🔒 Secure Vault, ⚡ Instant Trades, 📊 Advanced Charts, 💰 Low Fees, 🌐 Global Access, 📱 Mobile App)
+- Blockchain Network: Animated network graph with 30 nodes connected by glowing lines, data packets traveling along connections
+- Security Badges: "2FA Enabled" "Cold Storage" "Bank-Level Encryption" with shield icons and pulse glow
+- Market Stats: 24h Volume ($125B), Total Market Cap ($1.8T), Active Traders (2.5M) with animated counters
+- Footer: Black (#000) with neon green accents, crypto icons, legal/terms links
+- Animations: Hexagon pulse (3s), blockchain block float/rotate (10s), ticker scroll (20s linear), chart line draw (2s), price flicker, coin spin, network pulse
+Color Scheme: Green (#10b981) profit, red (#ef4444) loss, cyan (#06b6d4) highlights, gold (#fbbf24) Bitcoin, black (#0a0a0a) background
+Typography: Rajdhani bold (futuristic 80-110px titles), Roboto Mono (monospace prices/numbers), Space Grotesk (body), uppercase headings
+Layout: Full-screen terminal, 3-column crypto grids, chart focus, cyberpunk spacing
+Components: Blockchain network visualization, hexagon grid pulse, price ticker scroll, candlestick chart animation, neon glow effects, coin rotation
+Special: Cryptocurrency exchange theme with blockchain visualization, live price tickers, trading terminal interface, neon cyberpunk aesthetic, profit/loss color coding
+`
+  },
+  {
+    id: "education-platform-modern",
+    name: "EduLearn Academy",
+    description: "Clean modern education platform with course cards, instructor profiles, progress tracking, and certificate showcase",
+    thumbnail: "https://dummyimage.com/400x300/4f46e5/ffffff&text=Education",
+    templateFile: "/templates/education-platform.html",
+    category: "Education",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Clean Modern Education Platform
+- Background: White/light gradient (#ffffff → #f8fafc), subtle grid pattern, floating book pages, geometric shapes
+- Fixed Header: White with subtle shadow, "🎓 EDULEARN ACADEMY" indigo logo (Poppins 600), Courses/Instructors/About/Login nav
+- Floating Elements: 5 books (📚 40px) floating with page flip animation, 3 graduation caps (🎓 50px) tossing upward, lightbulb (💡) twinkling
+- Hero: 2-column grid (1fr 1fr, gap 80px)
+  - Left: "Learn Without Limits" (90px Poppins bold indigo), "10,000+ Courses • Expert Instructors • Lifetime Access", Explore button
+  - Right: Illustration of students learning (real image Unsplash photo-1523240795612-9a054b0db644) with floating achievement badges around it
+- Stats Section: 4 cards with animated counters (50K+ Students, 1,200+ Courses, 500+ Instructors, 98% Success Rate) with subtle card elevation
+- Courses Grid: Auto-fit minmax(380px, 1fr) with 6 featured courses
+  - Web Development Bootcamp (💻) $89 - 45 hours, 4.8★, 12,500 students (Unsplash photo-1498050108023-c5249f4df085)
+  - Data Science Master (📊) $129 - 60 hours, 4.9★, 8,300 students (photo-1551288049-bebda4e38f71)
+  - Digital Marketing Pro (📱) $79 - 35 hours, 4.7★, 15,200 students (photo-1460925895917-afdab827c52f)
+  - UI/UX Design (🎨) $99 - 40 hours, 4.8★, 9,800 students (photo-1561070791-2526d30994b5)
+  - Business Strategy (💼) $119 - 50 hours, 4.9★, 6,500 students (photo-1454165804606-c3d57bc86b40)
+  - Photography Basics (📷) $69 - 30 hours, 4.6★, 11,200 students (photo-1542038784456-1ea8e935640e)
+- Course Cards: Real images with rounded corners (16px), gradient overlay, category badge (top-left), hover zoom effect, price tag (bottom-right gold)
+- Progress Bars: Animated fill on scroll (0% to target %), gradient fills (indigo → purple)
+- Learning Paths: 4 structured journeys (Beginner → Intermediate → Advanced → Expert) with connecting arrows and completion checkmarks
+- Instructors Section: 4 top instructors with professional photos in circular frames (200px), names, specialties, student counts
+  - Prof. Sarah Chen (Web Dev - 25K students) Unsplash photo-1573497019940-1c28c88b4f3e
+  - Dr. Michael Ross (Data Science - 18K) photo-1472099645785-5658abf4ff4e
+  - Emily Parker (Design - 22K) photo-1580489944761-15a19d654956
+  - David Kumar (Business - 15K) photo-1519085360753-af0119f7cbe7
+- Features: 6 cards (📱 Mobile App, 🎥 HD Videos, 📝 Assignments, 🏆 Certificates, 💬 Community, ♾️ Lifetime Access)
+- Certificates Showcase: 3 certificate templates with gold seals, shine animation sweeping across, 3D tilt on hover
+- Testimonials: Student reviews with star ratings, avatars, course name badges
+- Newsletter: Indigo gradient CTA, "Get Free Courses" headline, email input with subscribe button
+- Footer: Light gray (#f8fafc) with indigo accents, 4-column grid (Courses, Company, Support, Legal)
+- Animations: Book page flip (4s), graduation cap toss (3s), lightbulb twinkle, progress bar fill (1.5s ease-out), certificate shine (6s), card zoom
+Color Scheme: Indigo (#4f46e5) primary, purple (#7c3aed) secondary, white/light backgrounds, gold (#fbbf24) accents for pricing/certificates
+Typography: Poppins (headings 70-90px, body 300-700), rounded friendly feel, clear hierarchy
+Layout: Fixed header, 2-column hero, auto-fit course grids, centered content (max-width 1600px), clean spacing
+Components: Progress bar animation, certificate shine effect, book flip, cap toss, star ratings, badges, counters
+Special: Education platform theme with course marketplace, instructor profiles, progress tracking, certificate showcase, student testimonials, learning paths
+`
+  },
+  {
+    id: "pirates-adventure",
+    name: "Pirates of the Caribbean",
+    description: "High seas adventure with water effects and swaying ships",
+    thumbnail: "https://dummyimage.com/400x300/2c1810/ffffff&text=Pirates",
+    templateFile: "/templates/pirates-adventure.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Pirates of the Caribbean Theme
+- Hero Section: Parallax ocean waves, swaying Black Pearl ship, treasure map background
+- Features Section: 'Cursed Gold' cards with coin spin effects, 'Crew' roster with wanted posters
+- Gallery: Telescope view effect, compass navigation
+- Typography: 'Pieces of Eight' or rustic serif fonts, gold/parchment colors
+- Animations: Water ripple (WebGL), fog rolling in, cannon fire particles, swinging lanterns
+- UI: Wood textures, torn paper edges, wax seal buttons
+`
+  },
+  {
+    id: "shinchan-fun",
+    name: "Shinchan Fun World",
+    description: "Playful and colorful cartoon theme with bouncing animations",
+    thumbnail: "https://dummyimage.com/400x300/ff0000/ffffff&text=Shinchan",
+    templateFile: "/templates/shinchan-fun.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Crayon Shin-chan Cartoon Theme
+- Hero Section: Bright primary colors (Red, Yellow, Blue), bouncing Shinchan character, comic bubbles
+- Features Section: 'Action Kamen' cards, 'Kasukabe Defense Group' team section
+- Gallery: Polaroid style with doodle borders, sticker effects
+- Typography: Comic Sans or playful handwritten fonts, bold outlines
+- Animations: Bouncing elements, wiggle effects, 'Action Beam' transitions, running Shiro dog
+- UI: Rounded corners, thick black borders, crayon texture backgrounds
+`
+  },
+  {
+    id: "spiderman-hero",
+    name: "Spiderman Hero",
+    description: "Action-packed superhero theme with web-swinging effects",
+    thumbnail: "https://dummyimage.com/400x300/cc0000/ffffff&text=Spiderman",
+    templateFile: "/templates/spiderman-hero.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Spiderman / Marvel Comic Theme
+- Hero Section: 3D City skyline parallax, swinging Spiderman, dynamic web layers
+- Features Section: 'Spider-Sense' tingling cards, 'Gadgets' showcase with blueprints
+- Gallery: Comic book panel layout, halftone pattern overlays
+- Typography: 'Bangers' or comic book fonts, italicized action text
+- Animations: Web shooting transitions, swinging camera movement, glitch/comic text effects
+- UI: Red/Blue/Black scheme, spiderweb background patterns, angular tech borders
+`
+  },
+  {
+    id: "got-epic",
+    name: "Game of Thrones",
+    description: "Epic medieval fantasy with fire and ice effects",
+    thumbnail: "https://dummyimage.com/400x300/000000/ffffff&text=GoT",
+    templateFile: "/templates/got-epic.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Game of Thrones / Medieval Fantasy
+- Hero Section: Iron Throne 3D model, falling snow/ash particles, dragon flight animation
+- Features Section: 'Great Houses' sigil cards (Stark, Lannister, Targaryen), 'Night's Watch' oath
+- Gallery: Map of Westeros zoom effect, parchment textures
+- Typography: 'Cinzel' or medieval serif fonts, metallic gold/silver text
+- Animations: Fire breathing dragon, freezing ice overlay, sword clash transitions, map unfolding
+- UI: Dark iron textures, gold filigree, stone backgrounds, cinematic lighting
+`
+  },
+  {
+    id: "stranger-things-retro",
+    name: "Stranger Things",
+    description: "80s Sci-Fi horror with neon and upside-down effects",
+    thumbnail: "https://dummyimage.com/400x300/000000/ff0000&text=Stranger+Things",
+    templateFile: "/templates/stranger-things-retro.html",
+    category: "Gaming",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Stranger Things / 80s Retro Synthwave
+- Hero Section: Neon red logo flicker, 'Upside Down' particle spores, bike silhouette parallax
+- Features Section: 'Hawkins Lab' files, 'D&D Party' character cards
+- Gallery: Polaroid wall with Christmas lights blinking, VHS glitch effects
+- Typography: 'Benguiat' (Title font) and retro sans-serifs, neon glow effects
+- Animations: Flickering lights, VHS tracking distortion, spore floating, screen shake
+- UI: Dark background, neon red/purple accents, grid lines, retro cassette tape elements
+`
+  },
 ];
 
 export const getTemplateById = (id: string): Template | undefined => {

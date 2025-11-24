@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Westeros - The Game of Thrones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background: #0a0a0a;
+            color: #d4af37;
+            overflow-x: hidden;
+        }
+        
+        /* Backgrounds */
+        .ice-fire-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(to right, #001f3f 0%, #0a0a0a 50%, #3d0000 100%);
+        }
+        
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Ccircle cx="10" cy="10" r="1" fill="white" opacity="0.5"/%3E%3Ccircle cx="50" cy="50" r="1" fill="orange" opacity="0.5"/%3E%3C/svg%3E');
+            animation: snow 20s linear infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes snow {
+            from { background-position: 0 0; }
+            to { background-position: 100px 100px; }
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem;
+            background: linear-gradient(to bottom, #000, transparent);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #d4af37, #8b4513);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        
+        .logo::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #d4af37, transparent);
+            margin-top: 0.5rem;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 2rem;
+        }
+        
+        .throne-model {
+            font-size: 8rem;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.3));
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.3)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 50px rgba(212, 175, 55, 0.5)); }
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 5rem;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #a5f3fc, #fff, #fca5a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            color: #aaa;
+            margin-bottom: 3rem;
+            letter-spacing: 2px;
+        }
+        
+        .btn-epic {
+            background: transparent;
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            padding: 1rem 3rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-epic::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-epic:hover::before {
+            left: 100%;
+        }
+        
+        .btn-epic:hover {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        /* Houses Section */
+        .houses-section {
+            padding: 6rem 4rem;
+            background: url('data:image/svg+xml;utf8,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="100" height="100" fill="%230f0f0f"/%3E%3Cpath d="M0 0 L100 100 M100 0 L0 100" stroke="%231a1a1a" stroke-width="1"/%3E%3C/svg%3E');
+        }
+        
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+        
+        .sigil-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .sigil-card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #333;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+        }
+        
+        .sigil-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .sigil-icon {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            display: block;
+            transition: transform 0.5s;
+        }
+        
+        .sigil-card:hover .sigil-icon {
+            transform: scale(1.2);
+        }
+        
+        .house-name {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        
+        .house-words {
+            font-style: italic;
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        /* Stark */
+        .stark:hover { border-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.1); }
+        .stark .sigil-icon { color: #fff; }
+        
+        /* Lannister */
+        .lannister:hover { border-color: #d4af37; box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        .lannister .sigil-icon { color: #d4af37; }
+        
+        /* Targaryen */
+        .targaryen:hover { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.1); }
+        .targaryen .sigil-icon { color: #ef4444; }
+        
+        /* Map Section */
+        .map-section {
+            height: 80vh;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-top: 2px solid #d4af37;
+            border-bottom: 2px solid #d4af37;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, #000 90%);
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .map-content {
+            z-index: 3;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3rem;
+            border: 1px solid #d4af37;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: #050505;
+            border-top: 1px solid #333;
+        }
+        
+        .footer-text {
+            font-family: 'Cinzel', serif;
+            color: #666;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="ice-fire-bg"></div>
+    <div class="particles"></div>
+
+    <header>
+        <div class="logo">WESTEROS</div>
+    </header>
+
+    <section class="hero">
+        <div class="throne-model">⚔️</div>
+        <h1>Winter is Coming</h1>
+        <p class="subtitle">When you play the game of thrones, you win or you die.</p>
+        <button class="btn-epic" onclick="document.getElementById('game-screen').scrollIntoView({behavior: 'smooth'})">Claim the Throne</button>
+    </section>
+
+    <section class="houses-section">
+        <h2 class="section-title">The Great Houses</h2>
+        <div class="sigil-grid">
+            <div class="sigil-card stark">
+                <span class="sigil-icon">🐺</span>
+                <h3 class="house-name">House Stark</h3>
+                <p class="house-words">"Winter Is Coming"</p>
+            </div>
+            <div class="sigil-card lannister">
+                <span class="sigil-icon">🦁</span>
+                <h3 class="house-name">House Lannister</h3>
+                <p class="house-words">"Hear Me Roar"</p>
+            </div>
+            <div class="sigil-card targaryen">
+                <span class="sigil-icon">🐉</span>
+                <h3 class="house-name">House Targaryen</h3>
+                <p class="house-words">"Fire and Blood"</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="map-section">
+        <div class="map-overlay"></div>
+        <div class="map-content">
+            <h2 class="section-title" style="margin-bottom: 2rem;">The Seven Kingdoms</h2>
+            <p style="margin-bottom: 2rem; max-width: 600px; line-height: 1.8;">
+                From the Wall in the North to the Red Waste in the East, explore the lands of ice and fire.
+                Conquer territories, forge alliances, and prepare for the Long Night.
+            </p>
+            <button class="btn-epic">View Map</button>
+        </div>
+    </section>
+
+    <section id="game-screen" style="padding: 6rem 2rem; background: #1a1a1a; text-align: center; border-top: 2px solid #d4af37;">
+        <h2 class="section-title">The War Room</h2>
+        <p class="subtitle" style="margin-bottom: 2rem;">Command your armies. Conquer the Seven Kingdoms.</p>
+        
+        <div style="max-width: 1000px; margin: 0 auto; height: 600px; background: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop') center/cover; border: 10px solid #3e2723; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+            <!-- Map Overlay -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(62, 39, 35, 0.3);"></div>
+            
+            <!-- Map Markers -->
+            <div class="marker" style="top: 20%; left: 30%;" onclick="alert('Winterfell Secured!')">🐺</div>
+            <div class="marker" style="top: 60%; left: 20%;" onclick="alert('Casterly Rock Besieged!')">🦁</div>
+            <div class="marker" style="top: 50%; right: 20%;" onclick="alert('Dragonstone Claimed!')">🐉</div>
+            
+            <!-- Controls -->
+            <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8); padding: 1rem; display: flex; justify-content: center; gap: 2rem;">
+                <button class="btn-epic" onclick="alert('Dragons Deployed! 🔥')">Deploy Dragons</button>
+                <button class="btn-epic" onclick="alert('The Wall is Manned! ❄️')">Defend The Wall</button>
+            </div>
+            
+            <style>
+                .marker {
+                    position: absolute;
+                    font-size: 3rem;
+                    cursor: pointer;
+                    transition: transform 0.3s;
+                    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+                }
+                .marker:hover { transform: scale(1.2) translateY(-10px); }
+            </style>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-text">
+            &copy; 298 AC THE IRON THRONE. ALL RIGHTS RESERVED.
+        </div>
+    </footer>
+</body>
+</html>

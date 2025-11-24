@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Daily Grind - Coffee & Co.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Pacifico&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            background: #fffaf0;
+            color: #3e2723;
+            overflow-x: hidden;
+        }
+        
+        /* Background Texture */
+        .bg-texture {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(#d7ccc8 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(139, 69, 19, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #d7ccc8;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Lobster', cursive;
+            font-size: 6rem;
+            color: #3e2723;
+            text-shadow: 3px 3px 0px #d7ccc8;
+            margin-bottom: 1rem;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            color: #5d4037;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+        
+        /* Coffee Cup Animation */
+        .cup-container {
+            position: relative;
+            width: 200px;
+            height: 160px;
+            margin: 2rem auto;
+        }
+        
+        .cup {
+            font-size: 150px;
+            animation: wiggle 4s ease-in-out infinite;
+            display: block;
+        }
+        
+        .steam {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            width: 20px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            filter: blur(8px);
+            opacity: 0;
+            animation: rise 3s infinite;
+        }
+        
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { opacity: 0.6; }
+            100% { transform: translateY(-60px) scale(2); opacity: 0; }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Menu Grid */
+        .menu-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-family: 'Lobster', cursive;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #3e2723;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .menu-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #efebe9;
+            position: relative;
+            transition: transform 0.3s;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-5px) rotate(1deg);
+            box-shadow: 0 10px 20px rgba(62, 39, 35, 0.1);
+        }
+        
+        .menu-card h3 {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.8rem;
+            color: #5d4037;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-weight: bold;
+            color: #8d6e63;
+            font-size: 1.2rem;
+        }
+        
+        /* Falling Beans */
+        .bean {
+            position: fixed;
+            top: -50px;
+            font-size: 24px;
+            z-index: 0;
+            pointer-events: none;
+            animation: fall linear infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+        
+        /* Polaroid Gallery */
+        .gallery {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 4rem 0;
+        }
+        
+        .polaroid {
+            background: #fff;
+            padding: 1rem 1rem 3rem 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: rotate(-3deg);
+            transition: transform 0.3s;
+            width: 250px;
+        }
+        
+        .polaroid:nth-child(even) {
+            transform: rotate(2deg);
+        }
+        
+        .polaroid:hover {
+            transform: scale(1.05) rotate(0deg);
+            z-index: 10;
+        }
+        
+        .polaroid-img {
+            width: 100%;
+            height: 200px;
+            background: #d7ccc8;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .caption {
+            font-family: 'Pacifico', cursive;
+            text-align: center;
+            color: #3e2723;
+        }
+        
+        /* Footer */
+        footer {
+            background: #3e2723;
+            color: #d7ccc8;
+            text-align: center;
+            padding: 3rem;
+            margin-top: 4rem;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="bg-texture"></div>
+    <div id="beans-container"></div>
+
+    <header>
+        <div class="logo">☕ The Daily Grind</div>
+        <nav>
+            <ul>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#location">Visit Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="cup-container">
+            <div class="steam" style="animation-delay: 0s; left: 40%"></div>
+            <div class="steam" style="animation-delay: 1s; left: 50%"></div>
+            <div class="steam" style="animation-delay: 2s; left: 60%"></div>
+            <span class="cup">☕</span>
+        </div>
+        <h1>Fresh Roasted Daily</h1>
+        <p class="subtitle">Serving happiness one cup at a time since 1995</p>
+    </section>
+
+    <section id="menu" class="menu-section">
+        <h2 class="section-title">Signature Blends</h2>
+        <div class="grid">
+            <div class="menu-card">
+                <span class="price">$4.50</span>
+                <h3>Classic Cappuccino</h3>
+                <p>Rich espresso topped with frothy steamed milk and a dusting of cocoa.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$5.00</span>
+                <h3>Caramel Macchiato</h3>
+                <p>Vanilla syrup, steamed milk, espresso, and caramel drizzle.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$3.75</span>
+                <h3>House Cold Brew</h3>
+                <p>Steeped for 24 hours for a smooth, bold flavor without bitterness.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$4.75</span>
+                <h3>Hazelnut Latte</h3>
+                <p>Espresso with steamed milk and roasted hazelnut syrup.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$3.50</span>
+                <h3>Double Espresso</h3>
+                <p>Two shots of our signature dark roast blend.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$5.25</span>
+                <h3>Mocha Madness</h3>
+                <p>Espresso, dark chocolate, steamed milk, and whipped cream.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 6rem;">Fresh Pastries</h2>
+        <div class="grid">
+            <div class="menu-card">
+                <span class="price">$3.25</span>
+                <h3>Butter Croissant</h3>
+                <p>Flaky, buttery layers baked fresh every morning.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$4.00</span>
+                <h3>Blueberry Muffin</h3>
+                <p>Bursting with fresh blueberries and topped with crumble.</p>
+            </div>
+            <div class="menu-card">
+                <span class="price">$3.50</span>
+                <h3>Cinnamon Roll</h3>
+                <p>Warm, gooey cinnamon swirl with cream cheese frosting.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="menu-section" style="background: rgba(255,255,255,0.5);">
+        <h2 class="section-title">Barista's Favorites</h2>
+        <div class="gallery">
+            <div class="polaroid">
+                <div class="polaroid-img">🥐</div>
+                <div class="caption">Fresh Pastries</div>
+            </div>
+            <div class="polaroid">
+                <div class="polaroid-img">🛋️</div>
+                <div class="caption">Cozy Corner</div>
+            </div>
+            <div class="polaroid">
+                <div class="polaroid-img">🎨</div>
+                <div class="caption">Latte Art</div>
+            </div>
+            <div class="polaroid">
+                <div class="polaroid-img">☕</div>
+                <div class="caption">Morning Brew</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="location" class="menu-section">
+        <h2 class="section-title">Visit Us</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1000px; margin: 0 auto;">
+            <div style="background: #fff; padding: 2rem; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transform: rotate(-1deg);">
+                <h3 style="font-family: 'Pacifico', cursive; font-size: 2rem; color: #3e2723; margin-bottom: 1.5rem;">Our Location</h3>
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">📍 123 Coffee Lane<br>Brewtown, CA 90210</p>
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">📞 (555) 123-4567</p>
+                <p style="font-size: 1.2rem;">✉️ hello@dailygrind.com</p>
+                
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px dashed #d7ccc8;">
+                    <h4 style="font-weight: bold; margin-bottom: 0.5rem;">Opening Hours</h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Mon - Fri</span>
+                        <span>7:00 AM - 8:00 PM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Sat - Sun</span>
+                        <span>8:00 AM - 9:00 PM</span>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 8rem; margin-bottom: 1rem;">🗺️</div>
+                <p style="font-style: italic; color: #5d4037;">"The best spot in town to relax, work, or catch up with friends."</p>
+                <button style="margin-top: 2rem; padding: 1rem 2rem; background: #3e2723; color: #fff; border: none; font-family: 'Lato', sans-serif; font-weight: bold; cursor: pointer; transition: transform 0.2s;">Get Directions</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Open Daily: 7AM - 8PM</p>
+        <p>&copy; 2025 The Daily Grind. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Create falling beans
+        const container = document.getElementById('beans-container');
+        const beans = ['☕', '🫘'];
+        
+        for (let i = 0; i < 15; i++) {
+            const bean = document.createElement('div');
+            bean.className = 'bean';
+            bean.textContent = beans[Math.floor(Math.random() * beans.length)];
+            bean.style.left = Math.random() * 100 + '%';
+            bean.style.animationDuration = (Math.random() * 5 + 10) + 's';
+            bean.style.animationDelay = Math.random() * 10 + 's';
+            container.appendChild(bean);
+        }
+    </script>
+</body>
+</html>
