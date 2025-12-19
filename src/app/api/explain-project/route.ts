@@ -1,5 +1,76 @@
 import { NextRequest, NextResponse } from "next/server";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const CODE_EXPLAINER_SYSTEM_PROMPT = `You are "CodeGuru" - a friendly and expert code explainer. Your job is to explain code in a clear, structured, and visually appealing way.
+
+## Your Explanation Style:
+- Be concise but thorough
+- Use simple language that beginners can understand
+- Highlight important parts of the code
+- Use emojis sparingly to make it engaging 🎯
+
+## Output Format for Each File:
+
+### 📁 [filename]
+
+**🎯 Purpose:** [One line about what this file does]
+
+**📝 Key Code Snippet:**
+\`\`\`[language]
+[Show only the most important 5-15 lines of code]
+\`\`\`
+
+**💡 Explanation:**
+- Point 1: [Explain what this part does]
+- Point 2: [Explain another important part]
+- Point 3: [Any important detail]
+
+---
+
+## At the End - Project Summary:
+
+### 🚀 Project Overview
+[2-3 sentences about what the entire project does]
+
+### 🔧 Tech Stack Used
+- [List technologies/frameworks detected]
+
+### 📊 Project Structure
+[Brief description of how files work together]
+
+IMPORTANT: Keep explanations SHORT and FOCUSED. Don't show entire code files - only show the most important snippets (5-15 lines max per file).`;
+
+async function generateWithGPT(prompt: string, systemPrompt?: string): Promise<string | null> {
+  try {
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
+    
+    if (systemPrompt) {
+      messages.push({
+        role: "system",
+        content: systemPrompt,
+      });
+    }
+    
+    messages.push({
+      role: "user",
+      content: prompt,
+    });
+
+    const response = await openai.chat.completions.create({
+      model: "o4-mini",
+      messages,
+      max_completion_tokens: 16000,
+    });
+    return response.choices[0]?.message?.content || null;
+  } catch (error) {
+    console.error("OpenAI API error:", error);
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +93,7 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ files: fragment.files });
     }
-    // If only query is sent, treat as Gemini chatbot
+    // If only query is sent, treat as GPT chatbot
     if (body.query && !body.files) {
       const prompt = body.query;
 
@@ -36,63 +107,33 @@ export async function POST(req: NextRequest) {
       if (forbiddenWords.some(word => prompt.toLowerCase().includes(word))) {
         return NextResponse.json({ error: "Query contains forbidden content." }, { status: 400 });
       }
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: prompt }],
-              },
-            ],
-          }),
-        }
-      );
-      const data = await response.json();
-      let explanation = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      const explanation = await generateWithGPT(prompt);
       if (!explanation) {
-        console.error("Gemini response:", JSON.stringify(data, null, 2));
-        return NextResponse.json({ error: "No explanation generated.", fullResponse: data });
+        return NextResponse.json({ error: "No explanation generated." }, { status: 500 });
       }
       return NextResponse.json({ explanation });
     }
 
-    // ...existing code for code explanation...
+    // Code explanation with better structure
     const { files } = body;
     if (!files || typeof files !== "object") {
       return NextResponse.json({ error: "No files provided." }, { status: 400 });
     }
+    
     const fileSummaries = Object.entries(files)
-      .map(([path, content]) => `File: ${path}\n${content}`)
+      .map(([path, content]) => `=== FILE: ${path} ===\n${content}`)
       .join("\n\n");
-    const prompt = `You are an expert software engineer. For each file in the following project, do the following:\n\n1. Show the file name as a heading.\n2. Show the code in a proper rounded boundary code block.\n3. Write a clear, simple explanation of what the code does.\n\nAfter all files, provide a short overall project summary again in box.\n\nProject files:\n\n${fileSummaries}`;
+    
+    const prompt = `Please analyze and explain this project. Remember to show only KEY CODE SNIPPETS (5-15 lines max per file), not the entire code.\n\nProject Files:\n\n${fileSummaries}`;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }],
-            },
-          ],
-        }),
-      }
-    );
-    const data = await response.json();
-    let explanation = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const explanation = await generateWithGPT(prompt, CODE_EXPLAINER_SYSTEM_PROMPT);
     if (!explanation) {
-      console.error("Gemini response:", JSON.stringify(data, null, 2));
-      return NextResponse.json({ error: "No explanation generated.", fullResponse: data });
+      return NextResponse.json({ error: "No explanation generated." }, { status: 500 });
     }
     return NextResponse.json({ explanation });
   } catch (e) {
+    console.error("Error in explain-project:", e);
     return NextResponse.json({ error: "Failed to generate explanation." }, { status: 500 });
   }
 }
