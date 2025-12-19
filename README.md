@@ -4,9 +4,7 @@ Build stunning websites with AI in seconds! Just describe what you want, and Gen
 
 ## 🎬 Demo Video
 
-[![Watch Demo](https://img.youtube.com/vi/NH4QOznT8ws/maxresdefault.jpg)](https://www.youtube.com/watch?v=NH4QOznT8ws)
-
-> 👆 Click the image above to watch the full demo on YouTube
+https://github.com/user-attachments/assets/83e8384d-63ef-40fe-b9e8-299f4d8ea06d
 
 ---
 
