@@ -1,3 +1,15 @@
+# 🚀 Genetix - AI Website Builder
+
+Build stunning websites with AI in seconds! Just describe what you want, and Genetix will create it for you.
+
+## 🎬 Demo Video
+
+[![Watch Demo](https://img.youtube.com/vi/NH4QOznT8ws/maxresdefault.jpg)](https://www.youtube.com/watch?v=NH4QOznT8ws)
+
+> 👆 Click the image above to watch the full demo on YouTube
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
