@@ -123,6 +123,16 @@ Guidelines:
 7. Ensure cross-browser compatibility
 8. Make sure index.html is the main entry point
 9. For multi-page sites, ensure ALL pages have working navigation
+10. ADD VALUABLE COMMENTS THROUGHOUT THE CODE:
+    - Add clear, meaningful comments explaining what each section/function does
+    - Comment every major HTML section (header, nav, main, footer, etc.)
+    - Explain CSS styling choices and responsive breakpoints
+    - Document JavaScript functions, event listeners, and logic flow
+    - Use comments to separate logical sections of code
+    - Write comments that help developers understand the "why" not just the "what"
+    - Example: <!-- Navigation Menu - Contains main site links with mobile hamburger menu -->
+    - Example: /* Hero Section Styles - Full viewport height with gradient overlay */
+    - Example: // Initialize event listeners for interactive elements
 
 File Safety Rules:
 - Always start with a complete HTML5 document structure
@@ -247,6 +257,15 @@ Guidelines:
 7. Keep state management simple (data, computed, methods)
 8. For multi-page apps, each page is a separate Vue instance
 9. Make sure index.html is the main entry point
+10. ADD VALUABLE COMMENTS THROUGHOUT THE CODE:
+    - Comment every Vue component explaining its purpose
+    - Document data properties and their usage
+    - Explain computed properties and methods with clear comments
+    - Add comments for Vue directives explaining their logic
+    - Comment lifecycle hooks and what they initialize/cleanup
+    - Use HTML comments for template sections: <!-- Hero Section with reactive image binding -->
+    - Use JS comments for logic: // Toggle mobile menu visibility
+    - Document reactive state changes and watchers
 
 Instructions:
 1. Create a complete, production-ready Vue application
@@ -372,6 +391,15 @@ Guidelines:
 7. Implement lifecycle-like hooks (init, destroy)
 8. For multi-page apps, each page follows the same structure
 9. Make sure index.html is the main entry point
+10. ADD VALUABLE COMMENTS THROUGHOUT THE CODE:
+    - Document every class with JSDoc-style comments explaining its purpose
+    - Comment constructor and initialization logic
+    - Explain component lifecycle methods (init, render, destroy)
+    - Add comments for service classes and their methods
+    - Document data binding and event handling logic
+    - Use clear section separators: // ========== Component State ==========
+    - Comment DOM manipulation and rendering logic
+    - Explain dependency injection patterns used
 
 Instructions:
 1. Create a complete, production-ready Angular-style application
@@ -514,6 +542,15 @@ Guidelines:
 7. Use ES6+ features (arrow functions, destructuring, template literals)
 8. For multi-page apps, each page follows reactive patterns
 9. Make sure index.html is the main entry point
+10. ADD VALUABLE COMMENTS THROUGHOUT THE CODE:
+    - Document reactive store creation and purpose
+    - Comment subscription handlers explaining state changes
+    - Explain reactivity patterns and how updates propagate
+    - Add comments for component rendering logic
+    - Document event handlers and user interactions
+    - Use clear comments: // Reactive store for managing app state
+    - Comment CSS transitions and animations
+    - Explain template literal rendering and dynamic content
 
 Instructions:
 1. Create a complete, production-ready Svelte-style application
@@ -687,6 +724,26 @@ Additional Guidelines:
 - This rule applies to ALL components: "button", "label", "input", "slider", "progress", etc.
 - Do NOT assume the file exists just because it's a common component. Sandbox environments need every file to be explicitly created first.
 - ALWAYS insert \`"use client";\` as the very first line in any file that imports or uses React hooks (useState, useEffect, useMemo, etc.) instead of just writing import "use client" or browser APIs; this line must be above all imports, or the file will fail to compile.
+
+CODE COMMENTING (MANDATORY - Apply to ALL generated code):
+- ADD VALUABLE, MEANINGFUL COMMENTS THROUGHOUT EVERY FILE
+- Comment every component explaining its purpose and props
+- Document complex logic, algorithms, and business rules
+- Add comments for state variables explaining what they track
+- Comment useEffect hooks explaining their side effects and dependencies
+- Document event handlers and what user actions they handle
+- Use JSDoc-style comments for functions: /** @description Handles form submission */
+- Add section separators for large files: // ============ State Management ============
+- Comment conditional rendering logic explaining when/why components show
+- Document API calls, data transformations, and utility functions
+- Explain Tailwind class combinations for complex styling
+- Add TODO comments for potential improvements where relevant
+- Example comments:
+  // State to track user authentication status
+  // Handle form submission and validate input fields
+  // Render loading spinner while data is being fetched
+  // Navigate to dashboard after successful login
+  /** Card component displaying user profile information with edit capabilities */
 
 - Do NOT use relative local file paths like /images/cat.png or /sounds/beep.mp3.Instead, always use complete public URLs from CDN or image hosts (like Unsplash, Pexels, etc.)
 - If a user requests to include images or sounds:
