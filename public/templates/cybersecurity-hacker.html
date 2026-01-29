@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackOps Terminal - Ethical Hacking Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* ============ CSS Variables & Reset ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --terminal-green: #00ff41;
+            --hacker-amber: #ffb000;
+            --matrix-dark: #001100;
+            --neon-cyan: #00fff5;
+            --deep-black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --text-dim: #888888;
+            --danger-red: #ff0040;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Fira Code', monospace;
+            background: var(--deep-black);
+            color: var(--terminal-green);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* ============ Matrix Rain Background ============ */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(180deg, var(--deep-black) 0%, var(--matrix-dark) 100%);
+            overflow: hidden;
+        }
+        
+        .rain-column {
+            position: absolute;
+            top: -100%;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            color: var(--terminal-green);
+            text-shadow: 0 0 10px var(--terminal-green);
+            animation: matrix-fall linear infinite;
+            opacity: 0.7;
+            writing-mode: vertical-rl;
+        }
+        
+        @keyframes matrix-fall {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(200vh); }
+        }
+        
+        /* ============ Scanlines Overlay ============ */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 65, 0.03) 2px,
+                rgba(0, 255, 65, 0.03) 4px
+            );
+        }
+        
+        /* ============ Header ============ */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--matrix-dark);
+            border: 2px solid var(--terminal-green);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+        
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--terminal-green);
+            text-shadow: 0 0 20px var(--terminal-green);
+            letter-spacing: 3px;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        nav a::before {
+            content: '>';
+            margin-right: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--terminal-green);
+            text-shadow: 0 0 10px var(--terminal-green);
+        }
+        
+        nav a:hover::before {
+            opacity: 1;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-terminal {
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-terminal:hover {
+            background: var(--terminal-green);
+            color: var(--deep-black);
+            box-shadow: 0 0 20px var(--terminal-green);
+        }
+        
+        .btn-access {
+            padding: 0.6rem 1.2rem;
+            background: var(--terminal-green);
+            border: none;
+            color: var(--deep-black);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-access:hover {
+            box-shadow: 0 0 30px var(--terminal-green);
+            transform: translateY(-2px);
+        }
+        
+        /* ============ Hero Section ============ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+        }
+        
+        .terminal-window {
+            background: rgba(0, 17, 0, 0.9);
+            border: 1px solid var(--terminal-green);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        
+        .terminal-header {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+        
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27ca40; }
+        
+        .terminal-title {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        
+        .terminal-body {
+            padding: 2rem;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: left;
+        }
+        
+        .terminal-line {
+            margin-bottom: 0.8rem;
+            opacity: 0;
+            animation: typeIn 0.5s forwards;
+        }
+        
+        .terminal-line:nth-child(1) { animation-delay: 0.2s; }
+        .terminal-line:nth-child(2) { animation-delay: 0.6s; }
+        .terminal-line:nth-child(3) { animation-delay: 1s; }
+        .terminal-line:nth-child(4) { animation-delay: 1.4s; }
+        
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+        
+        .prompt {
+            color: var(--hacker-amber);
+        }
+        
+        .command {
+            color: var(--neon-cyan);
+        }
+        
+        .output {
+            color: var(--terminal-green);
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background: var(--terminal-green);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 30px var(--terminal-green), 0 0 60px var(--terminal-green);
+        }
+        
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            padding: 1rem 2.5rem;
+            background: var(--terminal-green);
+            border: none;
+            color: var(--deep-black);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 40px var(--terminal-green);
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            padding: 1rem 2.5rem;
+            background: transparent;
+            border: 2px solid var(--hacker-amber);
+            color: var(--hacker-amber);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--hacker-amber);
+            color: var(--deep-black);
+            box-shadow: 0 0 30px var(--hacker-amber);
+        }
+        
+        /* ============ Courses Section ============ */
+        .courses {
+            padding: 6rem 2rem;
+            background: linear-gradient(180deg, transparent, rgba(0, 17, 0, 0.5), transparent);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-tag {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px var(--terminal-green);
+        }
+        
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .course-card {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--terminal-green), transparent);
+            transition: left 0.5s;
+        }
+        
+        .course-card:hover {
+            border-color: var(--terminal-green);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .course-card:hover::before {
+            left: 100%;
+        }
+        
+        .course-level {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+        
+        .level-beginner {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--terminal-green);
+            border: 1px solid var(--terminal-green);
+        }
+        
+        .level-intermediate {
+            background: rgba(255, 176, 0, 0.2);
+            color: var(--hacker-amber);
+            border: 1px solid var(--hacker-amber);
+        }
+        
+        .level-advanced {
+            background: rgba(255, 0, 64, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+        }
+        
+        .course-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .course-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--terminal-green);
+        }
+        
+        .course-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(0, 255, 65, 0.1);
+            padding-top: 1rem;
+        }
+        
+        /* ============ Labs Section ============ */
+        .labs {
+            padding: 6rem 2rem;
+        }
+        
+        .labs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        
+        .labs-content h2 {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        
+        .labs-content p {
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        
+        .lab-features {
+            list-style: none;
+        }
+        
+        .lab-features li {
+            padding: 0.8rem 0;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+        }
+        
+        .lab-features li::before {
+            content: '[✓]';
+            color: var(--terminal-green);
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .labs-preview {
+            background: rgba(0, 17, 0, 0.9);
+            border: 1px solid var(--terminal-green);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .preview-header {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+        
+        .preview-body {
+            padding: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .preview-line {
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-line .comment {
+            color: #666;
+        }
+        
+        .preview-line .keyword {
+            color: var(--hacker-amber);
+        }
+        
+        .preview-line .function {
+            color: var(--neon-cyan);
+        }
+        
+        .preview-line .string {
+            color: var(--terminal-green);
+        }
+        
+        /* ============ Certifications Section ============ */
+        .certifications {
+            padding: 6rem 2rem;
+            background: linear-gradient(180deg, transparent, rgba(0, 17, 0, 0.5), transparent);
+        }
+        
+        .certs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .cert-card {
+            background: var(--dark-gray);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+        }
+        
+        .cert-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--terminal-green), var(--neon-cyan));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+        
+        .cert-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--terminal-green);
+        }
+        
+        .cert-card:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .cert-badge {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--terminal-green), var(--neon-cyan));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .cert-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--terminal-green);
+        }
+        
+        .cert-card p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        
+        /* ============ CTA Section ============ */
+        .cta-section {
+            padding: 6rem 2rem;
+        }
+        
+        .cta-box {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 17, 0, 0.8);
+            border: 2px solid var(--terminal-green);
+            padding: 4rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .cta-box::before,
+        .cta-box::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--terminal-green);
+        }
+        
+        .cta-box::before {
+            top: -10px;
+            left: -10px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .cta-box::after {
+            bottom: -10px;
+            right: -10px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        .cta-box h2 {
+            margin-bottom: 1rem;
+        }
+        
+        .cta-box p {
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* ============ Footer ============ */
+        footer {
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(0, 255, 65, 0.2);
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-logo .logo-text {
+            font-size: 1.2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--terminal-green);
+        }
+        
+        .footer-copy {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+        
+        /* ============ Responsive Design ============ */
+        @media (max-width: 1024px) {
+            .labs-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-box {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <div class="matrix-rain">
+        <span class="rain-column" style="left: 5%; animation-duration: 15s;">01001000 01000001 01000011 01001011</span>
+        <span class="rain-column" style="left: 15%; animation-duration: 12s; animation-delay: 2s;">10110101 00111010 11001100</span>
+        <span class="rain-column" style="left: 25%; animation-duration: 18s; animation-delay: 1s;">アイウエオカキクケコ</span>
+        <span class="rain-column" style="left: 35%; animation-duration: 14s; animation-delay: 3s;">01110011 01100101 01100011</span>
+        <span class="rain-column" style="left: 45%; animation-duration: 16s; animation-delay: 0.5s;">サシスセソタチツテト</span>
+        <span class="rain-column" style="left: 55%; animation-duration: 13s; animation-delay: 2.5s;">00110001 00110000 00110001</span>
+        <span class="rain-column" style="left: 65%; animation-duration: 17s; animation-delay: 1.5s;">ナニヌネノハヒフヘホ</span>
+        <span class="rain-column" style="left: 75%; animation-duration: 11s; animation-delay: 4s;">01000011 01011001 01000010</span>
+        <span class="rain-column" style="left: 85%; animation-duration: 19s; animation-delay: 0.8s;">マミムメモヤユヨラリ</span>
+        <span class="rain-column" style="left: 95%; animation-duration: 14s; animation-delay: 3.5s;">11110000 10101010 00001111</span>
+    </div>
+    
+    <!-- Scanlines Overlay -->
+    <div class="scanlines"></div>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">💀</div>
+            <span class="logo-text">HACKOPS</span>
+        </div>
+        <nav>
+            <a href="#courses">Courses</a>
+            <a href="#labs">Labs</a>
+            <a href="#certifications">Certifications</a>
+            <a href="#community">Community</a>
+            <a href="#resources">Resources</a>
+        </nav>
+        <div class="header-actions">
+            <button class="btn-terminal">Login</button>
+            <button class="btn-access">Get Access</button>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                    <span class="terminal-title">hackops@kali:~</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">
+                        <span class="prompt">root@hackops:~#</span> <span class="command">./init_training.sh</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">[*] Initializing ethical hacking environment...</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">[+] 500+ penetration testing labs loaded</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">[+] System ready. Welcome, operator.</span> <span class="cursor"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <h1>HACKOPS TERMINAL</h1>
+            <p class="hero-desc">Master ethical hacking with hands-on penetration testing labs, real-world scenarios, and industry-recognized certifications.</p>
+            
+            <div class="hero-buttons">
+                <button class="btn-primary">Start Hacking</button>
+                <button class="btn-secondary">View Labs</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Courses Section -->
+    <section class="courses" id="courses">
+        <div class="section-header">
+            <span class="section-tag">Training Modules</span>
+            <h2>Master the Art of Hacking</h2>
+        </div>
+        
+        <div class="courses-grid">
+            <div class="course-card">
+                <span class="course-level level-beginner">Beginner</span>
+                <div class="course-icon">🔓</div>
+                <h3>Linux Fundamentals</h3>
+                <p>Master the command line and essential Linux skills for penetration testing.</p>
+                <div class="course-meta">
+                    <span>📚 45 Lessons</span>
+                    <span>⏱️ 12 Hours</span>
+                </div>
+            </div>
+            
+            <div class="course-card">
+                <span class="course-level level-beginner">Beginner</span>
+                <div class="course-icon">🌐</div>
+                <h3>Network Hacking</h3>
+                <p>Learn network scanning, enumeration, and exploitation techniques.</p>
+                <div class="course-meta">
+                    <span>📚 60 Lessons</span>
+                    <span>⏱️ 18 Hours</span>
+                </div>
+            </div>
+            
+            <div class="course-card">
+                <span class="course-level level-intermediate">Intermediate</span>
+                <div class="course-icon">🕸️</div>
+                <h3>Web App Pentesting</h3>
+                <p>Exploit OWASP Top 10 vulnerabilities in web applications.</p>
+                <div class="course-meta">
+                    <span>📚 80 Lessons</span>
+                    <span>⏱️ 25 Hours</span>
+                </div>
+            </div>
+            
+            <div class="course-card">
+                <span class="course-level level-intermediate">Intermediate</span>
+                <div class="course-icon">🔑</div>
+                <h3>Password Cracking</h3>
+                <p>Advanced techniques for password attacks and hash cracking.</p>
+                <div class="course-meta">
+                    <span>📚 35 Lessons</span>
+                    <span>⏱️ 10 Hours</span>
+                </div>
+            </div>
+            
+            <div class="course-card">
+                <span class="course-level level-advanced">Advanced</span>
+                <div class="course-icon">🛡️</div>
+                <h3>Active Directory</h3>
+                <p>Compromise enterprise AD environments and escalate privileges.</p>
+                <div class="course-meta">
+                    <span>📚 70 Lessons</span>
+                    <span>⏱️ 30 Hours</span>
+                </div>
+            </div>
+            
+            <div class="course-card">
+                <span class="course-level level-advanced">Advanced</span>
+                <div class="course-icon">🐛</div>
+                <h3>Exploit Development</h3>
+                <p>Write custom exploits and bypass modern security controls.</p>
+                <div class="course-meta">
+                    <span>📚 50 Lessons</span>
+                    <span>⏱️ 35 Hours</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Labs Section -->
+    <section class="labs" id="labs">
+        <div class="labs-container">
+            <div class="labs-content">
+                <span class="section-tag">Hacking Labs</span>
+                <h2>Real-World Attack Scenarios</h2>
+                <p>Practice in isolated environments that simulate real corporate networks, web applications, and vulnerable systems.</p>
+                
+                <ul class="lab-features">
+                    <li>500+ vulnerable machines to hack</li>
+                    <li>Realistic corporate network simulations</li>
+                    <li>CTF-style challenges with flags</li>
+                    <li>Step-by-step walkthroughs available</li>
+                    <li>New machines added weekly</li>
+                </ul>
+            </div>
+            
+            <div class="labs-preview">
+                <div class="preview-header">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                    <span style="margin-left: auto; color: #888; font-size: 0.8rem;">exploit.py</span>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-line"><span class="comment"># Buffer overflow exploit</span></div>
+                    <div class="preview-line"><span class="keyword">import</span> <span class="function">socket</span></div>
+                    <div class="preview-line"><span class="keyword">import</span> <span class="function">struct</span></div>
+                    <div class="preview-line"></div>
+                    <div class="preview-line"><span class="function">target</span> = <span class="string">"10.10.10.50"</span></div>
+                    <div class="preview-line"><span class="function">port</span> = <span class="string">4444</span></div>
+                    <div class="preview-line"></div>
+                    <div class="preview-line"><span class="comment"># Shellcode payload</span></div>
+                    <div class="preview-line"><span class="function">shellcode</span> = <span class="string">b"\x90"</span> * <span class="string">16</span></div>
+                    <div class="preview-line"><span class="function">shellcode</span> += <span class="string">b"\x31\xc0\x50..."</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Certifications Section -->
+    <section class="certifications" id="certifications">
+        <div class="section-header">
+            <span class="section-tag">Certifications</span>
+            <h2>Prove Your Skills</h2>
+        </div>
+        
+        <div class="certs-grid">
+            <div class="cert-card">
+                <div class="cert-badge">🎯</div>
+                <h3>OSCP Prep</h3>
+                <p>Prepare for the Offensive Security Certified Professional exam</p>
+            </div>
+            
+            <div class="cert-card">
+                <div class="cert-badge">🌐</div>
+                <h3>eWPT Prep</h3>
+                <p>Web Application Penetration Tester certification path</p>
+            </div>
+            
+            <div class="cert-card">
+                <div class="cert-badge">🔴</div>
+                <h3>Red Team Ops</h3>
+                <p>Advanced adversary simulation and red team operations</p>
+            </div>
+            
+            <div class="cert-card">
+                <div class="cert-badge">🐛</div>
+                <h3>Bug Bounty Hunter</h3>
+                <p>Real-world bug bounty hunting methodology</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-box">
+            <h2>Ready to Become a Hacker?</h2>
+            <p>Join 50,000+ security professionals learning to hack ethically</p>
+            <button class="btn-primary">Start Free Trial</button>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="logo-text">HACKOPS TERMINAL</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Courses</a>
+                <a href="#">Labs</a>
+                <a href="#">Certifications</a>
+                <a href="#">Blog</a>
+                <a href="#">Discord</a>
+                <a href="#">Support</a>
+            </div>
+            <p class="footer-copy">© 2025 HackOps Terminal. Hack responsibly. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

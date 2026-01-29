@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHANTOM VAULT - Dark Web Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============ Core Variables & Reset ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --phantom-cyan: #00ffe5;
+            --phantom-magenta: #ff00ff;
+            --phantom-yellow: #f0ff00;
+            --blood-red: #dc143c;
+            --ghost-white: #f8f8ff;
+            --deep-black: #050507;
+            --card-dark: rgba(8, 8, 12, 0.95);
+            --glitch-1: #00ffe5;
+            --glitch-2: #ff00ff;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--deep-black);
+            color: var(--ghost-white);
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+        
+        /* ============ Glitch Background ============ */
+        .glitch-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 229, 0.03) 2px,
+                    rgba(0, 255, 229, 0.03) 4px
+                ),
+                radial-gradient(ellipse at 20% 30%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0, 255, 229, 0.1) 0%, transparent 50%),
+                var(--deep-black);
+        }
+        
+        /* ============ VHS Noise Effect ============ */
+        .vhs-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        /* ============ Scanline Overlay ============ */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 50%
+            );
+            background-size: 100% 4px;
+        }
+        
+        /* ============ Header ============ */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 3rem;
+            background: rgba(5, 5, 7, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 229, 0.2);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-skull {
+            font-size: 2.5rem;
+            animation: glitchSkull 3s infinite;
+        }
+        
+        @keyframes glitchSkull {
+            0%, 95%, 100% { transform: translate(0); filter: none; }
+            96% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+            97% { transform: translate(2px, -1px); filter: hue-rotate(180deg); }
+            98% { transform: translate(-1px, -1px); filter: hue-rotate(270deg); }
+            99% { transform: translate(1px, 1px); }
+        }
+        
+        .logo-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: var(--phantom-cyan);
+            text-shadow: 
+                2px 2px 0 var(--phantom-magenta),
+                -1px -1px 0 var(--phantom-yellow);
+            animation: textGlitch 5s infinite;
+        }
+        
+        @keyframes textGlitch {
+            0%, 90%, 100% { text-shadow: 2px 2px 0 var(--phantom-magenta), -1px -1px 0 var(--phantom-yellow); }
+            91% { text-shadow: -3px 0 var(--phantom-magenta), 3px 0 var(--phantom-yellow); }
+            92% { text-shadow: 3px 0 var(--phantom-magenta), -3px 0 var(--phantom-yellow); }
+            93% { text-shadow: 0 0 var(--phantom-cyan); }
+        }
+        
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: var(--ghost-white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        nav a::before {
+            content: '[';
+            color: var(--phantom-cyan);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        nav a::after {
+            content: ']';
+            color: var(--phantom-cyan);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--phantom-cyan);
+        }
+        
+        nav a:hover::before,
+        nav a:hover::after {
+            opacity: 1;
+        }
+        
+        .access-btn {
+            padding: 0.8rem 2rem;
+            background: transparent;
+            border: 2px solid var(--phantom-cyan);
+            color: var(--phantom-cyan);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .access-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--phantom-cyan), transparent);
+            transition: left 0.5s;
+        }
+        
+        .access-btn:hover {
+            background: var(--phantom-cyan);
+            color: var(--deep-black);
+            box-shadow: 0 0 30px var(--phantom-cyan);
+        }
+        
+        .access-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* ============ Hero Section ============ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 4rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            z-index: 1;
+        }
+        
+        .warning-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(220, 20, 60, 0.2);
+            border: 1px solid var(--blood-red);
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 20, 60, 0.5); }
+            50% { box-shadow: 0 0 20px 5px rgba(220, 20, 60, 0.3); }
+        }
+        
+        .warning-text {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: var(--blood-red);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 3rem;
+            line-height: 1.4;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .glitch-text {
+            position: relative;
+            display: inline-block;
+            color: var(--ghost-white);
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch-text::before {
+            color: var(--phantom-cyan);
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+        
+        .glitch-text::after {
+            color: var(--phantom-magenta);
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+        
+        @keyframes glitch-1 {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(3px, -3px); }
+            60% { transform: translate(-3px, -3px); }
+            80% { transform: translate(3px, 3px); }
+            100% { transform: translate(0); }
+        }
+        
+        @keyframes glitch-2 {
+            0% { transform: translate(0); }
+            25% { transform: translate(3px, -3px); }
+            50% { transform: translate(-3px, 3px); }
+            75% { transform: translate(3px, 3px); }
+            100% { transform: translate(0); }
+        }
+        
+        .hero p {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 3rem;
+            font-family: 'Inter', sans-serif;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+        }
+        
+        .btn-primary {
+            padding: 1.2rem 3rem;
+            background: var(--phantom-cyan);
+            border: none;
+            color: var(--deep-black);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 50px var(--phantom-cyan);
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            padding: 1.2rem 3rem;
+            background: transparent;
+            border: 2px solid var(--phantom-magenta);
+            color: var(--phantom-magenta);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--phantom-magenta);
+            color: var(--deep-black);
+            box-shadow: 0 0 30px var(--phantom-magenta);
+        }
+        
+        /* ============ Terminal Stats ============ */
+        .terminal-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 2rem;
+            background: var(--card-dark);
+            border: 1px solid rgba(0, 255, 229, 0.2);
+            position: relative;
+        }
+        
+        .terminal-stats::before {
+            content: '> LIVE INTELLIGENCE FEED';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--deep-black);
+            padding: 0 10px;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            color: var(--phantom-cyan);
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 1.5rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-box:last-child {
+            border-right: none;
+        }
+        
+        .stat-value {
+            font-family: 'VT323', monospace;
+            font-size: 2.5rem;
+            color: var(--phantom-cyan);
+            text-shadow: 0 0 20px var(--phantom-cyan);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0.5rem;
+        }
+        
+        /* ============ Services Section ============ */
+        .services {
+            padding: 8rem 4rem;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+        
+        .section-tag {
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            color: var(--phantom-magenta);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-desc {
+            color: #888;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .service-card {
+            background: var(--card-dark);
+            border: 1px solid rgba(0, 255, 229, 0.1);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(180deg, var(--phantom-cyan), var(--phantom-magenta));
+            transition: height 0.4s;
+        }
+        
+        .service-card:hover {
+            border-color: var(--phantom-cyan);
+            transform: translateX(10px);
+        }
+        
+        .service-card:hover::before {
+            height: 100%;
+        }
+        
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .service-card h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--phantom-cyan);
+            text-transform: uppercase;
+        }
+        
+        .service-card p {
+            color: #888;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 1.5rem;
+        }
+        
+        .service-list {
+            list-style: none;
+        }
+        
+        .service-list li {
+            padding: 0.5rem 0;
+            color: #aaa;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .service-list li::before {
+            content: '>';
+            color: var(--phantom-cyan);
+            font-weight: bold;
+        }
+        
+        /* ============ Dark Web Monitor ============ */
+        .monitor-section {
+            padding: 8rem 4rem;
+            background: linear-gradient(180deg, transparent, rgba(255, 0, 255, 0.02), transparent);
+        }
+        
+        .monitor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        
+        .monitor-visual {
+            background: var(--card-dark);
+            border: 1px solid rgba(0, 255, 229, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .monitor-header {
+            background: rgba(0, 255, 229, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 229, 0.2);
+        }
+        
+        .monitor-title {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: var(--phantom-cyan);
+        }
+        
+        .monitor-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--phantom-cyan);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--phantom-cyan);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .monitor-body {
+            padding: 1.5rem;
+        }
+        
+        .leak-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.8rem;
+            border-left: 3px solid;
+            transition: all 0.3s;
+        }
+        
+        .leak-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .leak-item.critical {
+            border-color: var(--blood-red);
+        }
+        
+        .leak-item.high {
+            border-color: #ff6b00;
+        }
+        
+        .leak-item.medium {
+            border-color: var(--phantom-yellow);
+        }
+        
+        .leak-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .leak-icon {
+            font-size: 1.5rem;
+        }
+        
+        .leak-details h4 {
+            font-size: 0.95rem;
+            color: var(--ghost-white);
+            margin-bottom: 0.2rem;
+        }
+        
+        .leak-details span {
+            font-size: 0.75rem;
+            color: #666;
+            font-family: 'VT323', monospace;
+        }
+        
+        .leak-severity {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .leak-item.critical .leak-severity {
+            background: rgba(220, 20, 60, 0.3);
+            color: var(--blood-red);
+        }
+        
+        .leak-item.high .leak-severity {
+            background: rgba(255, 107, 0, 0.3);
+            color: #ff6b00;
+        }
+        
+        .leak-item.medium .leak-severity {
+            background: rgba(240, 255, 0, 0.3);
+            color: var(--phantom-yellow);
+        }
+        
+        .monitor-content h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .monitor-content p {
+            color: #888;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 255, 229, 0.1);
+            border: 1px solid rgba(0, 255, 229, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .feature-text h4 {
+            color: var(--ghost-white);
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .feature-text p {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        /* ============ Pricing Section ============ */
+        .pricing {
+            padding: 8rem 4rem;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--phantom-cyan);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--phantom-cyan);
+            color: var(--deep-black);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+            letter-spacing: 1px;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 255, 229, 0.1);
+        }
+        
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+        
+        .plan-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--phantom-cyan);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .plan-desc {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+        
+        .plan-price {
+            margin-bottom: 2rem;
+        }
+        
+        .price {
+            font-family: 'VT323', monospace;
+            font-size: 4rem;
+            color: var(--ghost-white);
+        }
+        
+        .price-period {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .plan-features li {
+            padding: 0.8rem 0;
+            color: #888;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .plan-features li::before {
+            content: '✓';
+            color: var(--phantom-cyan);
+        }
+        
+        .plan-btn {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 2px solid var(--phantom-cyan);
+            color: var(--phantom-cyan);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card.featured .plan-btn {
+            background: var(--phantom-cyan);
+            color: var(--deep-black);
+        }
+        
+        .plan-btn:hover {
+            background: var(--phantom-cyan);
+            color: var(--deep-black);
+            box-shadow: 0 0 30px var(--phantom-cyan);
+        }
+        
+        /* ============ CTA Section ============ */
+        .cta-section {
+            padding: 8rem 4rem;
+        }
+        
+        .cta-box {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 4rem;
+            background: var(--card-dark);
+            border: 1px solid var(--phantom-magenta);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-box::before,
+        .cta-box::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+        }
+        
+        .cta-box::before {
+            background: var(--phantom-cyan);
+            top: -100px;
+            left: -100px;
+        }
+        
+        .cta-box::after {
+            background: var(--phantom-magenta);
+            bottom: -100px;
+            right: -100px;
+        }
+        
+        .cta-box h2 {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-box p {
+            position: relative;
+            z-index: 1;
+            color: #888;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .cta-buttons {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        /* ============ Footer ============ */
+        footer {
+            padding: 4rem;
+            border-top: 1px solid rgba(0, 255, 229, 0.1);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+        }
+        
+        .footer-brand {
+            max-width: 300px;
+        }
+        
+        .footer-brand p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .footer-links h4 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--phantom-cyan);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .footer-links a:hover {
+            color: var(--phantom-cyan);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #444;
+            font-size: 0.8rem;
+        }
+        
+        .footer-bottom a {
+            color: var(--phantom-cyan);
+            text-decoration: none;
+        }
+        
+        /* ============ Responsive ============ */
+        @media (max-width: 1024px) {
+            .monitor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            .terminal-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stat-box {
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+            
+            .pricing-card.featured:hover {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- VHS Noise Effect -->
+    <div class="vhs-noise"></div>
+    
+    <!-- Scanline Overlay -->
+    <div class="scanline"></div>
+    
+    <!-- Glitch Background -->
+    <div class="glitch-bg"></div>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span class="logo-skull">💀</span>
+            <span class="logo-text">PHANTOM VAULT</span>
+        </div>
+        <nav>
+            <a href="#services">Intelligence</a>
+            <a href="#monitor">Monitor</a>
+            <a href="#pricing">Access</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <button class="access-btn">Enter Vault</button>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="warning-badge">
+                <span class="warning-text">⚠ Classified Intelligence</span>
+            </div>
+            <h1>
+                <span class="glitch-text" data-text="DARK WEB">DARK WEB</span><br>
+                <span class="glitch-text" data-text="INTELLIGENCE">INTELLIGENCE</span>
+            </h1>
+            <p>Advanced threat intelligence platform monitoring the dark web, criminal forums, and underground markets to protect your organization from emerging threats.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary">Request Access</button>
+                <button class="btn-secondary">View Demo</button>
+            </div>
+            <div class="terminal-stats">
+                <div class="stat-box">
+                    <span class="stat-value">15M+</span>
+                    <span class="stat-label">Credentials Monitored</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">500K</span>
+                    <span class="stat-label">Daily Alerts</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">10K+</span>
+                    <span class="stat-label">Sources Tracked</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">24/7</span>
+                    <span class="stat-label">Live Monitoring</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-header">
+            <span class="section-tag">> CAPABILITIES_</span>
+            <h2>Intelligence Services</h2>
+            <p class="section-desc">Comprehensive dark web monitoring and threat intelligence to stay ahead of adversaries</p>
+        </div>
+        <div class="services-grid">
+            <div class="service-card">
+                <span class="service-icon">🔍</span>
+                <h3>Credential Monitoring</h3>
+                <p>Real-time detection of leaked credentials from data breaches and underground markets</p>
+                <ul class="service-list">
+                    <li>Employee credential alerts</li>
+                    <li>VIP executive monitoring</li>
+                    <li>Domain-wide scanning</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🌐</span>
+                <h3>Brand Protection</h3>
+                <p>Monitor for brand impersonation, phishing kits, and counterfeit operations</p>
+                <ul class="service-list">
+                    <li>Fake domain detection</li>
+                    <li>Phishing kit tracking</li>
+                    <li>Social media monitoring</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">💬</span>
+                <h3>Forum Intelligence</h3>
+                <p>Deep infiltration of criminal forums and encrypted chat channels</p>
+                <ul class="service-list">
+                    <li>Threat actor profiling</li>
+                    <li>Attack planning alerts</li>
+                    <li>Ransomware negotiations</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">📦</span>
+                <h3>Data Breach Detection</h3>
+                <p>Early warning system for breaches before public disclosure</p>
+                <ul class="service-list">
+                    <li>Pre-disclosure alerts</li>
+                    <li>Breach validation</li>
+                    <li>Impact assessment</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">🎯</span>
+                <h3>Attack Surface Intel</h3>
+                <p>Discover exposed assets and vulnerabilities being discussed by threat actors</p>
+                <ul class="service-list">
+                    <li>Exploit chatter</li>
+                    <li>Zero-day mentions</li>
+                    <li>Targeted attack warnings</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">📊</span>
+                <h3>Threat Reports</h3>
+                <p>Actionable intelligence reports and threat landscape analysis</p>
+                <ul class="service-list">
+                    <li>Weekly briefings</li>
+                    <li>Industry reports</li>
+                    <li>Custom analysis</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Dark Web Monitor Section -->
+    <section class="monitor-section" id="monitor">
+        <div class="monitor-container">
+            <div class="monitor-visual">
+                <div class="monitor-header">
+                    <span class="monitor-title">> DARK WEB FEED</span>
+                    <span class="monitor-status"><span class="status-dot"></span> LIVE</span>
+                </div>
+                <div class="monitor-body">
+                    <div class="leak-item critical">
+                        <div class="leak-info">
+                            <span class="leak-icon">🔴</span>
+                            <div class="leak-details">
+                                <h4>Employee Credentials Detected</h4>
+                                <span>Source: RaidForums Mirror | 2 min ago</span>
+                            </div>
+                        </div>
+                        <span class="leak-severity">Critical</span>
+                    </div>
+                    <div class="leak-item high">
+                        <div class="leak-info">
+                            <span class="leak-icon">🟠</span>
+                            <div class="leak-details">
+                                <h4>Phishing Kit Targeting Brand</h4>
+                                <span>Source: Telegram Channel | 15 min ago</span>
+                            </div>
+                        </div>
+                        <span class="leak-severity">High</span>
+                    </div>
+                    <div class="leak-item medium">
+                        <div class="leak-info">
+                            <span class="leak-icon">🟡</span>
+                            <div class="leak-details">
+                                <h4>Domain Lookalike Registered</h4>
+                                <span>Source: WHOIS Monitor | 1 hr ago</span>
+                            </div>
+                        </div>
+                        <span class="leak-severity">Medium</span>
+                    </div>
+                    <div class="leak-item critical">
+                        <div class="leak-info">
+                            <span class="leak-icon">🔴</span>
+                            <div class="leak-details">
+                                <h4>Ransomware Negotiation Leak</h4>
+                                <span>Source: LockBit Blog | 3 hr ago</span>
+                            </div>
+                        </div>
+                        <span class="leak-severity">Critical</span>
+                    </div>
+                </div>
+            </div>
+            <div class="monitor-content">
+                <span class="section-tag">> REAL-TIME MONITORING_</span>
+                <h2>Stay Ahead of Threats</h2>
+                <p>Our AI-powered platform continuously scans dark web sources, providing instant alerts when your organization's data or brand is mentioned.</p>
+                <ul class="feature-list">
+                    <li>
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-text">
+                            <h4>Instant Alerts</h4>
+                            <p>Real-time notifications via email, Slack, or SIEM integration</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-text">
+                            <h4>AI-Powered Analysis</h4>
+                            <p>Machine learning filters noise and prioritizes critical threats</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feature-icon">🔗</div>
+                        <div class="feature-text">
+                            <h4>Source Correlation</h4>
+                            <p>Connect related intelligence across multiple dark web sources</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <span class="section-tag">> ACCESS_TIERS_</span>
+            <h2>Choose Your Access Level</h2>
+            <p class="section-desc">Scalable intelligence solutions for organizations of all sizes</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3 class="plan-name">Reconnaissance</h3>
+                <p class="plan-desc">Essential monitoring for startups</p>
+                <div class="plan-price">
+                    <span class="price">$499</span>
+                    <span class="price-period">/month</span>
+                </div>
+                <ul class="plan-features">
+                    <li>1 Domain monitoring</li>
+                    <li>100 Email addresses</li>
+                    <li>Daily alerts</li>
+                    <li>Basic reporting</li>
+                    <li>Email support</li>
+                </ul>
+                <button class="plan-btn">Get Started</button>
+            </div>
+            <div class="pricing-card featured">
+                <h3 class="plan-name">Infiltrator</h3>
+                <p class="plan-desc">Advanced intel for enterprises</p>
+                <div class="plan-price">
+                    <span class="price">$1,499</span>
+                    <span class="price-period">/month</span>
+                </div>
+                <ul class="plan-features">
+                    <li>10 Domains monitoring</li>
+                    <li>Unlimited emails</li>
+                    <li>Real-time alerts</li>
+                    <li>Custom reports</li>
+                    <li>API access</li>
+                </ul>
+                <button class="plan-btn">Get Started</button>
+            </div>
+            <div class="pricing-card">
+                <h3 class="plan-name">Phantom</h3>
+                <p class="plan-desc">Complete intel for global orgs</p>
+                <div class="plan-price">
+                    <span class="price">Custom</span>
+                    <span class="price-period"></span>
+                </div>
+                <ul class="plan-features">
+                    <li>Unlimited monitoring</li>
+                    <li>Dedicated analyst</li>
+                    <li>Custom integrations</li>
+                    <li>Threat hunting</li>
+                    <li>24/7 support</li>
+                </ul>
+                <button class="plan-btn">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-box">
+            <h2>Enter The Vault</h2>
+            <p>Get a free dark web exposure report for your organization. Discover what threat actors know about you.</p>
+            <div class="cta-buttons">
+                <button class="btn-primary">Free Exposure Report</button>
+                <button class="btn-secondary">Schedule Demo</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span class="logo-skull">💀</span>
+                    <span class="logo-text">PHANTOM VAULT</span>
+                </div>
+                <p>Elite dark web intelligence trusted by Fortune 500 companies and government agencies worldwide.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="#">Intelligence Feed</a></li>
+                    <li><a href="#">Credential Monitor</a></li>
+                    <li><a href="#">Brand Protection</a></li>
+                    <li><a href="#">API Access</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Partners</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Threat Reports</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Phantom Vault. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
+</body>
+</html>

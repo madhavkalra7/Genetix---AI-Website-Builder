@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORTRESS AI - Zero Trust Security Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============ Core Variables & Reset ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --fortress-gold: #ffd700;
+            --fortress-orange: #ff8c00;
+            --fortress-amber: #ffb347;
+            --electric-blue: #00bfff;
+            --steel-gray: #708090;
+            --carbon-black: #0c0c0f;
+            --card-bg: rgba(12, 12, 15, 0.95);
+            --border-gold: rgba(255, 215, 0, 0.3);
+            --text-white: #ffffff;
+            --text-gray: #9ca3af;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--carbon-black);
+            color: var(--text-white);
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+        
+        /* ============ Fortress Background ============ */
+        .fortress-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 20% 0%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(255, 140, 0, 0.05) 0%, transparent 50%),
+                linear-gradient(180deg, #0c0c0f 0%, #14141a 50%, #0c0c0f 100%);
+        }
+        
+        /* ============ Animated Grid Pattern ============ */
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+        
+        /* ============ Floating Shields ============ */
+        .floating-shields {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .shield-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: floatShield 30s ease-in-out infinite;
+        }
+        
+        @keyframes floatShield {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-50px) rotate(10deg); }
+            50% { transform: translateY(20px) rotate(-5deg); }
+            75% { transform: translateY(-30px) rotate(5deg); }
+        }
+        
+        /* ============ Header ============ */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 3rem;
+            background: rgba(12, 12, 15, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-gold);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            position: relative;
+        }
+        
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 15px;
+            border: 2px solid var(--fortress-gold);
+            opacity: 0.5;
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.2; }
+        }
+        
+        .logo-text {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange));
+            transition: width 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--fortress-gold);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-login {
+            padding: 0.7rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--steel-gray);
+            color: var(--text-gray);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        
+        .btn-login:hover {
+            border-color: var(--fortress-gold);
+            color: var(--fortress-gold);
+        }
+        
+        .btn-demo {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            border: none;
+            color: var(--carbon-black);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        
+        .btn-demo:hover {
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* ============ Hero Section ============ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 4rem;
+            position: relative;
+        }
+        
+        .hero-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        
+        .hero-content {
+            z-index: 1;
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--border-gold);
+            border-radius: 50px;
+            margin-bottom: 2rem;
+        }
+        
+        .badge-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--fortress-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .badge-text {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--fortress-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        h1 {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        h1 span {
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange), var(--fortress-amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+            max-width: 520px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+        
+        .btn-primary {
+            padding: 1.1rem 2.5rem;
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            border: none;
+            color: var(--carbon-black);
+            font-family: 'Oxanium', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 10px;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .btn-outline {
+            padding: 1.1rem 2.5rem;
+            background: transparent;
+            border: 2px solid var(--steel-gray);
+            color: var(--text-white);
+            font-family: 'Oxanium', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 10px;
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--fortress-gold);
+            color: var(--fortress-gold);
+        }
+        
+        /* ============ Trust Badges ============ */
+        .trust-badges {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+        
+        .trust-item span {
+            color: var(--fortress-gold);
+            font-size: 1.2rem;
+        }
+        
+        /* ============ Hero Visual ============ */
+        .hero-visual {
+            position: relative;
+        }
+        
+        .fortress-diagram {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .diagram-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--fortress-gold);
+        }
+        
+        .diagram-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #22c55e;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        }
+        
+        .security-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .layer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 3px solid;
+            transition: all 0.3s;
+        }
+        
+        .layer:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .layer.identity { border-color: var(--fortress-gold); }
+        .layer.device { border-color: var(--electric-blue); }
+        .layer.network { border-color: var(--fortress-orange); }
+        .layer.data { border-color: #22c55e; }
+        
+        .layer-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        
+        .layer.identity .layer-icon { background: rgba(255, 215, 0, 0.2); }
+        .layer.device .layer-icon { background: rgba(0, 191, 255, 0.2); }
+        .layer.network .layer-icon { background: rgba(255, 140, 0, 0.2); }
+        .layer.data .layer-icon { background: rgba(34, 197, 94, 0.2); }
+        
+        .layer-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .layer-info span {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+        
+        .layer-status {
+            margin-left: auto;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-verified {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .status-active {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--fortress-gold);
+        }
+        
+        /* ============ Features Section ============ */
+        .features {
+            padding: 6rem 4rem;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-tag {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--border-gold);
+            border-radius: 50px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--fortress-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+        
+        h2 {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+        
+        .section-desc {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--border-gold);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.1);
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 17px;
+            border: 1px solid var(--border-gold);
+        }
+        
+        .feature-card h3 {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        
+        .feature-card p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .feature-list li::before {
+            content: '◆';
+            color: var(--fortress-gold);
+            font-size: 0.5rem;
+        }
+        
+        /* ============ Architecture Section ============ */
+        .architecture {
+            padding: 6rem 4rem;
+            background: linear-gradient(180deg, transparent, rgba(255, 215, 0, 0.02), transparent);
+        }
+        
+        .arch-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        
+        .arch-content h2 {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        
+        .arch-content p {
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+        
+        .principle-list {
+            list-style: none;
+        }
+        
+        .principle-list li {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+        }
+        
+        .principle-icon {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--border-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .principle-text h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .principle-text p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .arch-visual {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        
+        .arch-diagram {
+            position: relative;
+            padding: 2rem;
+        }
+        
+        .core-circle {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-family: 'Oxanium', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--carbon-black);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .orbit-ring {
+            position: absolute;
+            border: 1px dashed var(--border-gold);
+            border-radius: 50%;
+            animation: rotateOrbit 30s linear infinite;
+        }
+        
+        .orbit-1 {
+            width: 250px;
+            height: 250px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .orbit-2 {
+            width: 350px;
+            height: 350px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-direction: reverse;
+        }
+        
+        @keyframes rotateOrbit {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .orbit-node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--fortress-gold);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        /* ============ Pricing Section ============ */
+        .pricing {
+            padding: 6rem 4rem;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--fortress-gold);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.featured::before {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange));
+            color: var(--carbon-black);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+        
+        .plan-name {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .plan-desc {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        
+        .plan-price {
+            margin-bottom: 2rem;
+        }
+        
+        .price {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--fortress-gold), var(--fortress-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .price-period {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+        
+        .plan-features li {
+            padding: 0.8rem 0;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .plan-features li::before {
+            content: '✓';
+            color: var(--fortress-gold);
+            font-weight: bold;
+        }
+        
+        .plan-btn {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 2px solid var(--fortress-gold);
+            color: var(--fortress-gold);
+            font-family: 'Oxanium', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card.featured .plan-btn {
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            border: none;
+            color: var(--carbon-black);
+        }
+        
+        .plan-btn:hover {
+            background: linear-gradient(135deg, var(--fortress-gold), var(--fortress-orange));
+            color: var(--carbon-black);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* ============ CTA Section ============ */
+        .cta-section {
+            padding: 6rem 4rem;
+        }
+        
+        .cta-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.05));
+            border: 1px solid var(--border-gold);
+            border-radius: 30px;
+            padding: 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+            animation: rotateCTA 40s linear infinite;
+        }
+        
+        @keyframes rotateCTA {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .cta-card h2 {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-card p {
+            position: relative;
+            z-index: 1;
+            color: var(--text-gray);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .cta-buttons {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        /* ============ Footer ============ */
+        footer {
+            padding: 4rem;
+            border-top: 1px solid var(--border-gold);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+        }
+        
+        .footer-brand p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            max-width: 300px;
+        }
+        
+        .footer-links h4 {
+            font-family: 'Oxanium', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--fortress-gold);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--fortress-gold);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+        
+        /* ============ Responsive ============ */
+        @media (max-width: 1200px) {
+            .hero-container,
+            .arch-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .fortress-diagram,
+            .arch-visual {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            .hero {
+                padding: 6rem 2rem 3rem;
+            }
+            
+            .trust-badges {
+                flex-wrap: wrap;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+            
+            .pricing-card.featured:hover {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="fortress-bg"></div>
+    <div class="grid-pattern"></div>
+    
+    <!-- Floating Shields -->
+    <div class="floating-shields">
+        <span class="shield-icon" style="left: 10%; top: 20%;">🛡️</span>
+        <span class="shield-icon" style="left: 80%; top: 15%; animation-delay: 2s;">🔒</span>
+        <span class="shield-icon" style="left: 70%; top: 70%; animation-delay: 4s;">🔐</span>
+        <span class="shield-icon" style="left: 20%; top: 75%; animation-delay: 1s;">🏰</span>
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🏰</div>
+            <span class="logo-text">Fortress AI</span>
+        </div>
+        <nav>
+            <a href="#features">Platform</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#integrations">Integrations</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#resources">Resources</a>
+        </nav>
+        <div class="header-buttons">
+            <button class="btn-login">Sign In</button>
+            <button class="btn-demo">Request Demo</button>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="security-badge">
+                    <div class="badge-icon">✓</div>
+                    <span class="badge-text">Zero Trust Verified</span>
+                </div>
+                <h1>Never Trust<br><span>Always Verify</span></h1>
+                <p>Enterprise Zero Trust security platform with AI-powered identity verification, continuous authentication, and adaptive access control.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary">Start Free Trial</button>
+                    <button class="btn-outline">See How It Works</button>
+                </div>
+                <div class="trust-badges">
+                    <div class="trust-item">
+                        <span>🏆</span>
+                        SOC 2 Type II
+                    </div>
+                    <div class="trust-item">
+                        <span>🔒</span>
+                        ISO 27001
+                    </div>
+                    <div class="trust-item">
+                        <span>✓</span>
+                        FedRAMP Ready
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="fortress-diagram">
+                    <div class="diagram-header">
+                        <span class="diagram-title">🏰 Zero Trust Architecture</span>
+                        <span class="diagram-status"><span class="status-dot"></span> All Systems Protected</span>
+                    </div>
+                    <div class="security-layers">
+                        <div class="layer identity">
+                            <div class="layer-icon">👤</div>
+                            <div class="layer-info">
+                                <h4>Identity Layer</h4>
+                                <span>MFA + Biometric + Behavioral</span>
+                            </div>
+                            <span class="layer-status status-verified">Verified</span>
+                        </div>
+                        <div class="layer device">
+                            <div class="layer-icon">💻</div>
+                            <div class="layer-info">
+                                <h4>Device Trust</h4>
+                                <span>Posture + Compliance + Health</span>
+                            </div>
+                            <span class="layer-status status-verified">Verified</span>
+                        </div>
+                        <div class="layer network">
+                            <div class="layer-icon">🌐</div>
+                            <div class="layer-info">
+                                <h4>Network Access</h4>
+                                <span>Micro-segmentation + Encryption</span>
+                            </div>
+                            <span class="layer-status status-active">Active</span>
+                        </div>
+                        <div class="layer data">
+                            <div class="layer-icon">📁</div>
+                            <div class="layer-info">
+                                <h4>Data Protection</h4>
+                                <span>DLP + Classification + Encryption</span>
+                            </div>
+                            <span class="layer-status status-active">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <span class="section-tag">Core Capabilities</span>
+            <h2>Complete Zero Trust Platform</h2>
+            <p class="section-desc">Every access request verified, every user authenticated, every device validated</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <h3>Identity Verification</h3>
+                <p>Multi-factor authentication with adaptive policies and risk-based access</p>
+                <ul class="feature-list">
+                    <li>Passwordless authentication</li>
+                    <li>Biometric verification</li>
+                    <li>Behavioral analytics</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Device Trust</h3>
+                <p>Continuous device posture assessment and compliance verification</p>
+                <ul class="feature-list">
+                    <li>Endpoint health checks</li>
+                    <li>Certificate management</li>
+                    <li>BYOD support</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Secure Access</h3>
+                <p>Zero trust network access replacing legacy VPNs</p>
+                <ul class="feature-list">
+                    <li>Application-level access</li>
+                    <li>Micro-segmentation</li>
+                    <li>Least privilege</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>AI Risk Engine</h3>
+                <p>Machine learning-powered risk scoring and anomaly detection</p>
+                <ul class="feature-list">
+                    <li>Continuous risk assessment</li>
+                    <li>Threat prediction</li>
+                    <li>Automated response</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Policy Engine</h3>
+                <p>Granular, context-aware policies with real-time enforcement</p>
+                <ul class="feature-list">
+                    <li>Conditional access</li>
+                    <li>Geo-fencing</li>
+                    <li>Time-based policies</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3>Integrations</h3>
+                <p>Seamless integration with your existing security stack</p>
+                <ul class="feature-list">
+                    <li>SIEM integration</li>
+                    <li>Identity providers</li>
+                    <li>Cloud platforms</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Architecture Section -->
+    <section class="architecture" id="architecture">
+        <div class="arch-container">
+            <div class="arch-content">
+                <span class="section-tag">Zero Trust Principles</span>
+                <h2>Built on Security First</h2>
+                <p>Our platform enforces Zero Trust principles at every layer, ensuring no implicit trust is ever granted.</p>
+                <ul class="principle-list">
+                    <li>
+                        <div class="principle-icon">🔍</div>
+                        <div class="principle-text">
+                            <h4>Verify Explicitly</h4>
+                            <p>Authenticate and authorize based on all available data points</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="principle-icon">🔒</div>
+                        <div class="principle-text">
+                            <h4>Least Privilege Access</h4>
+                            <p>Limit user access with just-in-time and just-enough-access</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="principle-icon">⚠️</div>
+                        <div class="principle-text">
+                            <h4>Assume Breach</h4>
+                            <p>Minimize blast radius and segment access, verify end-to-end encryption</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="arch-visual">
+                <div class="arch-diagram">
+                    <div class="orbit-ring orbit-1"></div>
+                    <div class="orbit-ring orbit-2"></div>
+                    <div class="core-circle">Zero<br>Trust<br>Core</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <span class="section-tag">Pricing</span>
+            <h2>Choose Your Plan</h2>
+            <p class="section-desc">Scalable security for organizations of all sizes</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3 class="plan-name">Starter</h3>
+                <p class="plan-desc">For small teams getting started</p>
+                <div class="plan-price">
+                    <span class="price">$8</span>
+                    <span class="price-period">/user/month</span>
+                </div>
+                <ul class="plan-features">
+                    <li>Up to 50 users</li>
+                    <li>Basic MFA</li>
+                    <li>Single sign-on</li>
+                    <li>Device trust</li>
+                    <li>Email support</li>
+                </ul>
+                <button class="plan-btn">Get Started</button>
+            </div>
+            <div class="pricing-card featured">
+                <h3 class="plan-name">Enterprise</h3>
+                <p class="plan-desc">For growing organizations</p>
+                <div class="plan-price">
+                    <span class="price">$15</span>
+                    <span class="price-period">/user/month</span>
+                </div>
+                <ul class="plan-features">
+                    <li>Unlimited users</li>
+                    <li>Advanced MFA</li>
+                    <li>ZTNA access</li>
+                    <li>AI risk engine</li>
+                    <li>24/7 support</li>
+                </ul>
+                <button class="plan-btn">Get Started</button>
+            </div>
+            <div class="pricing-card">
+                <h3 class="plan-name">Ultimate</h3>
+                <p class="plan-desc">For complex enterprises</p>
+                <div class="plan-price">
+                    <span class="price">Custom</span>
+                    <span class="price-period"></span>
+                </div>
+                <ul class="plan-features">
+                    <li>Everything in Enterprise</li>
+                    <li>Dedicated support</li>
+                    <li>Custom integrations</li>
+                    <li>On-premise option</li>
+                    <li>SLA guarantees</li>
+                </ul>
+                <button class="plan-btn">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-card">
+            <h2>Secure Your Organization Today</h2>
+            <p>Join thousands of enterprises protecting their infrastructure with Fortress AI</p>
+            <div class="cta-buttons">
+                <button class="btn-primary">Start Free Trial</button>
+                <button class="btn-outline">Talk to Expert</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon">🏰</div>
+                    <span class="logo-text">Fortress AI</span>
+                </div>
+                <p>Enterprise Zero Trust security platform trusted by Fortune 500 companies and government agencies worldwide.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="#">Identity</a></li>
+                    <li><a href="#">Device Trust</a></li>
+                    <li><a href="#">Access</a></li>
+                    <li><a href="#">Analytics</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Partners</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Fortress AI. All rights reserved. | SOC 2 Type II | ISO 27001 | FedRAMP Ready</p>
+        </div>
+    </footer>
+</body>
+</html>

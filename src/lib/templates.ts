@@ -820,6 +820,121 @@ Design Style: Stranger Things / 80s Retro Synthwave
 - UI: Dark background, neon red/purple accents, grid lines, retro cassette tape elements
 `
   },
+  {
+    id: "cybersecurity-shield",
+    name: "CyberShield Pro",
+    description: "Advanced security operations center with threat monitoring, security services, and SOC dashboard",
+    thumbnail: "https://dummyimage.com/400x300/0a0a0f/00ff88&text=CyberShield+Pro",
+    templateFile: "/templates/cybersecurity-shield.html",
+    category: "Cyber Security",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Advanced Security Operations Center
+- Hero: "CYBERSHIELD PRO" title with rotating shield rings animation, floating security nodes, grid background
+- Background: Animated grid pattern, security nodes floating with pulse effects, gradient overlays (green/blue)
+- Services Section: 6 security service cards (Threat Detection, Penetration Testing, Security Audit, Incident Response, Cloud Security, Compliance)
+- Dashboard Preview: Live threat monitoring panel with security layers visualization
+- Pricing: 3 tiers (Starter, Professional, Enterprise) with security features
+- Animations: Rotating shield rings, floating nodes, pulsing indicators, scanning effects
+Color Scheme: Cyber green (#00ff88), cyber blue (#00d4ff), dark background (#0a0a0f)
+Typography: Rajdhani for headings, Inter for body, uppercase styling, wide letter-spacing
+Layout: Centered content, card grids, dashboard panels, security-focused UI
+Components: Shield animations, security badges, threat level indicators, service cards with icons
+Special: SOC-style dashboard preview, security layer visualization, trust badges
+`
+  },
+  {
+    id: "cybersecurity-hacker",
+    name: "HackOps Terminal",
+    description: "Ethical hacking training platform with terminal UI, penetration testing labs, and certification paths",
+    thumbnail: "https://dummyimage.com/400x300/0a0a0a/00ff41&text=HackOps+Terminal",
+    templateFile: "/templates/cybersecurity-hacker.html",
+    category: "Cyber Security",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Ethical Hacking Training Platform
+- Hero: Terminal window with animated typing effect, command line prompts, "HACKOPS TERMINAL" title with glow
+- Background: Matrix digital rain with Japanese/binary characters, scanlines overlay, green tint
+- Courses Section: 6 training modules (Linux Fundamentals, Network Hacking, Web Pentesting, Password Cracking, Active Directory, Exploit Development)
+- Labs Preview: Code editor style panel with syntax-highlighted exploit code
+- Certifications: 4 cert paths (OSCP Prep, eWPT Prep, Red Team Ops, Bug Bounty Hunter)
+- Level Badges: Beginner (green), Intermediate (amber), Advanced (red) difficulty indicators
+Color Scheme: Terminal green (#00ff41), hacker amber (#ffb000), matrix dark (#001100), neon cyan (#00fff5)
+Typography: Fira Code monospace, Orbitron for titles, Share Tech Mono for terminal, uppercase headings
+Layout: Terminal-style containers, code blocks, scanline effects, hacker aesthetic
+Components: Terminal windows with dots, typing cursor animation, glitch effects, difficulty badges
+Special: Matrix rain animation, terminal typing effect, code syntax highlighting, course meta (lessons/hours)
+`
+  },
+  {
+    id: "cybersecurity-soc",
+    name: "NEXUS SOC",
+    description: "24/7 Security Operations Center with threat hunting, SIEM integration, and incident response",
+    thumbnail: "https://dummyimage.com/400x300/0a0f1a/00f0ff&text=NEXUS+SOC",
+    templateFile: "/templates/cybersecurity-soc.html",
+    category: "Cyber Security",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Security Operations Center Dashboard
+- Hero: "NEXUS SOC" with threat level indicator (green/amber/red), live monitoring status, particle effects
+- Background: Cyber grid pattern, floating particles animation, blue/purple gradient
+- Services: 6 SOC services (24/7 Monitoring, Threat Hunting, SIEM Management, Incident Response, Forensics, Threat Intelligence)
+- Dashboard Preview: Multi-panel SOC dashboard with security metrics, threat feeds, system status
+- Stats Section: Key metrics (Threats Blocked, Response Time, Uptime, Clients Protected)
+- Integration Logos: SIEM/security tool integration showcase
+Color Scheme: Neon blue (#00f0ff), neon purple (#bf00ff), dark background (#0a0f1a)
+Typography: Oxanium for headings, Inter for body, technical styling, uppercase titles
+Layout: Dashboard-style panels, grid layouts, status indicators, monitoring UI
+Components: Threat level badges, rotating status indicators, floating particles, dashboard panels
+Special: Live status indicators, threat level visualization, SOC dashboard preview, integration showcase
+`
+  },
+  {
+    id: "cybersecurity-darkweb",
+    name: "PHANTOM VAULT",
+    description: "Dark web intelligence and monitoring platform with threat detection and leaked data scanning",
+    thumbnail: "https://dummyimage.com/400x300/0d0d0d/00ffe5&text=PHANTOM+VAULT",
+    templateFile: "/templates/cybersecurity-darkweb.html",
+    category: "Cyber Security",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Dark Web Intelligence Platform
+- Hero: "PHANTOM VAULT" with glitch text animation, skull icon branding, VHS noise overlay
+- Background: VHS noise texture, scanlines, glitch effects, cyan/magenta color scheme
+- Services: 6 intelligence services (Dark Web Scanning, Credential Monitoring, Brand Protection, Threat Actor Tracking, Data Leak Detection, Intelligence Reports)
+- Monitor Preview: Dark web activity feed with leaked credential alerts, threat notifications
+- Pricing: 3 tiers (Recon, Hunter, Ghost) with dark web monitoring features
+- Glitch Effects: Text distortion, RGB shift, noise overlay, flicker animations
+Color Scheme: Phantom cyan (#00ffe5), phantom magenta (#ff00ff), deep black (#0d0d0d)
+Typography: Orbitron for titles, Share Tech Mono for data, glitch text effects, uppercase styling
+Layout: Dark terminal aesthetic, alert panels, intelligence feeds, noir design
+Components: Glitch text animation, VHS noise overlay, skull branding, alert notifications, threat cards
+Special: VHS/glitch aesthetic, dark web monitoring preview, credential leak alerts, threat actor profiles
+`
+  },
+  {
+    id: "cybersecurity-zerotrust",
+    name: "FORTRESS AI",
+    description: "Zero Trust security platform with identity verification, device trust, and adaptive access control",
+    thumbnail: "https://dummyimage.com/400x300/0c0c0f/ffd700&text=FORTRESS+AI",
+    templateFile: "/templates/cybersecurity-zerotrust.html",
+    category: "Cyber Security",
+    techStacks: ["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"],
+    designPrompt: `
+Design Style: Enterprise Zero Trust Security Platform
+- Hero: "Never Trust, Always Verify" tagline, security layer diagram, trust badges (SOC 2, ISO 27001, FedRAMP)
+- Background: Subtle grid pattern, gold accent gradients, floating shield icons, fortress theme
+- Security Layers: Identity Layer, Device Trust, Network Access, Data Protection - with status indicators
+- Features: 6 capabilities (Identity Verification, Device Trust, Secure Access, AI Risk Engine, Policy Engine, Integrations)
+- Architecture: Zero Trust principles visualization (Verify Explicitly, Least Privilege, Assume Breach)
+- Pricing: 3 tiers (Starter, Enterprise, Ultimate) with user-based pricing
+Color Scheme: Fortress gold (#ffd700), fortress orange (#ff8c00), amber (#ffb347), electric blue (#00bfff), carbon black (#0c0c0f)
+Typography: Oxanium for headings, IBM Plex Mono for technical text, Inter for body, uppercase titles
+Layout: Enterprise UI, security diagrams, layer cards, professional aesthetic
+Components: Security layer cards with status badges, orbit animations, trust badges, compliance icons
+Special: Zero Trust architecture diagram, security layer visualization, compliance certifications, enterprise pricing
+`
+  },
 ];
 
 export const getTemplateById = (id: string): Template | undefined => {

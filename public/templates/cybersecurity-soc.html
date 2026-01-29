@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS SOC - Security Operations Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============ Core Variables & Reset ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --neon-blue: #00f0ff;
+            --neon-purple: #bf00ff;
+            --neon-pink: #ff0099;
+            --alert-red: #ff2d55;
+            --success-green: #00ff9d;
+            --warning-orange: #ff9500;
+            --bg-primary: #0a0a12;
+            --bg-secondary: #12121f;
+            --bg-card: rgba(18, 18, 31, 0.9);
+            --text-primary: #ffffff;
+            --text-secondary: #8892a0;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* ============ Cyber Grid Background ============ */
+        .cyber-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(ellipse at 30% 20%, rgba(191, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0, 240, 255, 0.1) 0%, transparent 50%),
+                var(--bg-primary);
+            background-size: 60px 60px, 60px 60px, 100% 100%, 100% 100%, 100% 100%;
+        }
+        
+        /* ============ Floating Particles ============ */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue);
+            animation: float 20s linear infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* ============ Header Navigation ============ */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 3rem;
+            background: rgba(10, 10, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+        
+        .logo-icon::before {
+            content: '👁️';
+        }
+        
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 14px;
+            border: 2px solid var(--neon-blue);
+            animation: borderPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes borderPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        
+        .logo-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        
+        .logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            transition: width 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--neon-blue);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .alert-badge {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 45, 85, 0.2);
+            border: 1px solid var(--alert-red);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .alert-badge:hover {
+            background: rgba(255, 45, 85, 0.3);
+        }
+        
+        .alert-badge::before {
+            content: '🔔';
+            font-size: 1.1rem;
+        }
+        
+        .alert-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--alert-red);
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .login-btn {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 8px;
+        }
+        
+        .login-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* ============ Hero Section ============ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 4rem 4rem;
+            position: relative;
+        }
+        
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+        
+        .hero-content {
+            z-index: 1;
+        }
+        
+        .threat-level {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 45, 85, 0.15);
+            border: 1px solid rgba(255, 45, 85, 0.5);
+            border-radius: 50px;
+            margin-bottom: 2rem;
+        }
+        
+        .threat-indicator {
+            width: 12px;
+            height: 12px;
+            background: var(--alert-red);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .threat-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--alert-red);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        h1 .gradient-text {
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .btn-primary {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 8px;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        .btn-outline {
+            padding: 1rem 2.5rem;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 8px;
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        
+        /* ============ Dashboard Preview ============ */
+        .dashboard-preview {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--neon-blue);
+        }
+        
+        .dashboard-time {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .metric-value.blue { color: var(--neon-blue); }
+        .metric-value.green { color: var(--success-green); }
+        .metric-value.orange { color: var(--warning-orange); }
+        .metric-value.red { color: var(--alert-red); }
+        
+        .threat-chart {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.7rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 80px;
+        }
+        
+        .bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+        
+        .bar::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+        
+        /* ============ Services Section ============ */
+        .services {
+            padding: 6rem 4rem;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-tag {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(191, 0, 255, 0.1));
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 50px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+        
+        h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+        
+        .section-desc {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 20px 60px rgba(0, 240, 255, 0.15);
+        }
+        
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(191, 0, 255, 0.1));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .service-icon::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 21px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+        
+        .service-card h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .service-features {
+            list-style: none;
+        }
+        
+        .service-features li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .service-features li::before {
+            content: '◆';
+            color: var(--neon-blue);
+            font-size: 0.6rem;
+        }
+        
+        /* ============ Stats Section ============ */
+        .stats {
+            padding: 4rem;
+            background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.03), transparent);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* ============ Integrations Section ============ */
+        .integrations {
+            padding: 6rem 4rem;
+        }
+        
+        .integration-logos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 3rem auto 0;
+        }
+        
+        .integration-item {
+            width: 120px;
+            height: 60px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        
+        .integration-item:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            transform: translateY(-5px);
+        }
+        
+        /* ============ CTA Section ============ */
+        .cta-section {
+            padding: 6rem 4rem;
+        }
+        
+        .cta-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(191, 0, 255, 0.1));
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 30px;
+            padding: 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 50%);
+            animation: rotateBg 30s linear infinite;
+        }
+        
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .cta-card h2 {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-card p {
+            position: relative;
+            z-index: 1;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .cta-buttons {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        /* ============ Footer ============ */
+        footer {
+            padding: 4rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+        }
+        
+        .footer-brand p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            max-width: 300px;
+        }
+        
+        .footer-links h4 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-blue);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--neon-blue);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        /* ============ Responsive ============ */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-preview {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            .hero {
+                padding: 6rem 2rem 3rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                gap: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cyber Grid Background -->
+    <div class="cyber-bg"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-duration: 15s; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-duration: 20s; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 35%; animation-duration: 18s; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 50%; animation-duration: 22s; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 65%; animation-duration: 16s; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 80%; animation-duration: 19s; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 90%; animation-duration: 21s; animation-delay: 1.5s;"></div>
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <div>
+                <div class="logo-text">NEXUS SOC</div>
+                <div class="logo-sub">Security Operations Center</div>
+            </div>
+        </div>
+        <nav>
+            <a href="#services">Services</a>
+            <a href="#platform">Platform</a>
+            <a href="#intelligence">Threat Intel</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <div class="header-actions">
+            <div class="alert-badge">
+                <span class="alert-count">5</span>
+            </div>
+            <button class="login-btn">Access Dashboard</button>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <div class="threat-level">
+                    <span class="threat-indicator"></span>
+                    <span class="threat-text">Global Threat Level: Elevated</span>
+                </div>
+                <h1>24/7 <span class="gradient-text">Cyber Defense</span> Operations</h1>
+                <p>Enterprise-grade Security Operations Center providing continuous monitoring, threat detection, and rapid incident response.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary">Request Demo</button>
+                    <button class="btn-outline">View Capabilities</button>
+                </div>
+            </div>
+            <div class="dashboard-preview">
+                <div class="dashboard-header">
+                    <span class="dashboard-title">📊 Live Security Dashboard</span>
+                    <span class="dashboard-time">Last updated: 2 sec ago</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Events/Hour</div>
+                        <div class="metric-value blue">2.4M</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Threats Blocked</div>
+                        <div class="metric-value green">15,847</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Active Alerts</div>
+                        <div class="metric-value orange">23</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Critical</div>
+                        <div class="metric-value red">3</div>
+                    </div>
+                </div>
+                <div class="threat-chart">
+                    <div class="chart-header">
+                        <span class="chart-title">Threat Activity (24h)</span>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background: var(--neon-blue);"></span> Detected</span>
+                            <span class="legend-item"><span class="legend-dot" style="background: var(--success-green);"></span> Blocked</span>
+                        </div>
+                    </div>
+                    <div class="chart-bars">
+                        <div class="bar" style="height: 40%; background: linear-gradient(to top, var(--neon-blue), rgba(0,240,255,0.3));" data-label="00"></div>
+                        <div class="bar" style="height: 65%; background: linear-gradient(to top, var(--neon-blue), rgba(0,240,255,0.3));" data-label="04"></div>
+                        <div class="bar" style="height: 45%; background: linear-gradient(to top, var(--neon-blue), rgba(0,240,255,0.3));" data-label="08"></div>
+                        <div class="bar" style="height: 80%; background: linear-gradient(to top, var(--alert-red), rgba(255,45,85,0.3));" data-label="12"></div>
+                        <div class="bar" style="height: 95%; background: linear-gradient(to top, var(--alert-red), rgba(255,45,85,0.3));" data-label="16"></div>
+                        <div class="bar" style="height: 70%; background: linear-gradient(to top, var(--neon-blue), rgba(0,240,255,0.3));" data-label="20"></div>
+                        <div class="bar" style="height: 55%; background: linear-gradient(to top, var(--success-green), rgba(0,255,157,0.3));" data-label="Now"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-header">
+            <span class="section-tag">◆ Our Services</span>
+            <h2>Comprehensive Security Operations</h2>
+            <p class="section-desc">End-to-end security monitoring and response capabilities powered by AI and expert analysts</p>
+        </div>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🔍</div>
+                <h3>Threat Detection</h3>
+                <p>AI-powered threat detection analyzing billions of events in real-time</p>
+                <ul class="service-features">
+                    <li>Behavioral analytics</li>
+                    <li>Machine learning models</li>
+                    <li>Zero-day detection</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">⚡</div>
+                <h3>Incident Response</h3>
+                <p>Rapid response and containment with automated playbooks</p>
+                <ul class="service-features">
+                    <li>15-minute SLA</li>
+                    <li>Automated containment</li>
+                    <li>Forensic analysis</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📡</div>
+                <h3>Continuous Monitoring</h3>
+                <p>24/7/365 monitoring by certified security analysts</p>
+                <ul class="service-features">
+                    <li>Follow-the-sun model</li>
+                    <li>Tier 1-3 analysts</li>
+                    <li>Custom runbooks</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎯</div>
+                <h3>Threat Hunting</h3>
+                <p>Proactive hunting to identify hidden threats in your environment</p>
+                <ul class="service-features">
+                    <li>Hypothesis-driven</li>
+                    <li>IOC enrichment</li>
+                    <li>Adversary emulation</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📊</div>
+                <h3>SIEM Management</h3>
+                <p>Complete SIEM deployment, tuning, and management</p>
+                <ul class="service-features">
+                    <li>Log collection</li>
+                    <li>Rule optimization</li>
+                    <li>Compliance reporting</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🛡️</div>
+                <h3>Vulnerability Management</h3>
+                <p>Continuous vulnerability assessment and prioritization</p>
+                <ul class="service-features">
+                    <li>Asset discovery</li>
+                    <li>Risk scoring</li>
+                    <li>Remediation tracking</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-number">99.99%</span>
+                <span class="stat-label">Uptime SLA</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">< 15min</span>
+                <span class="stat-label">Response Time</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Clients Protected</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">10B+</span>
+                <span class="stat-label">Events/Day</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Integrations Section -->
+    <section class="integrations">
+        <div class="section-header">
+            <span class="section-tag">◆ Integrations</span>
+            <h2>Works With Your Stack</h2>
+            <p class="section-desc">Seamless integration with your existing security tools</p>
+        </div>
+        <div class="integration-logos">
+            <div class="integration-item">Splunk</div>
+            <div class="integration-item">CrowdStrike</div>
+            <div class="integration-item">Microsoft</div>
+            <div class="integration-item">AWS</div>
+            <div class="integration-item">Palo Alto</div>
+            <div class="integration-item">SentinelOne</div>
+            <div class="integration-item">Okta</div>
+            <div class="integration-item">Carbon Black</div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-card">
+            <h2>Ready to Enhance Your Security Posture?</h2>
+            <p>Get a free security assessment and see how our SOC can protect your organization</p>
+            <div class="cta-buttons">
+                <button class="btn-primary">Schedule Assessment</button>
+                <button class="btn-outline">Talk to Expert</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <div>
+                        <div class="logo-text">NEXUS SOC</div>
+                        <div class="logo-sub">Security Operations Center</div>
+                    </div>
+                </div>
+                <p>Enterprise-grade security operations trusted by Fortune 500 companies worldwide. ISO 27001 and SOC 2 Type II certified.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="#">Threat Detection</a></li>
+                    <li><a href="#">Incident Response</a></li>
+                    <li><a href="#">Managed SIEM</a></li>
+                    <li><a href="#">Threat Hunting</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Partners</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Status Page</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Emergency</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Nexus SOC. All rights reserved. | ISO 27001 | SOC 2 Type II | GDPR Compliant</p>
+        </div>
+    </footer>
+</body>
+</html>
