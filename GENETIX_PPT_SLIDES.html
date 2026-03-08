@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genetix — AI Website Builder | Project Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    /* ==================== SLIDE SYSTEM ==================== */
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      padding: 60px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+    }
+
+    .slide-number {
+      position: absolute;
+      bottom: 30px;
+      right: 50px;
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .slide-brand {
+      position: absolute;
+      bottom: 30px;
+      left: 50px;
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* ==================== TITLE SLIDE ==================== */
+    .slide-title {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+    .slide-title::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(1deg); }
+      66% { transform: translate(-20px, 20px) rotate(-1deg); }
+    }
+
+    .slide-title .content { position: relative; z-index: 2; }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 72px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      letter-spacing: -2px;
+    }
+
+    .tagline {
+      font-size: 24px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 300;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+    }
+
+    .title-meta {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .title-meta-item {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 12px 28px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .title-meta-item span { color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block;}
+    .title-meta-item strong { color: white; font-size: 16px; }
+
+    /* ==================== SECTION HEADERS ==================== */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+      color: #6366f1;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .slide h2 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .slide h2 .highlight {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .slide-subtitle {
+      font-size: 18px;
+      color: #64748b;
+      max-width: 700px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    /* ==================== COMPARISON TABLE ==================== */
+    .comparison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+      margin-top: 10px;
+    }
+
+    .comparison-table thead th {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      color: white;
+      padding: 18px 24px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .comparison-table thead th:first-child { border-top-left-radius: 16px; }
+    .comparison-table thead th:last-child { border-top-right-radius: 16px; }
+
+    .comparison-table thead th.genetix-col {
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      text-align: center;
+    }
+
+    .comparison-table tbody td {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .comparison-table tbody tr:nth-child(even) { background: #f8fafc; }
+    .comparison-table tbody tr:hover { background: #ede9fe22; }
+
+    .comparison-table tbody td:first-child {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .comparison-table .check { color: #22c55e; font-weight: 700; font-size: 18px; }
+    .comparison-table .cross { color: #ef4444; font-weight: 700; font-size: 18px; }
+    .comparison-table .partial { color: #f59e0b; font-weight: 600; font-size: 14px; }
+
+    .comparison-table td.genetix-cell {
+      background: rgba(99, 102, 241, 0.04);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* ==================== PROBLEM CARDS ==================== */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .problem-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .problem-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #ef4444, #f97316);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .problem-card.solution::before {
+      background: linear-gradient(180deg, #22c55e, #06b6d4);
+    }
+
+    .problem-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .problem-card-icon.red { background: #fef2f2; }
+    .problem-card-icon.green { background: #f0fdf4; }
+
+    .problem-card h4 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .problem-card p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ==================== ARCHITECTURE ==================== */
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .arch-step {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px 32px;
+      width: 700px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      position: relative;
+    }
+
+    .arch-step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .arch-step-content h4 { font-size: 16px; font-weight: 700; color: #1e293b; }
+    .arch-step-content p { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+    .arch-arrow {
+      width: 2px;
+      height: 28px;
+      background: linear-gradient(180deg, #6366f1, #a855f7);
+      position: relative;
+    }
+
+    .arch-arrow::after {
+      content: '▼';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #6366f1;
+      font-size: 10px;
+    }
+
+    /* ==================== TECH STACK ==================== */
+    .tech-categories {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      margin-top: 10px;
+    }
+
+    .tech-category {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+    }
+
+    .tech-category-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .tech-category-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .tech-category-header h4 { font-size: 18px; font-weight: 700; color: #1e293b; }
+
+    .tech-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .tech-badge {
+      background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+      color: #4338ca;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ==================== OUTCOMES ==================== */
+    .outcome-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 10px;
+    }
+
+    .outcome-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+      transition: transform 0.3s;
+    }
+
+    .outcome-card:hover { transform: translateY(-4px); }
+
+    .outcome-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .outcome-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .outcome-desc {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* ==================== AI/ML SECTION ==================== */
+    .ai-pipeline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .ai-card {
+      background: linear-gradient(135deg, #faf5ff, #eef2ff);
+      border: 1px solid #e0e7ff;
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-card::after {
+      content: '';
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1));
+      border-radius: 50%;
+    }
+
+    .ai-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #312e81;
+      margin-bottom: 12px;
+    }
+
+    .ai-card p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .ai-card .ai-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* ==================== IMAGE SECTIONS ==================== */
+    .image-showcase {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .image-card {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-card .image-caption {
+      padding: 16px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .full-width-image {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    .full-width-image img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ==================== FEATURE CHIPS ==================== */
+    .feature-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .chip-icon { font-size: 16px; }
+
+    /* ==================== SCREENSHOTS MOCKUP ==================== */
+    .mockup-browser {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      border: 1px solid #e2e8f0;
+      margin-top: 20px;
+    }
+
+    .mockup-toolbar {
+      background: #f8fafc;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .mockup-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #f59e0b; }
+    .mockup-dot.green { background: #22c55e; }
+
+    .mockup-url {
+      background: white;
+      border: 1px solid #e2e8f0;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #64748b;
+      margin-left: 12px;
+      flex: 1;
+    }
+
+    .mockup-content {
+      padding: 0;
+    }
+
+    .mockup-content img {
+      width: 100%;
+      display: block;
+    }
+
+    /* ==================== DIVIDER ==================== */
+    .slide-divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border-radius: 4px;
+      margin: 16px 0 24px 0;
+    }
+
+    /* ==================== SVG ILLUSTRATIONS ==================== */
+    .illustration-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0 10px 0;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 30px;
+    }
+
+    .stat-item {
+      flex: 1;
+      padding: 24px 20px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-item .stat-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .stat-item .stat-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+
+    /* Two Column */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .two-col-text { }
+    .two-col-visual { }
+
+    /* Quote / Callout */
+    .callout {
+      background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+      border-left: 4px solid #6366f1;
+      padding: 24px 28px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0;
+    }
+
+    .callout p {
+      font-size: 16px;
+      color: #312e81;
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    /* Feature table mini */
+    .feature-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .feature-table th {
+      background: #f8fafc;
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .feature-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .feature-table td:first-child { font-weight: 600; color: #1e293b; }
+
+    /* Deployment badge */
+    .deploy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+
+    .deploy-badge::before {
+      content: '●';
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @media print {
+      .slide { page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================== SLIDE 1: TITLE ======================== -->
+<div class="slide slide-title">
+  <div class="content">
+    <div style="margin-bottom: 20px;">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="20" fill="url(#g1)"/>
+        <path d="M24 28h12v6H24z M24 38h32v4H24z M24 46h28v4H24z M44 28h12v10H44z" fill="white" opacity="0.9"/>
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="80" y2="80"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+    </div>
+    <div class="logo-text">GENETIX</div>
+    <div class="tagline">AI-Powered Website Builder</div>
+    <p style="color: rgba(255,255,255,0.5); font-size: 16px; margin-bottom: 30px;">
+      Describe your website in plain English → Get a fully functional, deployed website in seconds
+    </p>
+    <div class="title-meta">
+      <div class="title-meta-item">
+        <span>Type</span>
+        <strong>Full-Stack SaaS</strong>
+      </div>
+      <div class="title-meta-item">
+        <span>Tech</span>
+        <strong>Next.js 15 + GPT-5.1</strong>
+      </div>
+      <div class="title-meta-item">
+        <span>Stack</span>
+        <strong>5 Frameworks</strong>
+      </div>
+      <div class="title-meta-item">
+        <span>Templates</span>
+        <strong>50+ Built-in</strong>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number" style="color: rgba(255,255,255,0.3);">01 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 2: PROBLEM STATEMENT ======================== -->
+<div class="slide">
+  <div class="section-label">🔍 Problem Statement</div>
+  <h2>Why Current AI Website Builders<br><span class="highlight">Fall Short</span></h2>
+  <p class="slide-subtitle">
+    Existing AI website builders like Lovable, Bolt.new, and v0.dev promise rapid website generation — but they suffer from critical limitations that prevent real-world adoption.
+  </p>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-card-icon red">🔒</div>
+      <h4>Single Framework Lock-in</h4>
+      <p>Lovable & Bolt only support React. No option for Vue, Angular, Svelte, or plain HTML/CSS/JS. Developers are forced into one ecosystem regardless of project needs.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-card-icon red">🖼️</div>
+      <h4>No Real Image Integration</h4>
+      <p>Competitors generate placeholder images or broken links. No automatic fetching of contextually relevant, high-quality stock photos from real APIs like Unsplash/Pexels.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-card-icon red">🧠</div>
+      <h4>No Persistent Memory</h4>
+      <p>AI agents forget previous conversations. If you ask "change the hero section color," the agent doesn't remember the code it generated 2 messages ago. Context is lost.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-card-icon red">💳</div>
+      <h4>Limited Payment & Indian Market Support</h4>
+      <p>No Indian payment gateways (Razorpay/Cashfree). No flexible credits system. Only expensive monthly subscriptions with rigid pricing — not suited for Indian developers.</p>
+    </div>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">02 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 3: COMPETITOR COMPARISON TABLE ======================== -->
+<div class="slide">
+  <div class="section-label">📊 Competitive Analysis</div>
+  <h2>Genetix vs. <span class="highlight">Existing Solutions</span></h2>
+  <p class="slide-subtitle">
+    A feature-by-feature comparison showing how Genetix addresses every gap left by competitors.
+  </p>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th style="width: 30%;">Feature / Capability</th>
+        <th style="width: 14%;">Lovable</th>
+        <th style="width: 14%;">Bolt.new</th>
+        <th style="width: 14%;">v0 (Vercel)</th>
+        <th style="width: 14%;">GPT Engineer</th>
+        <th class="genetix-col" style="width: 14%;">GENETIX ✨</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Multi-Framework Support (5 stacks)</td>
+        <td><span class="cross">✗</span> React only</td>
+        <td><span class="cross">✗</span> React only</td>
+        <td><span class="cross">✗</span> React only</td>
+        <td><span class="cross">✗</span> React only</td>
+        <td class="genetix-cell"><span class="check">✓</span> 5 Stacks</td>
+      </tr>
+      <tr>
+        <td>Real Image Auto-Injection (Unsplash/Pexels)</td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td class="genetix-cell"><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Code Explainer</td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td class="genetix-cell"><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>50+ Pre-built Templates</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="partial">Few</span></td>
+        <td><span class="cross">✗</span></td>
+        <td class="genetix-cell"><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Type-Safe API (tRPC End-to-End)</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td class="genetix-cell"><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Prompt Generator </td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td class="genetix-cell"><span class="check">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">03 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 4: PROPOSED SOLUTION ======================== -->
+<div class="slide">
+  <div class="section-label">💡 Proposed Solution</div>
+  <h2>Genetix — The <span class="highlight">Complete AI Builder</span></h2>
+  <div class="slide-divider"></div>
+  <p class="slide-subtitle">
+    Genetix is a production-grade AI-powered SaaS that converts natural language prompts into fully functional, live-preview websites with real images, multi-framework support, and intelligent memory.
+  </p>
+
+  <div class="two-col">
+    <div class="two-col-text">
+      <div class="callout">
+        <p>"Build me a restaurant website with a menu page, reservation form, and photo gallery"</p>
+      </div>
+      <p style="font-size: 14px; color: #64748b; margin: 16px 0;">
+        ↓ Genetix processes this single sentence and delivers:
+      </p>
+      <div class="feature-chips">
+        <div class="chip"><span class="chip-icon">📄</span> Full source code</div>
+        <div class="chip"><span class="chip-icon">🖼️</span> Real stock images</div>
+        <div class="chip"><span class="chip-icon">📱</span> Responsive design</div>
+        <div class="chip"><span class="chip-icon">🌐</span> Live preview URL</div>
+        <div class="chip"><span class="chip-icon">📦</span> Downloadable ZIP</div>
+        <div class="chip"><span class="chip-icon">🔄</span> Iterative editing</div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Key Differentiators:</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: start; gap: 10px;">
+            <span style="color: #6366f1; font-weight: 700;">01</span>
+            <span style="font-size: 14px; color: #475569;"><strong>Multi-Agent Architecture</strong> — Separate coding agent, response agent, and supervisor network, each with specialized roles</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 10px;">
+            <span style="color: #6366f1; font-weight: 700;">02</span>
+            <span style="font-size: 14px; color: #475569;"><strong>Persistent Memory</strong> — Full conversation history with code context preserved across sessions</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 10px;">
+            <span style="color: #6366f1; font-weight: 700;">03</span>
+            <span style="font-size: 14px; color: #475569;"><strong>5 Tech Stacks</strong> — React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit</span>
+          </div>
+          <div style="display: flex; align-items: start; gap: 10px;">
+            <span style="color: #6366f1; font-weight: 700;">04</span>
+            <span style="font-size: 14px; color: #475569;"><strong>Real Cloud Sandbox</strong> — E2B isolated Linux environment executes code live, installs dependencies, serves preview</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col-visual">
+      <!-- Mockup Browser -->
+      <div class="mockup-browser">
+        <div class="mockup-toolbar">
+          <div class="mockup-dot red"></div>
+          <div class="mockup-dot yellow"></div>
+          <div class="mockup-dot green"></div>
+          <div class="mockup-url">genetix.app/projects/restaurant-website</div>
+        </div>
+        <div class="mockup-content" style="background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 40px; text-align: center;">
+          <div style="color: white; font-family: 'Poppins', sans-serif;">
+            <div style="font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 3px; margin-bottom: 8px;">GENERATED IN 12 SECONDS</div>
+            <div style="font-size: 28px; font-weight: 700; margin-bottom: 4px;">🍽️ La Bella Cucina</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 20px;">Italian Fine Dining Experience</div>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 6px; font-size: 11px;">Home</span>
+              <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 6px; font-size: 11px;">Menu</span>
+              <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 6px; font-size: 11px;">Reserve</span>
+              <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 6px; font-size: 11px;">Gallery</span>
+            </div>
+            <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <div style="background: rgba(255,255,255,0.08); height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🥘</div>
+              <div style="background: rgba(255,255,255,0.08); height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🍝</div>
+              <div style="background: rgba(255,255,255,0.08); height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🍷</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 16px; text-align: center;">
+        <span style="font-size: 12px; color: #94a3b8;">↑ Auto-generated from a single prompt</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">04 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 5: ARCHITECTURE OVERVIEW ======================== -->
+<div class="slide">
+  <div class="section-label">🏗️ Architecture Overview</div>
+  <h2>System <span class="highlight">Architecture</span></h2>
+  <div class="slide-divider"></div>
+
+  <div class="arch-flow">
+    <div class="arch-step">
+      <div class="arch-step-number">1</div>
+      <div class="arch-step-content">
+        <h4>User Prompt</h4>
+        <p>"Build a restaurant website with menu and reservations"</p>
+      </div>
+    </div>
+    <div class="arch-arrow"></div>
+    <div class="arch-step">
+      <div class="arch-step-number">2</div>
+      <div class="arch-step-content">
+        <h4>Next.js Frontend → tRPC API (Type-Safe)</h4>
+        <p>React 19 UI sends request via end-to-end typed API layer</p>
+      </div>
+    </div>
+    <div class="arch-arrow"></div>
+    <div class="arch-step">
+      <div class="arch-step-number">3</div>
+      <div class="arch-step-content">
+        <h4>Inngest Event Triggered → Multi-Agent Network</h4>
+        <p>Background job orchestrates Code Agent (GPT-5.1) + Response Agent + Supervisor</p>
+      </div>
+    </div>
+    <div class="arch-arrow"></div>
+    <div class="arch-step">
+      <div class="arch-step-number">4</div>
+      <div class="arch-step-content">
+        <h4>E2B Cloud Sandbox — Isolated Execution</h4>
+        <p>Real Linux environment: creates files, runs npm install, starts dev server, serves live preview</p>
+      </div>
+    </div>
+    <div class="arch-arrow"></div>
+    <div class="arch-step">
+      <div class="arch-step-number">5</div>
+      <div class="arch-step-content">
+        <h4>Image Injection (Unsplash + Pexels APIs)</h4>
+        <p>AI extracts keywords → fetches relevant high-quality images → injects as base64 into code</p>
+      </div>
+    </div>
+    <div class="arch-arrow"></div>
+    <div class="arch-step">
+      <div class="arch-step-number">6</div>
+      <div class="arch-step-content">
+        <h4>Fragment Saved → Live Preview Delivered</h4>
+        <p>Code files + sandbox URL stored in PostgreSQL → User sees live preview in iframe + can download ZIP</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-number">< 15s</div>
+      <div class="stat-label">Average Generation Time</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">Supported Frameworks</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">3</div>
+      <div class="stat-label">AI Agents in Network</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">∞</div>
+      <div class="stat-label">Persistent Memory</div>
+    </div>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">05 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 6: TECHNOLOGY STACK ======================== -->
+<div class="slide">
+  <div class="section-label">⚙️ Technology Stack</div>
+  <h2>Built With <span class="highlight">Modern Technologies</span></h2>
+  <div class="slide-divider"></div>
+
+  <div class="tech-categories">
+    <!-- Frontend -->
+    <div class="tech-category">
+      <div class="tech-category-header">
+        <div class="tech-category-icon" style="background: #dbeafe;">🎨</div>
+        <h4>Frontend</h4>
+      </div>
+      <ul class="tech-list">
+        <li class="tech-item"><span class="tech-badge">Framework</span> Next.js 15 (App Router + Turbopack)</li>
+        <li class="tech-item"><span class="tech-badge">UI Library</span> React 19 + TypeScript</li>
+        <li class="tech-item"><span class="tech-badge">Styling</span> Tailwind CSS 4 + Shadcn/UI</li>
+        <li class="tech-item"><span class="tech-badge">Components</span> Radix UI (Accessible, Headless)</li>
+        <li class="tech-item"><span class="tech-badge">State</span> TanStack React Query + React Hook Form</li>
+        <li class="tech-item"><span class="tech-badge">Charts</span> Recharts (Usage Analytics)</li>
+      </ul>
+    </div>
+
+    <!-- Backend -->
+    <div class="tech-category">
+      <div class="tech-category-header">
+        <div class="tech-category-icon" style="background: #fef3c7;">⚡</div>
+        <h4>Backend</h4>
+      </div>
+      <ul class="tech-list">
+        <li class="tech-item"><span class="tech-badge">API</span> tRPC (End-to-End Type-Safe)</li>
+        <li class="tech-item"><span class="tech-badge">ORM</span> Prisma with PostgreSQL</li>
+        <li class="tech-item"><span class="tech-badge">Jobs</span> Inngest (Background Processing)</li>
+        <li class="tech-item"><span class="tech-badge">Auth</span> Custom Sessions + NextAuth OAuth</li>
+        <li class="tech-item"><span class="tech-badge">Security</span> bcrypt + Rate Limiter + Middleware</li>
+        <li class="tech-item"><span class="tech-badge">Validation</span> Zod Schema Validation</li>
+      </ul>
+    </div>
+
+    <!-- AI & Sandbox -->
+    <div class="tech-category">
+      <div class="tech-category-header">
+        <div class="tech-category-icon" style="background: #f3e8ff;">🤖</div>
+        <h4>AI & Cloud Sandbox</h4>
+      </div>
+      <ul class="tech-list">
+        <li class="tech-item"><span class="tech-badge">LLM</span> OpenAI GPT-5.1 / GPT-5-mini</li>
+        <li class="tech-item"><span class="tech-badge">Agents</span> Inngest Agent Kit (Multi-Agent)</li>
+        <li class="tech-item"><span class="tech-badge">Sandbox</span> E2B Cloud (Isolated Linux)</li>
+        <li class="tech-item"><span class="tech-badge">Images</span> Unsplash + Pexels API</li>
+        <li class="tech-item"><span class="tech-badge">Reasoning</span> Advanced Reasoning Toggle</li>
+      </ul>
+    </div>
+
+    <!-- Payments & DevOps -->
+    <div class="tech-category">
+      <div class="tech-category-header">
+        <div class="tech-category-icon" style="background: #dcfce7;">💳</div>
+        <h4>Payments & Tools</h4>
+      </div>
+      <ul class="tech-list">
+        <li class="tech-item"><span class="tech-badge">Global</span> Stripe (Subscriptions + One-time)</li>
+        <li class="tech-item"><span class="tech-badge">India</span> Razorpay + Cashfree</li>
+        <li class="tech-item"><span class="tech-badge">Model</span> Credits System + Plan Tiers</li>
+        <li class="tech-item"><span class="tech-badge">Export</span> JSZip (Download as ZIP)</li>
+        <li class="tech-item"><span class="tech-badge">DB</span> PostgreSQL + Prisma Migrations</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">06 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 7: SUPPORTED TECH STACKS ======================== -->
+<div class="slide">
+  <div class="section-label">🌐 Multi-Stack Support</div>
+  <h2><span class="highlight">5 Technology Stacks</span> — One Platform</h2>
+  <div class="slide-divider"></div>
+  <p class="slide-subtitle">Unlike competitors locked to React, Genetix generates production-ready code in any major web framework.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-top: 10px;">
+    <!-- React -->
+    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; text-align: center; transition: all 0.3s;">
+      <div style="width: 64px; height: 64px; background: #dbeafe; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="3" fill="#61dafb"/><ellipse cx="18" cy="18" rx="16" ry="6" stroke="#61dafb" stroke-width="1.5" fill="none"/><ellipse cx="18" cy="18" rx="16" ry="6" stroke="#61dafb" stroke-width="1.5" fill="none" transform="rotate(60 18 18)"/><ellipse cx="18" cy="18" rx="16" ry="6" stroke="#61dafb" stroke-width="1.5" fill="none" transform="rotate(120 18 18)"/></svg>
+      </div>
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">React / Next.js</h4>
+      <p style="font-size: 12px; color: #94a3b8;">App Router + SSR</p>
+    </div>
+    <!-- HTML/CSS/JS -->
+    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; text-align: center;">
+      <div style="width: 64px; height: 64px; background: #fef3c7; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+        📄
+      </div>
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">HTML/CSS/JS</h4>
+      <p style="font-size: 12px; color: #94a3b8;">Vanilla Web</p>
+    </div>
+    <!-- Vue/Nuxt -->
+    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; text-align: center;">
+      <div style="width: 64px; height: 64px; background: #dcfce7; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg width="32" height="32" viewBox="0 0 32 32"><path d="M2 4h6l8 14L24 4h6L16 28z" fill="#42b883"/><path d="M8 4h4l4 7 4-7h4L16 18z" fill="#35495e"/></svg>
+      </div>
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Vue / Nuxt</h4>
+      <p style="font-size: 12px; color: #94a3b8;">Composition API</p>
+    </div>
+    <!-- Angular -->
+    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; text-align: center;">
+      <div style="width: 64px; height: 64px; background: #fee2e2; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg width="32" height="32" viewBox="0 0 32 32"><path d="M16 2L3 7l2 18L16 30l11-5 2-18z" fill="#dd0031"/><path d="M16 2v28l11-5 2-18z" fill="#c3002f"/><path d="M16 6L9 22h3l1.5-4h5l1.5 4h3z" fill="white"/><path d="M16 10l-2.5 6h5z" fill="#dd0031"/></svg>
+      </div>
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Angular</h4>
+      <p style="font-size: 12px; color: #94a3b8;">Standalone Components</p>
+    </div>
+    <!-- SvelteKit -->
+    <div style="background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px 20px; text-align: center;">
+      <div style="width: 64px; height: 64px; background: #fff7ed; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg width="28" height="34" viewBox="0 0 28 34"><path d="M24.6 4.5C21.7.7 16.5-.5 12.3 1.4L5.1 5.8c-2 1.2-3.4 3-4 5.2-.3 1.2-.3 2.4-.1 3.6-.9 1.3-1.4 2.8-1.5 4.4-.2 2.3.5 4.6 2 6.4C4.4 29.3 9.6 30.5 13.8 28.6l7.2-4.4c2-1.2 3.4-3 4-5.2.3-1.2.3-2.4.1-3.6.9-1.3 1.4-2.8 1.5-4.4.2-2.3-.5-4.6-2-6.5z" fill="#ff3e00"/><path d="M12 26c-3 .7-6-.8-7.2-3.5-.6-1.4-.6-2.9-.1-4.3l.3-.8.8 .5c1 .7 2.2 1.2 3.4 1.5l.3 0-.1.3c-.1.8.2 1.6.8 2.1.6.5 1.4.7 2.2.5l7.2-4.4c.4-.2.7-.6.8-1.1.2-.5.1-1-.1-1.4-.6-1-1.8-1.4-2.9-1.1l-2.7 1.6c-3 1.7-6.8.6-8.5-2.3-.8-1.4-.9-3.1-.3-4.6.6-1.5 1.8-2.7 3.4-3.5l7.2-4.4c3-.7 6 .8 7.2 3.5.6 1.4.6 2.9.1 4.3l-.3.8-.8-.5c-1-.7-2.2-1.2-3.4-1.5l-.3 0 .1-.3c.1-.8-.2-1.6-.8-2.1-.6-.5-1.4-.7-2.2-.5L9.4 17.2c-.4.2-.7.6-.8 1.1-.2.5-.1 1 .1 1.4.6 1 1.8 1.4 2.9 1.1l2.7-1.6c3-1.7 6.8-.6 8.5 2.3.8 1.4.9 3.1.3 4.6-.6 1.5-1.8 2.7-3.4 3.5z" fill="white"/></svg>
+      </div>
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">SvelteKit</h4>
+      <p style="font-size: 12px; color: #94a3b8;">Reactive, Compiled</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; padding: 24px; background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <span style="font-size: 24px;">📦</span>
+      <h4 style="font-size: 18px; font-weight: 700; color: #166534;">50+ Pre-Built Templates</h4>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">SaaS Landing Page</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">E-Commerce Store</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Restaurant</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Portfolio</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Cybersecurity</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Gaming</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Fitness Gym</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Medical Clinic</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Law Firm</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Education Platform</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Photography</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Music Festival</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Luxury Hotel</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">Crypto Exchange</span>
+      <span style="background: white; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 8px; font-size: 12px; color: #166534; font-weight: 500;">+ 36 more...</span>
+    </div>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">07 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 8: OUTCOMES & RESULTS ======================== -->
+<div class="slide">
+  <div class="section-label">📈 Outcomes & Results</div>
+  <h2>Measurable <span class="highlight">Impact & Performance</span></h2>
+  <div class="slide-divider"></div>
+
+  <div class="outcome-grid">
+    <div class="outcome-card">
+      <div class="outcome-number">< 15s</div>
+      <div class="outcome-label">Website Generation Time</div>
+      <div class="outcome-desc">Full website from single prompt</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">5</div>
+      <div class="outcome-label">Tech Stacks Supported</div>
+      <div class="outcome-desc">React, HTML, Vue, Angular, Svelte</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">50+</div>
+      <div class="outcome-label">Pre-built Templates</div>
+      <div class="outcome-desc">Industry-specific starter templates</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">100%</div>
+      <div class="outcome-label">Real Images</div>
+      <div class="outcome-desc">No placeholders — Unsplash + Pexels</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">3</div>
+      <div class="outcome-label">Payment Gateways</div>
+      <div class="outcome-desc">Stripe + Razorpay + Cashfree</div>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-number">∞</div>
+      <div class="outcome-label">Session Memory</div>
+      <div class="outcome-desc">Full conversation + code persistence</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <table class="feature-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Result</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Deployment Status</td>
+          <td><span class="deploy-badge" style="margin-top:0;">Production Ready</span></td>
+          <td>Full SaaS with auth, billing, and agent pipeline</td>
+        </tr>
+        <tr>
+          <td>Code Quality</td>
+          <td>Type-Safe (End-to-End)</td>
+          <td>tRPC ensures zero runtime type errors between frontend ↔ backend</td>
+        </tr>
+        <tr>
+          <td>Sandbox Execution</td>
+          <td>Isolated Cloud (E2B)</td>
+          <td>Real Linux VM per user — safe, isolated, ephemeral</td>
+        </tr>
+        <tr>
+          <td>Auth System</td>
+          <td>Dual (Custom + OAuth)</td>
+          <td>Email/password + Google + GitHub with session management</td>
+        </tr>
+        <tr>
+          <td>Image Quality</td>
+          <td>HD Stock Photos (API)</td>
+          <td>AI extracts keywords → automatic image injection</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">08 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 9: AI/ML COMPONENT ======================== -->
+<div class="slide">
+  <div class="section-label">🤖 AI / ML Component</div>
+  <h2>Multi-Agent <span class="highlight">AI Pipeline</span></h2>
+  <div class="slide-divider"></div>
+  <p class="slide-subtitle">
+    Genetix uses a production-grade multi-agent architecture powered by Large Language Models (LLMs) with intelligent tool use and persistent memory.
+  </p>
+
+  <div class="ai-pipeline">
+    <div class="ai-card">
+      <h4>🧠 Model Used</h4>
+      <p>OpenAI <strong>GPT-5.1</strong> for high-quality code generation. <strong>GPT-5-mini</strong> as a cost-effective fallback. User can toggle <em>Advanced Reasoning</em> for complex projects.</p>
+      <span class="ai-tag">Large Language Model (LLM)</span>
+    </div>
+    <div class="ai-card">
+      <h4>🏗️ Agent Architecture</h4>
+      <p><strong>Inngest Agent Kit</strong> powers a multi-agent network: a <em>Code Agent</em> (generates & edits code), a <em>Response Agent</em> (summarizes output), and a <em>Supervisor</em> (orchestrates routing).</p>
+      <span class="ai-tag">Multi-Agent System</span>
+    </div>
+    <div class="ai-card">
+      <h4>🛠️ Agent Tools</h4>
+      <p><strong>createOrUpdateFiles</strong> — writes code to sandbox. <strong>terminal</strong> — runs commands (npm install, etc.). <strong>readFiles</strong> — reads existing code for context.</p>
+      <span class="ai-tag">Tool-Augmented AI</span>
+    </div>
+    <div class="ai-card">
+      <h4>💾 Memory & Context</h4>
+      <p>Full conversation history (all messages + code fragments) persisted in PostgreSQL. Agent receives entire chat + latest code on every request.</p>
+      <span class="ai-tag">Persistent Memory</span>
+    </div>
+    <div class="ai-card">
+      <h4>🖼️ Image Intelligence</h4>
+      <p>AI extracts semantic keywords from user prompt → queries Unsplash & Pexels APIs → injects high-res images as base64 into generated code automatically.</p>
+      <span class="ai-tag">NLP + Image Pipeline</span>
+    </div>
+    <div class="ai-card">
+      <h4>☁️ Deployment</h4>
+      <p>AI agents run as <strong>Inngest serverless functions</strong>. Code executes in <strong>E2B cloud sandboxes</strong> (isolated Linux VMs). Stateless, scalable, production-ready.</p>
+      <span class="ai-tag">Serverless + Edge</span>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; padding: 24px; background: linear-gradient(135deg, #faf5ff, #eef2ff); border: 1px solid #c7d2fe; border-radius: 16px;">
+    <h4 style="font-size: 16px; font-weight: 700; color: #312e81; margin-bottom: 12px;">📊 Why LLM over Traditional ML?</h4>
+    <p style="font-size: 14px; color: #4338ca; line-height: 1.7;">
+      Website generation requires <strong>understanding natural language intent</strong>, <strong>generating structured code</strong> across multiple frameworks, and <strong>contextually reasoning</strong> about design decisions. These tasks demand the generative and reasoning capabilities of Large Language Models — traditional ML (classification, regression) cannot produce structured multi-file code from free-form text. LLMs with tool-use enable a conversational, iterative development loop that mirrors how a human developer works.
+    </p>
+  </div>
+
+  <div class="slide-brand">GENETIX</div>
+  <div class="slide-number">09 / 10</div>
+</div>
+
+<!-- ======================== SLIDE 10: THANK YOU ======================== -->
+<div class="slide slide-title">
+  <div class="content">
+    <div style="margin-bottom: 20px;">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="20" fill="url(#g2)"/>
+        <path d="M24 28h12v6H24z M24 38h32v4H24z M24 46h28v4H24z M44 28h12v10H44z" fill="white" opacity="0.9"/>
+        <defs><linearGradient id="g2" x1="0" y1="0" x2="80" y2="80"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+      </svg>
+    </div>
+    <div class="logo-text">Thank You</div>
+    <div class="tagline">GENETIX — AI-Powered Website Builder</div>
+    <p style="color: rgba(255,255,255,0.5); font-size: 16px; margin-top: 20px; margin-bottom: 40px;">
+      From natural language to production-ready websites — in seconds, not hours.
+    </p>
+    <div class="title-meta">
+      <div class="title-meta-item">
+        <span>Stack</span>
+        <strong>Next.js 15 + React 19</strong>
+      </div>
+      <div class="title-meta-item">
+        <span>AI</span>
+        <strong>GPT-5.1 Multi-Agent</strong>
+      </div>
+      <div class="title-meta-item">
+        <span>Sandbox</span>
+        <strong>E2B Cloud</strong>
+      </div>
+    </div>
+
+    <div style="margin-top: 50px; display: flex; gap: 20px; justify-content: center;">
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 16px 28px; border-radius: 12px; backdrop-filter: blur(10px);">
+        <span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block;">Questions?</span>
+        <strong style="color: white; font-size: 18px;">Let's Discuss</strong>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number" style="color: rgba(255,255,255,0.3);">10 / 10</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genetix — Interview Guide (English)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(244, 63, 94, 0.05) 0%, transparent 50%);
+      z-index: -1;
+      animation: bgPulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgPulse {
+      0% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      text-align: center;
+      padding: 60px 0 40px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #34d399;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #34d399, #60a5fa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero .subtitle {
+      font-size: 20px;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .hero .lang-tag {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 4px 14px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 8px;
+      font-size: 13px;
+      color: #60a5fa;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.25), transparent);
+      margin: 40px 0;
+    }
+
+    /* ===== SECTION HEADERS ===== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    .section-header .section-sub {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    /* ===== SCRIPT CARDS ===== */
+    .script-section { margin-bottom: 48px; }
+
+    .script-card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.2), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .script-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #34d399, #60a5fa);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .script-card:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.08);
+    }
+
+    .script-card .card-number {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .script-card .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #34d399;
+      margin-bottom: 10px;
+    }
+
+    .script-card p {
+      font-size: 16px;
+      color: #cbd5e1;
+      line-height: 1.8;
+    }
+
+    .script-card .highlight {
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 8px;
+      font-size: 12px;
+      color: #60a5fa;
+      margin-bottom: 20px;
+    }
+
+    /* ===== OVERVIEW ===== */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .overview-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 14px;
+      padding: 22px 24px;
+      transition: all 0.3s ease;
+    }
+
+    .overview-card:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .overview-card .ov-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .overview-card .ov-value {
+      font-size: 17px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    /* ===== TECH STACK ===== */
+    .tech-category { margin-bottom: 28px; }
+
+    .tech-category-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .tech-chip {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: all 0.25s ease;
+    }
+
+    .tech-chip:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      transform: translateX(4px);
+    }
+
+    .tech-chip .tech-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    .tech-chip .tech-name { font-weight: 600; font-size: 14px; color: #e2e8f0; }
+    .tech-chip .tech-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+    .cat-frontend .tech-category-title { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+    .cat-frontend .tech-dot { background: #60a5fa; }
+    .cat-backend .tech-category-title { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+    .cat-backend .tech-dot { background: #34d399; }
+    .cat-ai .tech-category-title { background: rgba(168, 85, 247, 0.1); color: #c084fc; }
+    .cat-ai .tech-dot { background: #c084fc; }
+    .cat-payments .tech-category-title { background: rgba(251, 146, 60, 0.1); color: #fb923c; }
+    .cat-payments .tech-dot { background: #fb923c; }
+
+    /* ===== ARCHITECTURE ===== */
+    .arch-flow {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+
+    .arch-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .arch-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .arch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 3px solid;
+      background: #0a0a0f;
+      flex-shrink: 0;
+    }
+
+    .arch-line {
+      width: 2px;
+      height: 32px;
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .arch-content { flex: 1; padding-bottom: 16px; }
+    .arch-content .arch-title { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+    .arch-content .arch-desc { font-size: 13px; color: #64748b; margin-top: 3px; }
+
+    .agent-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(59, 130, 246, 0.06));
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 16px 0 16px 56px;
+    }
+
+    .agent-box .agent-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #6ee7b7;
+      margin-bottom: 12px;
+    }
+
+    .agent-tool {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #94a3b8;
+      margin: 4px 4px 4px 0;
+    }
+
+    /* ===== AUTH ===== */
+    .auth-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .auth-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .auth-card:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      transform: translateY(-3px);
+    }
+
+    .auth-card .auth-icon { font-size: 32px; margin-bottom: 12px; }
+    .auth-card h4 { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+
+    .auth-card ul { list-style: none; text-align: left; }
+
+    .auth-card ul li {
+      font-size: 13px;
+      color: #94a3b8;
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .auth-card ul li::before {
+      content: '✓';
+      color: #34d399;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* ===== BILLING ===== */
+    .billing-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .billing-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .billing-item .bi-icon { font-size: 24px; margin-bottom: 8px; }
+    .billing-item .bi-title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+    .billing-item .bi-desc { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+    /* ===== DB SCHEMA ===== */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .schema-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(51, 65, 85, 0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+
+    .schema-item code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .schema-item span { font-size: 13px; color: #94a3b8; }
+
+    /* ===== FEATURES ===== */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(51, 65, 85, 0.3);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: all 0.25s ease;
+    }
+
+    .feature-item:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .feature-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+      color: #6ee7b7;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-text .ft-title { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+    .feature-text .ft-desc { font-size: 12px; color: #64748b; margin-top: 3px; }
+
+    /* ===== Q&A ===== */
+    .qa-list { margin-bottom: 48px; }
+
+    .qa-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .qa-item:hover { border-color: rgba(16, 185, 129, 0.3); }
+
+    .qa-question {
+      padding: 20px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qa-question .q-badge {
+      padding: 3px 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #34d399;
+      flex-shrink: 0;
+    }
+
+    .qa-answer {
+      padding: 0 24px 20px;
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.8;
+      border-top: 1px solid rgba(51, 65, 85, 0.3);
+      padding-top: 16px;
+      margin: 0 16px;
+    }
+
+    /* ===== PITCH ===== */
+    .pitch-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08), rgba(244, 63, 94, 0.05));
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 18px;
+      padding: 36px 40px;
+      text-align: center;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .pitch-box::before {
+      content: '💡';
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 32px;
+      background: #0a0a0f;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .pitch-box .pitch-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #34d399;
+      margin-bottom: 14px;
+    }
+
+    .pitch-box p {
+      font-size: 18px;
+      font-weight: 500;
+      color: #e2e8f0;
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ===== STRUCTURE ===== */
+    .structure-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      color: #94a3b8;
+    }
+
+    .structure-box .dir { color: #34d399; font-weight: 600; }
+    .structure-box .file { color: #e2e8f0; }
+    .structure-box .comment { color: #4b5563; }
+    .structure-box .tree { color: #334155; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center;
+      padding: 40px 0;
+      border-top: 1px solid rgba(51, 65, 85, 0.3);
+    }
+
+    .footer p { font-size: 16px; color: #64748b; }
+    .footer .emoji { font-size: 24px; margin-bottom: 8px; display: block; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .overview-grid, .auth-grid, .features-grid { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .agent-box { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== HERO ===== -->
+  <div class="hero">
+    <div class="hero-badge">🎤 Interview Preparation Guide</div>
+    <h1>Genetix — AI Website Builder</h1>
+    <p class="subtitle">Explain your project in 2 minutes during campus placement interviews</p>
+    <div class="lang-tag">🌐 English Version</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== 2-MIN SCRIPT ===== -->
+  <div class="script-section">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(16,185,129,0.1);">🗣️</div>
+      <div>
+        <h2>2-Minute Speaking Script</h2>
+        <div class="section-sub">Read this directly during your interview</div>
+      </div>
+    </div>
+
+    <div class="time-badge">⏱️ Total Time: ~2 minutes</div>
+
+    <div class="script-card">
+      <div class="card-number">1</div>
+      <div class="card-label">📌 Introduction — 15 sec</div>
+      <p>"My project is called <span class="highlight">Genetix — an AI-powered Website Builder</span>. The idea is simple — the user just describes their website in natural language, for example <span class="highlight">'Build me a restaurant website with menu and reservation'</span> — and Genetix generates the entire website within seconds, complete with real images, responsive design, and deployable source code."</p>
+    </div>
+
+    <div class="script-card">
+      <div class="card-number">2</div>
+      <div class="card-label">⚙️ Tech Stack — 20 sec</div>
+      <p>"I built this project on <span class="highlight">Next.js 15</span> with <span class="highlight">React 19, TypeScript, Tailwind CSS, and PostgreSQL with Prisma ORM</span>. On the backend, I used <span class="highlight">tRPC</span> which provides type-safe API calls — meaning the frontend and backend types stay perfectly in sync, eliminating any type mismatches at compile time."</p>
+    </div>
+
+    <div class="script-card">
+      <div class="card-number">3</div>
+      <div class="card-label">🤖 AI Architecture — 25 sec</div>
+      <p>"For the core AI logic, I used <span class="highlight">Inngest Agent Kit</span> which enables a multi-agent architecture. There's a coding agent powered by <span class="highlight">OpenAI's GPT-5.1 and GPT-5-mini</span> models — it takes the user's prompt, generates code, and executes it inside an <span class="highlight">E2B Cloud Sandbox</span>. This sandbox is a real isolated Linux environment where the code actually runs — files are created, dependencies are installed, and a live preview is served."</p>
+    </div>
+
+    <div class="script-card">
+      <div class="card-number">4</div>
+      <div class="card-label">🎨 Features — 20 sec</div>
+      <p>"The project supports <span class="highlight">5 tech stacks</span> — React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, and SvelteKit. It also includes <span class="highlight">50+ pre-built templates</span> like SaaS landing pages, e-commerce stores, portfolios, restaurants, and more. I integrated the <span class="highlight">Unsplash and Pexels APIs</span> which automatically fetch relevant stock images and inject them into the generated website."</p>
+    </div>
+
+    <div class="script-card">
+      <div class="card-number">5</div>
+      <div class="card-label">🔐 Auth & Billing — 20 sec</div>
+      <p>"For authentication, I built a <span class="highlight">custom session-based auth system</span> with bcrypt password hashing, email verification, <span class="highlight">OAuth support for Google and GitHub via NextAuth</span>, and middleware-based route protection. For billing, I integrated both <span class="highlight">Stripe and Razorpay</span> with subscription plans, a credits system, and rate limiting."</p>
+    </div>
+
+    <div class="script-card">
+      <div class="card-number">6</div>
+      <div class="card-label">🏆 Challenges Solved — 20 sec</div>
+      <p>"The key challenges I solved include <span class="highlight">multi-agent memory management</span> — persisting conversation history across sessions so the AI remembers previous code, <span class="highlight">cross-tech-stack sandbox execution</span>, real-time image injection, and <span class="highlight">credits-based usage tracking</span> with rate limiting. These are all production-grade features."</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== QUICK OVERVIEW ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(59,130,246,0.1);">📋</div>
+    <div>
+      <h2>Project Overview</h2>
+      <div class="section-sub">Quick reference card</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="overview-card">
+      <div class="ov-label">Project Name</div>
+      <div class="ov-value">Genetix — AI Website Builder</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">Project Type</div>
+      <div class="ov-value">Full-Stack SaaS Application</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">What It Does</div>
+      <div class="ov-value">Natural language → AI generates full website + live preview</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">Deployment</div>
+      <div class="ov-value">Working with sandbox deployment</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== TECH STACK ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(16,185,129,0.1);">🏗️</div>
+    <div>
+      <h2>Tech Stack</h2>
+      <div class="section-sub">Complete technology breakdown</div>
+    </div>
+  </div>
+
+  <div class="tech-category cat-frontend">
+    <div class="tech-category-title">⚡ Frontend</div>
+    <div class="tech-grid">
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Next.js 15 (App Router + Turbopack)</div><div class="tech-desc">SSR, routing, API routes</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">React 19</div><div class="tech-desc">Latest concurrent features</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">TypeScript</div><div class="tech-desc">Type safety across codebase</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Tailwind CSS 4</div><div class="tech-desc">Utility-first styling</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Radix UI + Shadcn/UI</div><div class="tech-desc">Accessible component library</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">TanStack React Query</div><div class="tech-desc">Server state & caching</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">React Hook Form + Zod</div><div class="tech-desc">Form handling + validation</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Recharts</div><div class="tech-desc">Usage data visualization</div></div></div>
+    </div>
+  </div>
+
+  <div class="tech-category cat-backend">
+    <div class="tech-category-title">🖥️ Backend</div>
+    <div class="tech-grid">
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">tRPC</div><div class="tech-desc">End-to-end type-safe API</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Prisma ORM</div><div class="tech-desc">Database access + migrations</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">PostgreSQL</div><div class="tech-desc">Primary relational database</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Inngest</div><div class="tech-desc">Background jobs & orchestration</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">NextAuth.js + Custom Auth</div><div class="tech-desc">OAuth + session-based auth</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Rate Limiter Flexible</div><div class="tech-desc">Per-user API rate limiting</div></div></div>
+    </div>
+  </div>
+
+  <div class="tech-category cat-ai">
+    <div class="tech-category-title">🧠 AI & Sandboxing</div>
+    <div class="tech-grid">
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">OpenAI GPT-5.1 / GPT-5-mini</div><div class="tech-desc">Code generation AI models</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Inngest Agent Kit</div><div class="tech-desc">Multi-agent system framework</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">E2B Cloud Sandbox</div><div class="tech-desc">Isolated code execution env</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Unsplash + Pexels API</div><div class="tech-desc">Auto-fetch stock images</div></div></div>
+    </div>
+  </div>
+
+  <div class="tech-category cat-payments" style="margin-bottom: 48px;">
+    <div class="tech-category-title">💳 Payments</div>
+    <div class="tech-grid">
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Stripe</div><div class="tech-desc">International payments</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Razorpay</div><div class="tech-desc">Indian payment gateway</div></div></div>
+      <div class="tech-chip"><div class="tech-dot"></div><div><div class="tech-name">Cashfree</div><div class="tech-desc">Additional payment option</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== ARCHITECTURE ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(168,85,247,0.1);">🧠</div>
+    <div>
+      <h2>How It Works</h2>
+      <div class="section-sub">End-to-end architecture flow</div>
+    </div>
+  </div>
+
+  <div class="arch-flow">
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #60a5fa;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">📝 User Prompt</div><div class="arch-desc">"Build a restaurant website with menu and reservation"</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #34d399;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">⚡ Next.js Frontend</div><div class="arch-desc">React 19 + TypeScript captures user input</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #4ade80;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">🔗 tRPC API Call</div><div class="arch-desc">Type-safe call to backend, triggers Inngest event</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #c084fc;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">🤖 Multi-Agent Network</div><div class="arch-desc">Inngest Agent Kit orchestrates the code agent</div></div>
+    </div>
+
+    <div class="agent-box">
+      <div class="agent-title">🛠️ Code Agent (GPT-5.1 / GPT-5-mini)</div>
+      <div>
+        <span class="agent-tool">🖥️ terminal</span>
+        <span class="agent-tool">📄 createOrUpdateFiles</span>
+        <span class="agent-tool">📖 readFiles</span>
+      </div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 10px;">Reads existing files → generates new code → installs deps → runs server</div>
+    </div>
+
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #fb923c;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">📦 E2B Cloud Sandbox</div><div class="arch-desc">Real execution: npm install, file creation, live server</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #f472b6;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">🖼️ Image Injection</div><div class="arch-desc">Unsplash/Pexels images fetched and injected as base64</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #22d3ee;"></div><div class="arch-line"></div></div>
+      <div class="arch-content"><div class="arch-title">💾 Fragment Saved to DB</div><div class="arch-desc">Files JSON + sandbox URL stored in PostgreSQL</div></div>
+    </div>
+    <div class="arch-step">
+      <div class="arch-connector"><div class="arch-dot" style="border-color: #4ade80;"></div></div>
+      <div class="arch-content"><div class="arch-title">🌐 Live Preview</div><div class="arch-desc">Website shown to user in iframe — fully interactive</div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== AUTH ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(251,146,60,0.1);">🔐</div>
+    <div>
+      <h2>Authentication System</h2>
+      <div class="section-sub">Dual authentication strategy</div>
+    </div>
+  </div>
+
+  <div class="auth-grid">
+    <div class="auth-card">
+      <div class="auth-icon">🔑</div>
+      <h4>Custom Auth</h4>
+      <ul>
+        <li>bcrypt password hashing</li>
+        <li>UUID session tokens</li>
+        <li>Email verification (OTP)</li>
+        <li>Password reset flow</li>
+      </ul>
+    </div>
+    <div class="auth-card">
+      <div class="auth-icon">🌐</div>
+      <h4>OAuth (NextAuth.js)</h4>
+      <ul>
+        <li>Google Sign-In</li>
+        <li>GitHub Sign-In</li>
+        <li>Auto-links with custom auth</li>
+        <li>Prisma adapter</li>
+      </ul>
+    </div>
+    <div class="auth-card">
+      <div class="auth-icon">🛡️</div>
+      <h4>Middleware Protection</h4>
+      <ul>
+        <li>Public routes (/, /pricing)</li>
+        <li>Protected routes (/projects)</li>
+        <li>Session cookie validation</li>
+        <li>Redirect on unauthorized</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== BILLING ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(16,185,129,0.1);">💰</div>
+    <div>
+      <h2>Billing & Credits System</h2>
+      <div class="section-sub">Monetization infrastructure</div>
+    </div>
+  </div>
+
+  <div class="billing-items">
+    <div class="billing-item"><div class="bi-icon">🎁</div><div class="bi-title">Free Tier</div><div class="bi-desc">3 website generations/month</div></div>
+    <div class="billing-item"><div class="bi-icon">💎</div><div class="bi-title">Paid Plans</div><div class="bi-desc">Monthly/Yearly via Stripe & Razorpay</div></div>
+    <div class="billing-item"><div class="bi-icon">🎯</div><div class="bi-title">Credits System</div><div class="bi-desc">UserCredits model tracks usage</div></div>
+    <div class="billing-item"><div class="bi-icon">🧠</div><div class="bi-title">Advanced Reasoning</div><div class="bi-desc">GPT-5.1 with 24hr cooldown</div></div>
+    <div class="billing-item"><div class="bi-icon">⚡</div><div class="bi-title">Rate Limiting</div><div class="bi-desc">Per-user request throttling</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== DB SCHEMA ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(168,85,247,0.1);">📊</div>
+    <div>
+      <h2>Database Schema</h2>
+      <div class="section-sub">11 models in PostgreSQL via Prisma</div>
+    </div>
+  </div>
+
+  <div class="schema-grid">
+    <div class="schema-item"><code>User</code><span>Profile, email, password, OAuth</span></div>
+    <div class="schema-item"><code>Account</code><span>OAuth providers (Google, GitHub)</span></div>
+    <div class="schema-item"><code>Session</code><span>Login sessions + token/expiry</span></div>
+    <div class="schema-item"><code>Project</code><span>Website projects + tech stack</span></div>
+    <div class="schema-item"><code>Message</code><span>Chat messages (USER/ASSISTANT)</span></div>
+    <div class="schema-item"><code>Fragment</code><span>Generated code + sandbox URL</span></div>
+    <div class="schema-item"><code>Subscription</code><span>Active plan per user</span></div>
+    <div class="schema-item"><code>Plan</code><span>Pricing plans with features</span></div>
+    <div class="schema-item"><code>Payment</code><span>Transaction records</span></div>
+    <div class="schema-item"><code>UserCredits</code><span>Usage tracking (used/limit)</span></div>
+    <div class="schema-item"><code>AdvancedReasoning</code><span>GPT-5.1 24hr cooldown</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== FEATURES ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(59,130,246,0.1);">🌟</div>
+    <div>
+      <h2>Key Features</h2>
+      <div class="section-sub">10 features to highlight in your interview</div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-item"><div class="feature-num">1</div><div class="feature-text"><div class="ft-title">Multi-Tech Stack Support</div><div class="ft-desc">React, Vue, Angular, Svelte, HTML/CSS/JS</div></div></div>
+    <div class="feature-item"><div class="feature-num">2</div><div class="feature-text"><div class="ft-title">50+ Pre-built Templates</div><div class="ft-desc">SaaS, E-commerce, Portfolio, Restaurant, Gaming</div></div></div>
+    <div class="feature-item"><div class="feature-num">3</div><div class="feature-text"><div class="ft-title">Real Code Execution</div><div class="ft-desc">E2B Sandbox runs actual code, not just previews</div></div></div>
+    <div class="feature-item"><div class="feature-num">4</div><div class="feature-text"><div class="ft-title">Auto Image Injection</div><div class="ft-desc">Unsplash/Pexels images auto-fetched by keywords</div></div></div>
+    <div class="feature-item"><div class="feature-num">5</div><div class="feature-text"><div class="ft-title">Conversation Memory</div><div class="ft-desc">Agent remembers full history for iterative builds</div></div></div>
+    <div class="feature-item"><div class="feature-num">6</div><div class="feature-text"><div class="ft-title">Voice Input</div><div class="ft-desc">Speech-to-text for describing websites</div></div></div>
+    <div class="feature-item"><div class="feature-num">7</div><div class="feature-text"><div class="ft-title">Live Preview</div><div class="ft-desc">Iframe-based real-time website preview</div></div></div>
+    <div class="feature-item"><div class="feature-num">8</div><div class="feature-text"><div class="ft-title">Code Editor</div><div class="ft-desc">Built-in file explorer + syntax highlighting</div></div></div>
+    <div class="feature-item"><div class="feature-num">9</div><div class="feature-text"><div class="ft-title">Multi-Language UI</div><div class="ft-desc">Internationalization support</div></div></div>
+    <div class="feature-item"><div class="feature-num">10</div><div class="feature-text"><div class="ft-title">Production Billing</div><div class="ft-desc">Stripe + Razorpay with credits & subscriptions</div></div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== Q&A ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(244,114,182,0.1);">❓</div>
+    <div>
+      <h2>Interview Questions & Answers</h2>
+      <div class="section-sub">8 most common questions interviewers will ask</div>
+    </div>
+  </div>
+
+  <div class="qa-list">
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q1</span>Why tRPC over REST or GraphQL?</div>
+      <div class="qa-answer">tRPC gives end-to-end type safety between frontend and backend. Since both are in TypeScript, I get auto-complete and compile-time error checking on API calls. No schema definitions needed like GraphQL, and no type mismatches like REST.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q2</span>How does the AI generate websites?</div>
+      <div class="qa-answer">I use a multi-agent architecture with Inngest Agent Kit. The user's prompt goes to a Code Agent backed by GPT-5.1/5-mini. The agent has 3 tools — terminal, createOrUpdateFiles, readFiles. It plans the website, writes code, installs dependencies, and runs everything inside an E2B cloud sandbox — a real Linux container where code actually executes.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q3</span>How do you handle authentication?</div>
+      <div class="qa-answer">I built a dual auth system — custom email/password auth with bcrypt hashing and session tokens stored in PostgreSQL, plus OAuth via NextAuth.js for Google and GitHub. Middleware protects routes by checking session cookies. Both auth methods share the same User model.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q4</span>What was the biggest challenge?</div>
+      <div class="qa-answer">Agent memory management. Initially, the AI would forget previous code when users asked for modifications. I solved it by persisting all conversation history and code fragments in the database, pre-loading existing files into the sandbox before each agent run, and providing file context in the prompt.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q5</span>How is this different from Wix or Squarespace?</div>
+      <div class="qa-answer">Those are drag-and-drop builders. Genetix generates actual source code — React, Vue, Angular, etc. — that users own and can deploy anywhere. Plus it supports 5 different tech stacks, uses AI to understand natural language requirements, and provides full code editor access.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q6</span>How do you handle payments?</div>
+      <div class="qa-answer">Stripe for international users, Razorpay for Indian users. I have a subscription model with plans stored in the database, webhook handlers for payment confirmations, and a credits system that tracks per-user usage with monthly resets.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q7</span>What about scalability?</div>
+      <div class="qa-answer">Next.js with Turbopack for fast builds, Inngest for async background processing (AI generation doesn't block the server), Prisma with connection pooling for the database, rate limiting per user, and E2B sandboxes are ephemeral — they spin up per request and auto-destroy.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-question"><span class="q-badge">Q8</span>What did you learn from this project?</div>
+      <div class="qa-answer">Multi-agent AI systems architecture, production-grade payment integration, building type-safe full-stack apps with tRPC, managing cloud sandboxes, and implementing proper auth with both custom and OAuth flows. I also learned a lot about prompt engineering for code generation.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== ELEVATOR PITCH ===== -->
+  <div class="pitch-box">
+    <div class="pitch-label">🎯 One-Liner Elevator Pitch</div>
+    <p>"Genetix is an AI-powered SaaS platform where users describe a website in natural language and get production-ready, deployable code generated in real-time across 5 tech stacks — built with Next.js 15, OpenAI, and cloud sandboxing."</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== PROJECT STRUCTURE ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: rgba(16,185,129,0.1);">📁</div>
+    <div>
+      <h2>Project Structure</h2>
+      <div class="section-sub">Simplified folder layout</div>
+    </div>
+  </div>
+
+  <div class="structure-box">
+    <span class="dir">src/</span><br>
+    <span class="tree">├── </span><span class="dir">app/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Next.js App Router pages</span><br>
+    <span class="tree">│&nbsp;&nbsp; ├── </span><span class="dir">(home)/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Landing, pricing, templates</span><br>
+    <span class="tree">│&nbsp;&nbsp; ├── </span><span class="dir">api/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Auth, payments, webhooks</span><br>
+    <span class="tree">│&nbsp;&nbsp; ├── </span><span class="dir">auth/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Sign-in, Sign-up pages</span><br>
+    <span class="tree">│&nbsp;&nbsp; ├── </span><span class="dir">project/[id]/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Project workspace</span><br>
+    <span class="tree">│&nbsp;&nbsp; └── </span><span class="dir">projects/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Dashboard</span><br>
+    <span class="tree">├── </span><span class="dir">components/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Reusable UI components</span><br>
+    <span class="tree">├── </span><span class="dir">contexts/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Auth, Language contexts</span><br>
+    <span class="tree">├── </span><span class="dir">inngest/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# AI agent functions</span><br>
+    <span class="tree">├── </span><span class="dir">lib/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Auth, DB, images, templates</span><br>
+    <span class="tree">├── </span><span class="dir">modules/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Feature modules</span><br>
+    <span class="tree">├── </span><span class="dir">trpc/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# tRPC router & procedures</span><br>
+    <span class="tree">├── </span><span class="file">middleware.ts</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Route protection</span><br>
+    <span class="tree">├── </span><span class="file">prompt.ts</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# AI prompts (5 stacks)</span><br>
+    <span class="tree">└── </span><span class="file">types.ts</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Shared TypeScript types</span><br>
+    <br>
+    <span class="dir">prisma/</span><br>
+    <span class="tree">├── </span><span class="file">schema.prisma</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 11 database models</span><br>
+    <span class="tree">├── </span><span class="file">seed.ts</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Database seeding</span><br>
+    <span class="tree">└── </span><span class="dir">migrations/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Version-controlled migrations</span><br>
+    <br>
+    <span class="dir">public/templates/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 50+ HTML templates</span><br>
+    <span class="dir">sandbox-templates/</span> <span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# E2B sandbox templates</span>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <span class="emoji">🚀</span>
+    <p>Best of luck with your placement interviews!</p>
+  </div>
+
+</div>
+
+</body>
+</html>
