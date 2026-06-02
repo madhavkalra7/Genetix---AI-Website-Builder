@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "icypluto": {
+      "source": "madhavkalra7/icypluto",
+      "sourceType": "github",
+      "skillPath": "skills/icypluto/SKILL.md",
+      "computedHash": "b0d65db6aa19f7933bbb9279f1684a244c46512bc86165be603273b56c2b22d3"
+    }
+  }
+}

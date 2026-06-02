@@ -244,6 +244,20 @@ const Page = () => {
             <p className="text-gray-300 mt-6 text-base md:text-xl font-light">
               {t('home.subtitle')}
             </p>
+            <p className="mt-4 text-sm md:text-base text-white/70 max-w-2xl mx-auto">
+              Genetix is an AI website builder that converts natural-language prompts into
+              production-ready, deployable source code with real images and responsive layouts.
+            </p>
+            <div className="mt-8 w-full max-w-2xl mx-auto rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-left">
+              <p className="text-white/90 text-sm font-[Orbitron] tracking-wide">
+                Key takeaways
+              </p>
+              <ul className="mt-3 list-disc pl-5 text-sm text-white/70 space-y-1">
+                <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>
+                <li>Generates editable, ownership-friendly source code you can deploy anywhere.</li>
+                <li>Built for real projects with templates, responsive layouts, and live previews.</li>
+              </ul>
+            </div>
             
             {/* Templates Button */}
             <div className="mt-8">
@@ -574,6 +588,74 @@ const Page = () => {
                   {prompt}
                 </Button>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="w-full bg-black py-14">
+        <div className="w-full max-w-4xl mx-auto px-4">
+          <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-8">
+            <h2 className="text-white text-2xl md:text-3xl font-[Orbitron]">Genetix vs. Drag-and-Drop Builders</h2>
+            <p className="mt-3 text-white/70 text-sm md:text-base">
+              Genetix generates real code across multiple frameworks, while drag-and-drop tools
+              lock you into proprietary editors and limited export options.
+            </p>
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full text-left text-sm text-white/80 border border-white/10">
+                <thead className="bg-white/5 text-white/90">
+                  <tr>
+                    <th className="px-4 py-3">Capability</th>
+                    <th className="px-4 py-3">Genetix</th>
+                    <th className="px-4 py-3">Drag-and-Drop Builders</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-white/10">
+                    <td className="px-4 py-3">Production-ready source code</td>
+                    <td className="px-4 py-3">Yes</td>
+                    <td className="px-4 py-3">Limited or partial export</td>
+                  </tr>
+                  <tr className="border-t border-white/10">
+                    <td className="px-4 py-3">Multi-framework output</td>
+                    <td className="px-4 py-3">5 stacks supported</td>
+                    <td className="px-4 py-3">Usually single stack</td>
+                  </tr>
+                  <tr className="border-t border-white/10">
+                    <td className="px-4 py-3">Full code ownership</td>
+                    <td className="px-4 py-3">Yes</td>
+                    <td className="px-4 py-3">Often restricted</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="w-full bg-black pb-16">
+        <div className="w-full max-w-3xl mx-auto px-4">
+          <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-8">
+            <h2 className="text-white text-2xl md:text-3xl font-[Orbitron]">FAQ</h2>
+            <div className="mt-5 space-y-4 text-white/80">
+              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+                <summary className="cursor-pointer font-semibold">What does Genetix build?</summary>
+                <p className="mt-2 text-sm text-white/70">
+                  Genetix generates complete, responsive websites from a single prompt, including
+                  layout, styling, and real images.
+                </p>
+              </details>
+              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+                <summary className="cursor-pointer font-semibold">Which frameworks are supported?</summary>
+                <p className="mt-2 text-sm text-white/70">
+                  Genetix supports React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, and SvelteKit.
+                </p>
+              </details>
+              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+                <summary className="cursor-pointer font-semibold">Do I own the code?</summary>
+                <p className="mt-2 text-sm text-white/70">
+                  Yes. Genetix outputs production-ready source code that you can edit and deploy
+                  on your own infrastructure.
+                </p>
+              </details>
             </div>
           </div>
         </div>

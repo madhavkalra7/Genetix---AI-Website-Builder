@@ -19,7 +19,7 @@
     "@e2b/code-interpreter": "^1.5.1",
     "@e2b/sdk": "^0.12.5",
     "@hookform/resolvers": "^5.1.1",
-    "@inngest/agent-kit": "^0.9.0",
+    "@inngest/agent-kit": "^0.13.2",
     "@opentelemetry/winston-transport": "^0.14.0",
     "@prisma/client": "^6.12.0",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -66,7 +66,7 @@
     "drizzle-orm": "^0.44.4",
     "embla-carousel-react": "^8.6.0",
     "howler": "^2.2.4",
-    "inngest": "^3.40.1",
+    "inngest": "^3.54.2",
     "input-otp": "^1.4.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.525.0",
@@ -91,7 +91,7 @@
     "superjson": "^2.2.2",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2",
-    "zod": "^3.24.1",
+    "zod": "^4.4.3",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
