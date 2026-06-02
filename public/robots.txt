@@ -13,4 +13,4 @@ Allow: /
 User-agent: OAI-SearchBot
 Allow: /
 
-Sitemap: /sitemap.xml
+Sitemap: https://genetix-ai-website-builder.vercel.app/sitemap.xml
