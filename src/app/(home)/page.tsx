@@ -13,35 +13,12 @@ import { useSession } from "next-auth/react";
 import { getTemplateById } from "@/lib/templates";
 import type { Template } from "@/lib/templates";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-function TypingTitle() {
-  const { t } = useLanguage();
-  const fullText = t('home.title');
-  const [displayed, setDisplayed] = useState("");
-  useEffect(() => {
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplayed(fullText.slice(0, i + 1));
-      i++;
-      if (i >= fullText.length) clearInterval(interval);
-    }, 120);
-    return () => clearInterval(interval);
-  }, [fullText]);
-  return (
-    <h1 className="text-white text-5xl md:text-6xl font-extrabold tracking-widest font-[Orbitron] drop-shadow-xl">
-      {displayed}
-      <span className="animate-blink">|</span>
-      <style jsx>{`
-        .animate-blink {
-          animation: blink 1s steps(2, start) infinite;
-        }
-        @keyframes blink {
-          to { opacity: 0; }
-        }
-      `}</style>
-    </h1>
-  );
-}
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import { FadeIn } from "@/components/animations/fade-in";
+import { TextReveal } from "@/components/animations/text-reveal";
+import { SpotlightCard } from "@/components/animations/spotlight-card";
+import { Magnetic } from "@/components/animations/magnetic-button";
+import { AuroraBackground, Starfield } from "@/components/animations/aurora-background";
 const Page = () => {
   const [value, setValue] = useState("");
   const [selectedTech, setSelectedTech] = useState("html-css-js");
@@ -54,6 +31,10 @@ const Page = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollThumbTop, setScrollThumbTop] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const moonY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.35]);
   const router = useRouter();
   const trpc = useTRPC();
   const { user } = useAuth();
@@ -187,28 +168,10 @@ const Page = () => {
 
   return (
     <main className="min-h-screen w-full bg-black overflow-x-hidden relative">
-      {/* Animated Stars & Nebula Background */}
+      {/* Animated Stars & Aurora Background */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-        {/* Stars */}
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          {[...Array(80)].map((_, i) => (
-            <span
-              key={i}
-              className="absolute rounded-full bg-white opacity-70 animate-twinkle"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 2 + 1}px`,
-                height: `${Math.random() * 2 + 1}px`,
-                animationDelay: `${Math.random() * 3}s`,
-              }}
-            />
-          ))}
-        </div>
-        {/* Nebula (CSS keyframes) */}
-        <div className="absolute left-1/2 top-1/2 w-[900px] h-[600px] -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
-          <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-700 via-blue-700 to-pink-500 opacity-30 blur-3xl animate-nebula" />
-        </div>
+        <Starfield count={70} />
+        <AuroraBackground />
       </div>
 
       {/* Custom Scroll Indicator (SSR-safe) */}
@@ -225,54 +188,98 @@ const Page = () => {
 
       {/* Hero Section */}
       <section
-        className="relative w-full flex flex-col items-center justify-center bg-center bg-cover bg-no-repeat"
-        style={{
-          backgroundImage: "url('/moon.jpg')",
-          minHeight: "110vh",
-        }}
+        ref={heroRef}
+        className="relative w-full flex flex-col items-center justify-center overflow-hidden"
+        style={{ minHeight: "110vh" }}
       >
-        <div className="w-full max-w-3xl mx-auto flex flex-col items-center pt-20 pb-19 px-4">
+        {/* Parallax moon backdrop */}
+        <motion.div
+          className="absolute inset-0 bg-center bg-cover bg-no-repeat will-change-transform"
+          style={{ backgroundImage: "url('/moon.jpg')", y: moonY, scale: 1.1, opacity: heroOpacity }}
+        />
+        {/* Deep vignette for readability */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.65)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent" />
+
+        <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center pt-20 pb-19 px-4">
           {/* Header Section */}
           <div className="text-center mb-16">
             {isLoggedIn && (
-              <p className="text-green-400 text-sm md:text-base font-[Orbitron] tracking-[0.3em] mb-8 uppercase" 
-                 style={{ textShadow: '0 0 10px rgba(74, 222, 128, 0.8), 0 0 20px rgba(74, 222, 128, 0.5)' }}>
+              <motion.p
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-green-400 text-sm md:text-base font-[Orbitron] tracking-[0.3em] mb-8 uppercase animate-led-glow"
+              >
                 {t('home.welcome')}, {displayName}
-              </p>
+              </motion.p>
             )}
-            <TypingTitle />
-            <p className="text-gray-300 mt-6 text-base md:text-xl font-light">
+            <TextReveal
+              text={t('home.title')}
+              className="text-shimmer text-5xl md:text-6xl font-extrabold tracking-widest font-[Orbitron] drop-shadow-xl"
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="text-gray-300 mt-6 text-base md:text-xl font-light"
+            >
               {t('home.subtitle')}
-            </p>
-            <p className="mt-4 text-sm md:text-base text-white/70 max-w-2xl mx-auto">
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-4 text-sm md:text-base text-white/70 max-w-2xl mx-auto"
+            >
               Genetix is an AI website builder that converts natural-language prompts into
               production-ready, deployable source code with real images and responsive layouts.
-            </p>
-            <div className="mt-8 w-full max-w-2xl mx-auto rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-left">
-              <p className="text-white/90 text-sm font-[Orbitron] tracking-wide">
-                Key takeaways
-              </p>
-              <ul className="mt-3 list-disc pl-5 text-sm text-white/70 space-y-1">
-                <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>
-                <li>Generates editable, ownership-friendly source code you can deploy anywhere.</li>
-                <li>Built for real projects with templates, responsive layouts, and live previews.</li>
-              </ul>
-            </div>
-            
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SpotlightCard className="mt-8 w-full max-w-2xl mx-auto px-6 py-4 text-left">
+                <p className="text-white/90 text-sm font-[Orbitron] tracking-wide">
+                  Key takeaways
+                </p>
+                <ul className="mt-3 list-disc pl-5 text-sm text-white/70 space-y-1">
+                  <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>
+                  <li>Generates editable, ownership-friendly source code you can deploy anywhere.</li>
+                  <li>Built for real projects with templates, responsive layouts, and live previews.</li>
+                </ul>
+              </SpotlightCard>
+            </motion.div>
+
             {/* Templates Button */}
-            <div className="mt-8">
-              <Button
-                onClick={() => router.push('/templates')}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-purple-500/50"
-              >
-                {t('home.browseTemplates')}
-              </Button>
-            </div>
+            <motion.div
+              className="mt-8 inline-block"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.05, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Magnetic>
+                <Button
+                  onClick={() => router.push('/templates')}
+                  className="btn-shine bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-purple-500/50"
+                >
+                  {t('home.browseTemplates')}
+                </Button>
+              </Magnetic>
+            </motion.div>
           </div>
-          
+
           {/* Selected Template Display */}
-          {selectedTemplate && (
-            <div className="backdrop-blur-md bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl px-6 py-4 w-full mb-6 rounded-xl">
+          <AnimatePresence>
+            {selectedTemplate && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="backdrop-blur-md bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/50 shadow-xl px-6 py-4 w-full mb-6 rounded-xl"
+              >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-purple-300 text-xs font-[Orbitron] uppercase tracking-wider mb-1">{t('home.selectedTemplate')}</p>
@@ -295,10 +302,16 @@ const Page = () => {
                   {t('home.clear')}
                 </Button>
               </div>
-            </div>
-          )}
+            </motion.div>
+            )}
+          </AnimatePresence>
           {/* Input + Prompts Section */}
-          <div className="backdrop-blur-md bg-black/40 border border-gray-700 shadow-2xl px-8 py-8 w-full text-center space-y-6 mt-1">
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
+            className="gradient-border backdrop-blur-xl shadow-2xl shadow-purple-900/20 px-8 py-8 w-full text-center space-y-6 mt-1 rounded-2xl"
+          >
             {/* Technology Stack Selector */}
             <div className="w-full">
               <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
@@ -485,13 +498,15 @@ const Page = () => {
                   </svg>
                 </button>
               </div>
-              <Button
-                disabled={createProject.isPending || !value}
-                onClick={handleCreateProject}
-                className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-xl font-bold font-[Orbitron] transition mt-2 sm:mt-0"
-              >
-                {t('home.launch')}
-              </Button>
+              <Magnetic className="mt-2 sm:mt-0">
+                <Button
+                  disabled={createProject.isPending || !value}
+                  onClick={handleCreateProject}
+                  className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
+                >
+                  {t('home.launch')}
+                </Button>
+              </Magnetic>
             </div>
             {value && (
               <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-left">
@@ -589,127 +604,17 @@ const Page = () => {
                 </Button>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-      <section className="w-full bg-black py-14">
-        <div className="w-full max-w-4xl mx-auto px-4">
-          <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-8">
-            <h2 className="text-white text-2xl md:text-3xl font-[Orbitron]">Genetix vs. Drag-and-Drop Builders</h2>
-            <p className="mt-3 text-white/70 text-sm md:text-base">
-              Genetix generates real code across multiple frameworks, while drag-and-drop tools
-              lock you into proprietary editors and limited export options.
-            </p>
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full text-left text-sm text-white/80 border border-white/10">
-                <thead className="bg-white/5 text-white/90">
-                  <tr>
-                    <th className="px-4 py-3">Capability</th>
-                    <th className="px-4 py-3">Genetix</th>
-                    <th className="px-4 py-3">Drag-and-Drop Builders</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t border-white/10">
-                    <td className="px-4 py-3">Production-ready source code</td>
-                    <td className="px-4 py-3">Yes</td>
-                    <td className="px-4 py-3">Limited or partial export</td>
-                  </tr>
-                  <tr className="border-t border-white/10">
-                    <td className="px-4 py-3">Multi-framework output</td>
-                    <td className="px-4 py-3">5 stacks supported</td>
-                    <td className="px-4 py-3">Usually single stack</td>
-                  </tr>
-                  <tr className="border-t border-white/10">
-                    <td className="px-4 py-3">Full code ownership</td>
-                    <td className="px-4 py-3">Yes</td>
-                    <td className="px-4 py-3">Often restricted</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="w-full bg-black pb-16">
-        <div className="w-full max-w-3xl mx-auto px-4">
-          <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-8">
-            <h2 className="text-white text-2xl md:text-3xl font-[Orbitron]">FAQ</h2>
-            <div className="mt-5 space-y-4 text-white/80">
-              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
-                <summary className="cursor-pointer font-semibold">What does Genetix build?</summary>
-                <p className="mt-2 text-sm text-white/70">
-                  Genetix generates complete, responsive websites from a single prompt, including
-                  layout, styling, and real images.
-                </p>
-              </details>
-              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
-                <summary className="cursor-pointer font-semibold">Which frameworks are supported?</summary>
-                <p className="mt-2 text-sm text-white/70">
-                  Genetix supports React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, and SvelteKit.
-                </p>
-              </details>
-              <details className="rounded-xl border border-white/10 bg-black/40 px-4 py-3">
-                <summary className="cursor-pointer font-semibold">Do I own the code?</summary>
-                <p className="mt-2 text-sm text-white/70">
-                  Yes. Genetix outputs production-ready source code that you can edit and deploy
-                  on your own infrastructure.
-                </p>
-              </details>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
       {/* Projects List Section */}
       <section className="w-full bg-black py-12">
         <div className="w-full max-w-3xl mx-auto px-4">
-          <ProjectsList />
+          <FadeIn>
+            <ProjectsList />
+          </FadeIn>
         </div>
       </section>
-
-      {/* Keyframes for stars and nebula */}
-      <style jsx global>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
-        }
-        .animate-twinkle {
-          animation: twinkle 2.5s infinite ease-in-out;
-        }
-        @keyframes nebula {
-          0% { transform: scale(1) rotate(0deg); filter: blur(60px); }
-          50% { transform: scale(1.08) rotate(8deg); filter: blur(80px); }
-          100% { transform: scale(1) rotate(0deg); filter: blur(60px); }
-        }
-        .animate-nebula {
-          animation: nebula 18s linear infinite;
-        }
-        @keyframes led-glow {
-          0% { 
-            color: #4ade80; 
-            text-shadow: 0 0 5px #4ade80, 0 0 10px #4ade80, 0 0 15px #4ade80;
-          }
-          25% { 
-            color: #22c55e; 
-            text-shadow: 0 0 8px #22c55e, 0 0 16px #22c55e, 0 0 24px #22c55e;
-          }
-          50% { 
-            color: #16a34a; 
-            text-shadow: 0 0 12px #16a34a, 0 0 24px #16a34a, 0 0 36px #16a34a;
-          }
-          75% { 
-            color: #22c55e; 
-            text-shadow: 0 0 8px #22c55e, 0 0 16px #22c55e, 0 0 24px #22c55e;
-          }
-          100% { 
-            color: #4ade80; 
-            text-shadow: 0 0 5px #4ade80, 0 0 10px #4ade80, 0 0 15px #4ade80;
-          }
-        }
-        .animate-led-glow {
-          animation: led-glow 2s ease-in-out infinite;
-        }
-      `}</style>
     </main>
   );
 }
