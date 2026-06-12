@@ -146,3 +146,116 @@
     cursor: pointer;
   }
 }
+/* ===== Homepage animation utilities ===== */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.animate-twinkle {
+  animation: twinkle 2.5s infinite ease-in-out;
+}
+
+@keyframes aurora-1 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  50% { transform: translate(-48%, -52%) scale(1.12) rotate(10deg); }
+}
+@keyframes aurora-2 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  50% { transform: translate(-46%, -47%) scale(1.18) rotate(-12deg); }
+}
+@keyframes aurora-3 {
+  0%, 100% { transform: translateX(33%) scale(1); opacity: 0.7; }
+  50% { transform: translateX(28%) scale(1.1); opacity: 1; }
+}
+.animate-aurora-1 { animation: aurora-1 16s ease-in-out infinite; }
+.animate-aurora-2 { animation: aurora-2 22s ease-in-out infinite; }
+.animate-aurora-3 { animation: aurora-3 19s ease-in-out infinite; }
+
+/* Gradient shimmer text */
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.text-shimmer {
+  background: linear-gradient(110deg, #fff 30%, #c084fc 45%, #ec4899 55%, #fff 70%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+/* Rotating conic gradient border for the prompt card */
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.gradient-border {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(8, 8, 12, 0.85), rgba(8, 8, 12, 0.85)) padding-box,
+    conic-gradient(from var(--border-angle), rgba(168, 85, 247, 0.6), rgba(236, 72, 153, 0.5), rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.6)) border-box;
+  animation: border-spin 6s linear infinite;
+}
+
+/* Button shine sweep */
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(220%) skewX(-20deg); }
+}
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+}
+.btn-shine:hover::after {
+  animation: shine 0.9s ease;
+}
+
+/* Welcome LED glow */
+@keyframes led-glow {
+  0%, 100% { text-shadow: 0 0 6px #4ade80, 0 0 14px rgba(74, 222, 128, 0.6); }
+  50% { text-shadow: 0 0 12px #22c55e, 0 0 28px rgba(34, 197, 94, 0.7); }
+}
+.animate-led-glow { animation: led-glow 2.4s ease-in-out infinite; }
+
+/* Navbar link underline grow */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, #c084fc, #ec4899);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-twinkle, .animate-aurora-1, .animate-aurora-2, .animate-aurora-3,
+  .text-shimmer, .gradient-border, .animate-led-glow {
+    animation: none;
+  }
+}

@@ -4,9 +4,10 @@ import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import {useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
+import { StaggerContainer, StaggerItem } from "@/components/animations/fade-in";
+import { SpotlightCard } from "@/components/animations/spotlight-card";
 
 
 
@@ -49,7 +50,7 @@ const ProjectsList = () => {
         <h2 className="text-xl sm:text-2xl font-semibold text-white">
           {(customAuthUser?.firstName || session?.user?.name || 'Your')}&apos;s Genetix
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {(!projects || projects?.length===0) && (
               <div className="col-span-full text-center py-8">
                 <p className="text-sm text-muted-foreground">
@@ -58,36 +59,33 @@ const ProjectsList = () => {
               </div>
             )}
             {projects?.map(project=>(
-              <Button
-                key={project.id}
-                variant="outline"
-                className="font-normal h-auto justify-start w-full text-start p-3 sm:p-4 hover:bg-gray-400"
-                asChild
-              >
-                <Link href={`/projects/${project.id}`}>
-                  <div className="flex items-center gap-x-3 sm:gap-x-4 w-full">
-                    <Image
-                      src="/logo.png"
-                      alt="genetix"
-                      width={28}
-                      height={28}
-                      className="object-contain flex-shrink-0 sm:w-8 sm:h-8"
-                      />
-                      <div className="flex flex-col flex-1 min-w-0">
-                        <h3 className="truncate font-medium text-sm sm:text-base">
-                          {project.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {formatDistanceToNow(project.updatedAt, {
-                            addSuffix: true,
-                          })}
-                        </p>
-                      </div>
-                  </div>
-                </Link>
-              </Button>
+              <StaggerItem key={project.id} className="transition-transform duration-300 hover:-translate-y-1">
+                <SpotlightCard className="h-full">
+                  <Link href={`/projects/${project.id}`} className="block p-3 sm:p-4">
+                    <div className="flex items-center gap-x-3 sm:gap-x-4 w-full">
+                      <Image
+                        src="/logo.png"
+                        alt="genetix"
+                        width={28}
+                        height={28}
+                        className="object-contain flex-shrink-0 sm:w-8 sm:h-8"
+                        />
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <h3 className="truncate font-medium text-sm sm:text-base text-white">
+                            {project.name}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-white/50 truncate">
+                            {formatDistanceToNow(project.updatedAt, {
+                              addSuffix: true,
+                            })}
+                          </p>
+                        </div>
+                    </div>
+                  </Link>
+                </SpotlightCard>
+              </StaggerItem>
             ))}
-        </div>
+        </StaggerContainer>
     </div>
   );
 };
