@@ -61,7 +61,7 @@ async function generateWithGPT(prompt: string, systemPrompt?: string): Promise<s
     });
 
     const response = await openai.chat.completions.create({
-      model: "o4-mini",
+      model: "gpt-4o-mini",
       messages,
       max_completion_tokens: 16000,
     });
