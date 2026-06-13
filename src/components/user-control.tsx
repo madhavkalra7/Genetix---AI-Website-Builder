@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, Book } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -90,6 +90,12 @@ export const UserControl = ({ showName }: Props) => {
                     <Link href="/pricing" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Subscription
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/docs" className="cursor-pointer">
+                        <Book className="mr-2 h-4 w-4" />
+                        Documentation
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
