@@ -195,6 +195,8 @@ const Page = () => {
         {/* Parallax moon backdrop */}
         <motion.div
           className="absolute inset-0 bg-center bg-cover bg-no-repeat will-change-transform"
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           style={{ backgroundImage: "url('/moon.jpg')", y: moonY, scale: 1.1, opacity: heroOpacity }}
         />
         {/* Deep vignette for readability */}
@@ -310,7 +312,8 @@ const Page = () => {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
-            className="gradient-border backdrop-blur-xl shadow-2xl shadow-purple-900/20 px-8 py-8 w-full text-center space-y-6 mt-1 rounded-2xl"
+            whileHover={{ boxShadow: "0px 0px 30px rgba(168, 85, 247, 0.4)" }}
+            className="gradient-border backdrop-blur-xl shadow-2xl shadow-purple-900/20 px-8 py-8 w-full text-center space-y-6 mt-1 rounded-2xl transition-all duration-500"
           >
             {/* Technology Stack Selector */}
             <div className="w-full">
@@ -448,9 +451,13 @@ const Page = () => {
             )}
             
             <div className="flex flex-col sm:flex-row items-start gap-3">
-              <div className="relative flex-1 flex">
+              <motion.div
+                className="relative flex-1 flex"
+                whileFocus={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
                 <textarea
-                  className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black resize-none w-full"
+                  className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black resize-none w-full transition-shadow duration-300 focus:shadow-[0_0_15px_rgba(168,85,247,0.5)]"
                   placeholder={t('home.placeholder')}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
@@ -497,15 +504,17 @@ const Page = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3m0 0h-3m3 0h3m-3-3a6 6 0 006-6V9a6 6 0 10-12 0v3a6 6 0 006 6z" />
                   </svg>
                 </button>
-              </div>
+              </motion.div>
               <Magnetic className="mt-2 sm:mt-0">
-                <Button
-                  disabled={createProject.isPending || !value}
-                  onClick={handleCreateProject}
-                  className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
-                >
-                  {t('home.launch')}
-                </Button>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    disabled={createProject.isPending || !value}
+                    onClick={handleCreateProject}
+                    className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
+                  >
+                    {t('home.launch')}
+                  </Button>
+                </motion.div>
               </Magnetic>
             </div>
             {value && (
