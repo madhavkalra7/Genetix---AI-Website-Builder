@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
 import { StaggerContainer, StaggerItem } from "@/components/animations/fade-in";
 import { SpotlightCard } from "@/components/animations/spotlight-card";
+import { motion } from "motion/react";
 
 
 
@@ -59,9 +60,10 @@ const ProjectsList = () => {
               </div>
             )}
             {projects?.map(project=>(
-              <StaggerItem key={project.id} className="transition-transform duration-300 hover:-translate-y-1">
-                <SpotlightCard className="h-full">
-                  <Link href={`/projects/${project.id}`} className="block p-3 sm:p-4">
+              <StaggerItem key={project.id} className="transition-transform duration-300">
+                <motion.div whileHover={{ scale: 1.05, y: -5 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+                  <SpotlightCard className="h-full shadow-lg hover:shadow-purple-500/20">
+                    <Link href={`/projects/${project.id}`} className="block p-3 sm:p-4">
                     <div className="flex items-center gap-x-3 sm:gap-x-4 w-full">
                       <Image
                         src="/logo.png"
@@ -74,15 +76,16 @@ const ProjectsList = () => {
                           <h3 className="truncate font-medium text-sm sm:text-base text-white">
                             {project.name}
                           </h3>
-                          <p className="text-xs sm:text-sm text-white/50 truncate">
-                            {formatDistanceToNow(project.updatedAt, {
-                              addSuffix: true,
-                            })}
-                          </p>
-                        </div>
-                    </div>
-                  </Link>
-                </SpotlightCard>
+                            <p className="text-xs sm:text-sm text-white/50 truncate">
+                              {formatDistanceToNow(project.updatedAt, {
+                                addSuffix: true,
+                              })}
+                            </p>
+                          </div>
+                      </div>
+                    </Link>
+                  </SpotlightCard>
+                </motion.div>
               </StaggerItem>
             ))}
         </StaggerContainer>

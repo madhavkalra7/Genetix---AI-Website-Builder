@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { motion } from "motion/react"
 
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -52,14 +53,20 @@ export const Navbar =()=>{
     };
     
     return (
-        <nav className={cn(
+        <motion.nav
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+            className={cn(
             "p-4 bg-transparent fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent",
             isScrolled && "backdrop-blur-xl bg-black/60 border-b border-white/10 shadow-lg shadow-purple-900/10"
             )}>
             <div className="max-w-5xl mx-auto w-full flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 z-10 group">
-                    <Image src="/logo.png" alt="genetix" width={24} height={24} className="transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+                    <motion.div whileHover={{ scale: 1.2, rotate: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                        <Image src="/logo.png" alt="genetix" width={24} height={24} className="transition-transform duration-300 group-hover:drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+                    </motion.div>
                     <span className="font-semibold text-md text-white">Genetix</span>
                 </Link>
 
@@ -212,6 +219,6 @@ export const Navbar =()=>{
                     )}
                 </div>
             )}
-        </nav>
+        </motion.nav>
     )
 }
