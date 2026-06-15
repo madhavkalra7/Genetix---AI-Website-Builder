@@ -195,6 +195,7 @@ export const FileExplorer=({
         // Editable code state
         const [editMode, setEditMode] = useState(false);
         const [editedCode, setEditedCode] = useState<string>("");
+        const [isRefactoring, setIsRefactoring] = useState(false);
 
         useEffect(() => {
             if (selectedFile) {
@@ -207,6 +208,28 @@ export const FileExplorer=({
         const handleCancelEdit = () => {
             setEditedCode(files[selectedFile] || "");
             setEditMode(false);
+        };
+        const handleRefactor = async () => {
+            if (!editedCode) return;
+            setIsRefactoring(true);
+            try {
+                const response = await fetch("/api/refactor-code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        code: editedCode,
+                        language: selectedFile ? getLanguageFromExtension(selectedFile) : "typescript"
+                    })
+                });
+                const data = await response.json();
+                if (data.code) {
+                    setEditedCode(data.code);
+                }
+            } catch (error) {
+                console.error("Refactoring failed", error);
+            } finally {
+                setIsRefactoring(false);
+            }
         };
         const handleSaveEdit = async () => {
             if (selectedFile) {
@@ -313,6 +336,15 @@ export const FileExplorer=({
                                                                 <div className="flex gap-2 mt-2">
                                                                     <Button variant="outline" size="sm" onClick={handleSaveEdit}>Save</Button>
                                                                     <Button variant="outline" size="sm" onClick={handleCancelEdit}>Cancel</Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={handleRefactor}
+                                                                        disabled={isRefactoring}
+                                                                        className="ml-auto bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border-purple-500/30"
+                                                                    >
+                                                                        {isRefactoring ? "✨ Refactoring..." : "✨ AI Refactor"}
+                                                                    </Button>
                                                                 </div>
                                                             </div>
                                                         ) : (
