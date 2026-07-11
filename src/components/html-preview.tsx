@@ -112,7 +112,29 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
         </script>
       `;
 
-      htmlContent = htmlContent.replace('</head>', `${navigationScript}\n</head>`);
+      // Style to hide browser scrollbars and enforce mobile-first layout bounds
+      const hideScrollbarStyle = `
+        <style>
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          *::-webkit-scrollbar {
+            display: none !important;
+          }
+          html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none !important;
+          }
+          /* Hide scrollbar for IE, Edge and Firefox */
+          html, body {
+            -ms-overflow-style: none !important;  /* IE and Edge */
+            scrollbar-width: none !important;  /* Firefox */
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            max-width: 100vw;
+            box-sizing: border-box;
+          }
+        </style>
+      `;
+
+      htmlContent = htmlContent.replace('</head>', `${navigationScript}\n${hideScrollbarStyle}\n</head>`);
 
       // Write to iframe
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -120,6 +142,33 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
         iframeDoc.open();
         iframeDoc.write(htmlContent);
         iframeDoc.close();
+
+        // Dynamic style injection to guarantee scrollbar hiding regardless of HTML structure
+        try {
+          const styleEl = iframeDoc.createElement('style');
+          styleEl.textContent = `
+            *::-webkit-scrollbar {
+              display: none !important;
+            }
+            html::-webkit-scrollbar, body::-webkit-scrollbar {
+              display: none !important;
+            }
+            html, body {
+              -ms-overflow-style: none !important;
+              scrollbar-width: none !important;
+              overflow-x: hidden !important;
+              overflow-y: auto !important;
+              max-width: 100vw !important;
+              box-sizing: border-box !important;
+            }
+          `;
+          const target = iframeDoc.head || iframeDoc.body || iframeDoc.documentElement;
+          if (target) {
+            target.appendChild(styleEl);
+          }
+        } catch (e) {
+          console.error("DOM style injection failed:", e);
+        }
       }
     };
 

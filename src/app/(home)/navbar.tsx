@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { usePathname } from "next/navigation"
 
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -38,6 +39,7 @@ export const Navbar =()=>{
     const { user: customAuthUser } = useAuth();
     const { data: session } = useSession();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const pathname = usePathname();
     const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
     const { language, setLanguage, t } = useLanguage();
     
@@ -126,7 +128,22 @@ export const Navbar =()=>{
                             </Button>
                         </div>
                     ) : (
-                        <UserControl showName />
+                        <div className="flex items-center gap-4">
+                            <UserControl showName />
+                            {pathname !== "/create-app" && (
+                                <div className="relative group/btn flex items-center">
+                                    <Link
+                                        href="/create-app"
+                                        className="relative text-xs font-[Orbitron] font-bold text-white px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400/40"
+                                    >
+                                        Create APP
+                                    </Link>
+                                    <span className="absolute -top-3 -right-3 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md rotate-12 select-none border border-black/20 shadow-md animate-pulse font-[Orbitron]">
+                                        New
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
                 
@@ -206,8 +223,22 @@ export const Navbar =()=>{
                             </Button>
                         </div>
                     ) : (
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center gap-3">
                             <UserControl showName />
+                            {pathname !== "/create-app" && (
+                                <div className="relative group/btn flex items-center pt-2">
+                                    <Link
+                                        href="/create-app"
+                                        className="relative text-xs font-[Orbitron] font-bold text-white px-5 py-2 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 border border-purple-400/40"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Create APP
+                                    </Link>
+                                    <span className="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md rotate-12 select-none border border-black/20 shadow-md animate-pulse font-[Orbitron]">
+                                        New
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

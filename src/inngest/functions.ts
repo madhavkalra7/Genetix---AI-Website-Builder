@@ -40,55 +40,75 @@ export const codeAgentFunction = inngest.createFunction(
 
     const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
+      const isApp = event.data.isApp === true;
 
-      // Get project info including techStack and advancedReasoning flag
-      const project = await prisma.project.findUnique({
-        where: { id: event.data.projectId },
-        select: { techStack: true, advancedReasoning: true }
-      });
-
-      // Get ALL messages for complete conversation history (not just 5)
-      const messages=await prisma.message.findMany({
-        where: {
-          projectId: event.data.projectId,
-        },
-        include: {
-          fragments: true, // Include fragments to get previous code
-        },
-        orderBy: {
-          createdAt: "asc", // Get in chronological order
-        },
-      });
-      
-      // Get the most recent fragment to provide current code context
-      const latestFragment = await prisma.fragment.findFirst({
-        where: {
-          message: {
-            projectId: event.data.projectId,
-          }
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          files: true,
-        }
-      });
-
-      for(const message of messages) {
-        formattedMessages.push({
-          type: "text",
-          role: message.role==="ASSISTANT" ? "assistant" : "user",
-          content: message.content,
+      if (isApp) {
+        // AppProject logic
+        const project = await prisma.appProject.findUnique({
+          where: { id: event.data.projectId },
+          select: { name: true }
         });
+
+        const messages = await prisma.appMessage.findMany({
+          where: { appProjectId: event.data.projectId },
+          include: { fragments: true },
+          orderBy: { createdAt: "asc" }
+        });
+
+        const latestFragment = await prisma.appFragment.findFirst({
+          where: { appMessage: { appProjectId: event.data.projectId } },
+          orderBy: { createdAt: "desc" },
+          select: { files: true }
+        });
+
+        for (const message of messages) {
+          formattedMessages.push({
+            type: "text",
+            role: message.role === "ASSISTANT" ? "assistant" : "user",
+            content: message.content,
+          } as any);
+        }
+
+        return {
+          previousMessages: formattedMessages,
+          projectTechStack: "html-css-js", // Always static html-css-js for mobile previews
+          previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
+          useAdvancedReasoning: false
+        };
+      } else {
+        // Standard Project logic
+        const project = await prisma.project.findUnique({
+          where: { id: event.data.projectId },
+          select: { techStack: true, advancedReasoning: true }
+        });
+
+        const messages = await prisma.message.findMany({
+          where: { projectId: event.data.projectId },
+          include: { fragments: true },
+          orderBy: { createdAt: "asc" }
+        });
+        
+        const latestFragment = await prisma.fragment.findFirst({
+          where: { message: { projectId: event.data.projectId } },
+          orderBy: { createdAt: "desc" },
+          select: { files: true }
+        });
+
+        for (const message of messages) {
+          formattedMessages.push({
+            type: "text",
+            role: message.role === "ASSISTANT" ? "assistant" : "user",
+            content: message.content,
+          });
+        }
+        
+        return {
+          previousMessages: formattedMessages,
+          projectTechStack: project?.techStack || "react-nextjs",
+          previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
+          useAdvancedReasoning: project?.advancedReasoning || false
+        };
       }
-      
-      return {
-        previousMessages: formattedMessages,
-        projectTechStack: project?.techStack || "react-nextjs",
-        previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
-        useAdvancedReasoning: project?.advancedReasoning || false
-      };
     });
 
     const state=createState<AgentState>(
@@ -619,34 +639,65 @@ export const codeAgentFunction = inngest.createFunction(
       return `https://${host}`;
     });
 
-    await step.run("save-result", async () => {
-      if (isError) {
-        // Only show error if both summary and files are missing
-        return await prisma.message.create({
+     await step.run("save-result", async () => {
+      const isApp = event.data.isApp === true;
+
+      if (isApp) {
+        if (isError) {
+          return await prisma.appMessage.create({
+            data: {
+              appProjectId: event.data.projectId,
+              content: "Something Went Wrong. No summary and no files generated.",
+              role: "ASSISTANT",
+              type: "ERROR",
+            },
+          });
+        }
+        
+        return prisma.appMessage.create({
+          data: {
+            appProjectId: event.data.projectId,
+            content: generateResponse(),
+            role: "ASSISTANT",
+            type: "RESULT",
+            fragments: {
+              create: {
+                sandboxUrl: sandboxUrl,
+                title: generateFragmentTitle(),
+                files: result.state.data.files as any,
+              },
+            },
+          },
+        });
+      } else {
+        if (isError) {
+          // Only show error if both summary and files are missing
+          return await prisma.message.create({
+            data: {
+              projectId: event.data.projectId,
+              content: "Something Went Wrong. No summary and no files generated.",
+              role: "ASSISTANT",
+              type: "ERROR",
+            },
+          });
+        }
+        
+        return prisma.message.create({
           data: {
             projectId: event.data.projectId,
-            content: "Something Went Wrong. No summary and no files generated.",
+            content: generateResponse(),
             role: "ASSISTANT",
-            type: "ERROR",
+            type: "RESULT",
+            fragments: {
+              create: {
+                sandboxUrl: sandboxUrl,
+                title: generateFragmentTitle(),
+                files: result.state.data.files,
+              },
+            },
           },
         });
       }
-      
-      return prisma.message.create({
-        data: {
-          projectId: event.data.projectId,
-          content: generateResponse(),
-          role: "ASSISTANT",
-          type: "RESULT",
-          fragments: {
-            create: {
-              sandboxUrl: sandboxUrl,
-              title: generateFragmentTitle(),
-              files: result.state.data.files,
-            },
-          },
-        },
-      });
     });
 
     return {

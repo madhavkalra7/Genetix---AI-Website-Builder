@@ -187,3 +187,191 @@ export const projectsRouter = createTRPCRouter({
                 return createdProject;
         }),
 });
+
+export const appProjectsRouter = createTRPCRouter({
+    getMany: protectedProcedure
+        .query(async ({ ctx }) => {
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+            return await prisma.appProject.findMany({
+                where: { userId: ctx.auth.userId },
+                orderBy: { updatedAt: "desc" },
+            });
+        }),
+    getOne: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ input, ctx }) => {
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+            const project = await prisma.appProject.findUnique({
+                where: { id: input.id, userId: ctx.auth.userId },
+            });
+            if (!project) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "App project not found",
+                });
+            }
+            return project;
+        }),
+    getMessages: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ input, ctx }) => {
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+            return await prisma.appMessage.findMany({
+                where: {
+                    appProjectId: input.projectId,
+                    appProject: { userId: ctx.auth.userId },
+                },
+                include: {
+                    fragments: true,
+                },
+                orderBy: {
+                    createdAt: "asc",
+                },
+            });
+        }),
+    create: protectedProcedure
+        .input(
+            z.object({
+                value: z.string().min(1, { message: "Prompt is required" }).max(10000),
+                enhancedValue: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+
+            try {
+                await consumeCredits();
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: error.message || "Something went wrong",
+                    });
+                } else {
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS",
+                        message: "You have run out of credits",
+                    });
+                }
+            }
+
+            const projectName = generateProjectName(input.value);
+
+            const createdProject = await prisma.appProject.create({
+                data: {
+                    userId: ctx.auth.userId,
+                    name: projectName,
+                    messages: {
+                        create: {
+                            content: input.value,
+                            role: "USER",
+                            type: "RESULT",
+                        },
+                    },
+                },
+            });
+
+            await inngest.send({
+                name: "code-agent/run",
+                data: {
+                    value: input.enhancedValue || input.value,
+                    projectId: createdProject.id,
+                    isApp: true,
+                },
+            });
+
+            return createdProject;
+        }),
+    createMessage: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string().min(1),
+                value: z.string().min(1).max(10000),
+                enhancedValue: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+
+            const existingProject = await prisma.appProject.findFirst({
+                where: {
+                    id: input.projectId,
+                    userId: ctx.auth.userId,
+                },
+            });
+
+            if (!existingProject) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "App project not found",
+                });
+            }
+
+            try {
+                await consumeCredits();
+            } catch (error) {
+                if (error instanceof Error) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: error.message || "Something went wrong",
+                    });
+                } else {
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS",
+                        message: "You have run out of credits",
+                    });
+                }
+            }
+
+            const createdMessage = await prisma.appMessage.create({
+                data: {
+                    appProjectId: input.projectId,
+                    content: input.value,
+                    role: "USER",
+                    type: "RESULT",
+                },
+            });
+
+            // Touch project updatedAt
+            await prisma.appProject.update({
+                where: { id: input.projectId },
+                data: { updatedAt: new Date() },
+            });
+
+            await inngest.send({
+                name: "code-agent/run",
+                data: {
+                    value: input.enhancedValue || input.value,
+                    projectId: input.projectId,
+                    isApp: true,
+                },
+            });
+
+            return createdMessage;
+        }),
+});
