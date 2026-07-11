@@ -76,7 +76,7 @@ export const projectsRouter = createTRPCRouter({
                     userId: ctx.auth.userId,
                 },
                 orderBy: {
-                    updatedAt: "asc",
+                    updatedAt: "desc",
                 },
             });
             
