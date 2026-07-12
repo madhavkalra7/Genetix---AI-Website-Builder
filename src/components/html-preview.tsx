@@ -18,7 +18,14 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
     
     // Function to load a specific HTML page
     const loadPage = (pageName: string) => {
-      let htmlContent = files[pageName] || files['index.html'];
+      const cleanPageName = pageName.replace(/^\/?(home\/user\/)?/, '');
+      
+      let htmlContent = files[cleanPageName] || 
+                        files[`/home/user/${cleanPageName}`] || 
+                        files[`/${cleanPageName}`] ||
+                        files['index.html'] ||
+                        files['/home/user/index.html'] ||
+                        files['/index.html'];
       
       if (!htmlContent) return;
 
@@ -41,19 +48,22 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
       imageFiles.forEach(imageFile => {
         const imageContent = files[imageFile];
         if (imageContent && imageContent.startsWith('data:')) {
-          // Create multiple regex patterns to catch all variations
+          const baseName = imageFile.split('/').pop() || imageFile;
+          
+          // Create multiple regex patterns to catch all variations using the base name and absolute path
           const patterns = [
-            new RegExp(`(src=["'])${imageFile}(["'])`, 'gi'),           // src="image-1.jpg"
-            new RegExp(`(src=["'])\\.\\/${imageFile}(["'])`, 'gi'),      // src="./image-1.jpg"
-            new RegExp(`(src=["'])\\/+${imageFile}(["'])`, 'gi'),        // src="/image-1.jpg"
-            new RegExp(`(src=["'])\\s*${imageFile}(["'])`, 'gi'),       // src=" image-1.jpg"
+            new RegExp(`(src=["'])${baseName}(["'])`, 'gi'),           // src="image-1.jpg"
+            new RegExp(`(src=["'])\\.\\/${baseName}(["'])`, 'gi'),      // src="./image-1.jpg"
+            new RegExp(`(src=["'])\\/+${baseName}(["'])`, 'gi'),        // src="/image-1.jpg"
+            new RegExp(`(src=["'])\\s*${baseName}(["'])`, 'gi'),       // src=" image-1.jpg"
+            new RegExp(`(src=["'])${imageFile}(["'])`, 'gi'),          // src="/home/user/image-1.jpg"
           ];
           
           patterns.forEach(pattern => {
             htmlContent = htmlContent.replace(pattern, `$1${imageContent}$2`);
           });
           
-          console.log(`✅ Replaced ${imageFile} with base64 data URL`);
+          console.log(`✅ Replaced ${imageFile} (base: ${baseName}) with base64 data URL`);
         }
       });
 
@@ -190,7 +200,8 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
   }, [files, currentPage]);
 
   // If no HTML file, show placeholder
-  if (!files['index.html']) {
+  const indexHtml = files['index.html'] || files['/home/user/index.html'] || files['/index.html'];
+  if (!indexHtml) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 ${className}`}>
         <p className="text-gray-500">No HTML file found for preview</p>
