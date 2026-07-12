@@ -28,7 +28,7 @@ async function getCurrentUser() {
   return session?.user || null;
 }
 
-export async function consumeCredits() {
+export async function consumeCredits(amount: number = 1) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -36,7 +36,7 @@ export async function consumeCredits() {
     throw new Error("User not authenticated");
   }
 
-  console.log("✅ consumeCredits: User found:", user.email);
+  console.log("✅ consumeCredits: User found:", user.email, "deducting:", amount);
   
   // Get or create user credits
   let userCredits = await prisma.userCredits.findUnique({
@@ -59,11 +59,12 @@ export async function consumeCredits() {
   // Check if user has enough credits
   const remainingCredits = userCredits.creditsLimit - userCredits.creditsUsed;
   
-  if (remainingCredits < GENERATION_COST) {
+  if (remainingCredits < amount) {
     console.error("❌ Insufficient credits:", {
       creditsUsed: userCredits.creditsUsed,
       creditsLimit: userCredits.creditsLimit,
       remaining: remainingCredits,
+      required: amount,
     });
     throw new Error("Insufficient credits");
   }
@@ -73,7 +74,7 @@ export async function consumeCredits() {
     where: { userId: user.id },
     data: {
       creditsUsed: {
-        increment: GENERATION_COST,
+        increment: amount,
       },
     },
   });

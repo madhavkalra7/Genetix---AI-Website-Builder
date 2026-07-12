@@ -260,7 +260,7 @@ export const appProjectsRouter = createTRPCRouter({
             }
 
             try {
-                await consumeCredits();
+                await consumeCredits(5);
             } catch (error) {
                 if (error instanceof Error) {
                     throw new TRPCError({
@@ -333,7 +333,7 @@ export const appProjectsRouter = createTRPCRouter({
             }
 
             try {
-                await consumeCredits();
+                await consumeCredits(5);
             } catch (error) {
                 if (error instanceof Error) {
                     throw new TRPCError({

@@ -55,6 +55,11 @@ export default function CreateAppPage() {
     trpc.appProjects.getMany.queryOptions()
   );
 
+  // Fetch user credit usage/balance
+  const { data: usageStatus, refetch: refetchUsage } = useQuery(
+    trpc.usage.status.queryOptions()
+  );
+
   // Fetch messages/fragments for the selected mobile app project
   const { data: messages, refetch: refetchMessages } = useQuery(
     trpc.appProjects.getMessages.queryOptions(
@@ -123,6 +128,7 @@ export default function CreateAppPage() {
         setSelectedProjectId(data.id);
         setActiveFragmentMessageId(null);
         queryClient.invalidateQueries(trpc.appProjects.getMany.queryOptions());
+        refetchUsage();
         // Start simulated logs animation
         setLogIndex(0);
         setLogs([SIMULATED_BUILD_LOGS[0]]);
@@ -141,6 +147,7 @@ export default function CreateAppPage() {
       onSuccess: () => {
         refetchMessages();
         setActiveFragmentMessageId(null);
+        refetchUsage();
         // Start simulated logs animation
         setLogIndex(0);
         setLogs([SIMULATED_BUILD_LOGS[0]]);
@@ -260,6 +267,14 @@ export default function CreateAppPage() {
           </Button>
         </div>
 
+        {/* Credit balance display card */}
+        {usageStatus && (
+          <div className="mb-6 p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between text-xs backdrop-blur-md">
+            <span className="text-white/60 font-sans">Credit Balance:</span>
+            <span className="font-bold text-purple-400">{usageStatus.remainingCredits} Credits</span>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto space-y-2 max-h-[300px] md:max-h-none pr-1">
           {isLoadingProjects ? (
             <div className="text-sm text-white/50 text-center py-4">Loading...</div>
@@ -324,6 +339,12 @@ export default function CreateAppPage() {
                     placeholder="e.g. A fully interactive BMI Calculator with animated weight gauges, history logs, advice based on score, and a sleek neon cyberpunk layout."
                     className="bg-black/50 border-white/15 focus:border-purple-500/50 rounded-2xl p-4 font-[Orbitron] text-sm resize-none"
                   />
+                  <div className="text-[10px] text-white/50 font-[Orbitron] flex items-center justify-between px-1">
+                    <span>⚡ Generation Cost: <span className="text-purple-400 font-bold">5 Credits</span></span>
+                    {usageStatus && (
+                      <span>Available Balance: <span className="text-purple-400 font-bold">{usageStatus.remainingCredits} Credits</span></span>
+                    )}
+                  </div>
                   <Button
                     onClick={handleGenerate}
                     disabled={!prompt.trim() || createAppProject.isPending}
@@ -476,21 +497,29 @@ export default function CreateAppPage() {
                 </div>
 
                 {/* Iteration Prompt box */}
-                <div className="p-4 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-md flex gap-2">
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Ask AI to modify or add screens to your app..."
-                    rows={2}
-                    className="bg-black/40 border-white/10 rounded-2xl text-xs focus:border-purple-500/40 resize-none font-[Orbitron] py-2"
-                  />
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={!prompt.trim() || createAppProject.isPending}
-                    className="bg-white text-black hover:bg-white/90 font-[Orbitron] font-bold text-xs rounded-2xl px-4 cursor-pointer"
-                  >
-                    Send
-                  </Button>
+                <div className="space-y-2">
+                  <div className="p-4 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-md flex gap-2">
+                    <Textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Ask AI to modify or add screens to your app..."
+                      rows={2}
+                      className="bg-black/40 border-white/10 rounded-2xl text-xs focus:border-purple-500/40 resize-none font-[Orbitron] py-2"
+                    />
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={!prompt.trim() || createAppProject.isPending}
+                      className="bg-white text-black hover:bg-white/90 font-[Orbitron] font-bold text-xs rounded-2xl px-4 cursor-pointer"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                  <div className="text-[10px] text-white/50 font-[Orbitron] flex items-center justify-between px-2">
+                    <span>⚡ Generation Cost: <span className="text-purple-400 font-bold">5 Credits</span></span>
+                    {usageStatus && (
+                      <span>Available Balance: <span className="text-purple-400 font-bold">{usageStatus.remainingCredits} Credits</span></span>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )}
