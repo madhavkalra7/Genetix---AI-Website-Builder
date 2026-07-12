@@ -3,7 +3,7 @@ import { createAgent, createTool, createNetwork, type Tool, openai, type Message
 import { Sandbox } from "@e2b/code-interpreter";
 import { z } from "zod";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
-import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT} from "@/prompt";
+import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT, MOBILE_APP_PROMPT } from "@/prompt";
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
@@ -286,9 +286,7 @@ export const codeAgentFunction = inngest.createFunction(
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
-      system: getTechSpecificPrompt(projectTechStack) + (event.data.isApp === true 
-        ? "\n\nCRITICAL CONTEXT: You are building a MOBILE APP mockup. You MUST use the SPA architecture rules inside index.html. Structure all pages/screens as divs/sections inside index.html and toggle them using JavaScript. Do not create separate HTML files." 
-        : "\n\nCRITICAL CONTEXT: You are building a standard WEBSITE. If multi-page navigation is needed, you can use separate HTML files (like index.html, about.html) as defined in the website instructions."),
+      system: event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack),
       model: openai({
     // Dynamically choose model based on advancedReasoning flag
     // GPT-5.1 for advanced reasoning (24h limit), GPT-5-mini for standard (fast & efficient)
