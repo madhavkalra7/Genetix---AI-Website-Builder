@@ -18,7 +18,8 @@ import {
   HistoryIcon,
   MessageSquareIcon,
   CpuIcon,
-  Maximize2
+  Maximize2,
+  QrCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -46,6 +47,7 @@ export default function CreateAppPage() {
   const [logs, setLogs] = useState<string[]>([]);
   const logIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isQrZoomed, setIsQrZoomed] = useState(false);
   const [activeFragmentMessageId, setActiveFragmentMessageId] = useState<string | null>(null);
 
   // Fetch only mobile app projects (completely separate from website projects)
@@ -404,6 +406,14 @@ export default function CreateAppPage() {
                           <Maximize2 className="w-3.5 h-3.5" />
                           Zoom Screen
                         </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setIsQrZoomed(true)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-8 px-3 font-[Orbitron] text-[10px] font-bold tracking-wider flex items-center gap-1.5 cursor-pointer shadow-[0_0_10px_rgba(168,85,247,0.3)] border border-purple-400/30"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                          QR Scan
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -564,7 +574,10 @@ export default function CreateAppPage() {
 
             {/* QR Code Card */}
             {activeFragment && selectedProjectId && (
-              <div className="flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 rounded-2xl w-full max-w-[280px] backdrop-blur-md">
+              <div 
+                onClick={() => setIsQrZoomed(true)}
+                className="flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 rounded-2xl w-full max-w-[280px] backdrop-blur-md cursor-pointer hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300 group"
+              >
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=a855f7&data=${encodeURIComponent(
                     typeof window !== "undefined"
@@ -572,9 +585,11 @@ export default function CreateAppPage() {
                       : ""
                   )}`} 
                   alt="Scan to open on phone" 
-                  className="w-28 h-28 rounded-lg bg-white p-1 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                  className="w-28 h-28 rounded-lg bg-white p-1 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="text-[10px] font-bold text-purple-300 font-[Orbitron] tracking-wider uppercase">Scan to Run on Phone</span>
+                <span className="text-[10px] font-bold text-purple-300 font-[Orbitron] tracking-wider uppercase flex items-center gap-1 group-hover:text-purple-200">
+                  <Maximize2 className="w-2.5 h-2.5" /> Scan to Run on Phone
+                </span>
               </div>
             )}
           </div>
@@ -656,6 +671,61 @@ export default function CreateAppPage() {
                 <div className="w-28 h-1 bg-white/30 rounded-full" />
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Zoomed QR Code Modal */}
+      <AnimatePresence>
+        {isQrZoomed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-50 p-4"
+            onClick={() => setIsQrZoomed(false)}
+          >
+            {/* Close button */}
+            <motion.button
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={() => setIsQrZoomed(false)}
+              className="absolute top-6 right-6 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center hover:scale-110 transition-all duration-300 cursor-pointer shadow-2xl z-50 font-[Orbitron]"
+            >
+              <span className="text-xl">✕</span>
+            </motion.button>
+
+            {/* QR Card Container */}
+            {activeFragment && selectedProjectId && (
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="p-8 border border-purple-500/30 rounded-3xl bg-neutral-950/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_50px_rgba(168,85,247,0.2)] flex flex-col items-center gap-6 max-w-sm w-full text-center ring-1 ring-neutral-700/50"
+                onClick={(e) => e.stopPropagation()} // Prevent close
+              >
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=a855f7&data=${encodeURIComponent(
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/preview/${selectedProjectId}`
+                        : ""
+                    )}`} 
+                    alt="Scan to open on phone" 
+                    className="relative w-64 h-64 rounded-xl bg-white p-3 border border-purple-500/40 shadow-2xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold font-[Orbitron] text-white tracking-wide uppercase">Scan to Run on Phone</h3>
+                  <p className="text-xs text-white/50 leading-relaxed font-sans px-2">
+                    Open your smartphone's camera or QR reader to scan this code. The application will load instantly fullscreen.
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
