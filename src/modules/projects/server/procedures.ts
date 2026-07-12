@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
+import { protectedProcedure, createTRPCRouter, baseProcedure } from "@/trpc/init";
 import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
@@ -373,5 +373,21 @@ export const appProjectsRouter = createTRPCRouter({
             });
 
             return createdMessage;
+        }),
+    getPublicPreview: baseProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ input }) => {
+            const latestFragment = await prisma.appFragment.findFirst({
+                where: { appMessage: { appProjectId: input.projectId } },
+                orderBy: { createdAt: "desc" },
+                select: { files: true }
+            });
+            if (!latestFragment) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Preview files not found",
+                });
+            }
+            return latestFragment.files as { [path: string]: string };
         }),
 });

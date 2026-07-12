@@ -536,29 +536,47 @@ export default function CreateAppPage() {
           </div>
 
           {/* Action Row below the phone frame */}
-          <div className="mt-6 flex gap-3 items-center justify-center w-full">
-            {/* Zoom Button */}
-            <Button
-              onClick={() => setIsZoomed(true)}
-              className="w-28 h-11 border border-purple-500/30 bg-purple-950/20 text-purple-300 rounded-full font-[Orbitron] font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-900/30 cursor-pointer shadow-[0_0_15px_rgba(168,85,247,0.1)] transition-all"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-              Zoom App
-            </Button>
-
-            {/* Download APK option */}
-            <div className="relative group">
+          <div className="mt-6 flex flex-col items-center gap-4 w-full">
+            <div className="flex gap-3 items-center justify-center w-full">
+              {/* Zoom Button */}
               <Button
-                disabled
-                className="w-28 h-11 border border-purple-500/30 bg-purple-950/20 text-purple-300 rounded-full font-[Orbitron] font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
+                onClick={() => setIsZoomed(true)}
+                className="w-28 h-11 border border-purple-500/30 bg-purple-950/20 text-purple-300 rounded-full font-[Orbitron] font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-900/30 cursor-pointer shadow-[0_0_15px_rgba(168,85,247,0.1)] transition-all"
               >
-                <DownloadIcon className="w-3.5 h-3.5" />
-                APK
+                <Maximize2 className="w-3.5 h-3.5" />
+                Zoom App
               </Button>
-              <span className="absolute -top-3 right-0 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full rotate-12 select-none border border-black/20 shadow-md">
-                Soon
-              </span>
+
+              {/* Download APK option */}
+              <div className="relative group">
+                <Button
+                  disabled
+                  className="w-28 h-11 border border-purple-500/30 bg-purple-950/20 text-purple-300 rounded-full font-[Orbitron] font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5" />
+                  APK
+                </Button>
+                <span className="absolute -top-3 right-0 bg-gradient-to-r from-pink-500 to-red-500 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full rotate-12 select-none border border-black/20 shadow-md">
+                  Soon
+                </span>
+              </div>
             </div>
+
+            {/* QR Code Card */}
+            {activeFragment && selectedProjectId && (
+              <div className="flex flex-col items-center gap-2 p-3 bg-white/5 border border-white/10 rounded-2xl w-full max-w-[280px] backdrop-blur-md">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=a855f7&data=${encodeURIComponent(
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}/preview/${selectedProjectId}`
+                      : ""
+                  )}`} 
+                  alt="Scan to open on phone" 
+                  className="w-28 h-28 rounded-lg bg-white p-1 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                />
+                <span className="text-[10px] font-bold text-purple-300 font-[Orbitron] tracking-wider uppercase">Scan to Run on Phone</span>
+              </div>
+            )}
           </div>
         </div>
 
