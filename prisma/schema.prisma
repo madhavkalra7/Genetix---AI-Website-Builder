@@ -315,3 +315,12 @@ model AppFragment {
   updatedAt    DateTime    @updatedAt
 }
 
+model CreditRequest {
+  id        String   @id @default(uuid())
+  email     String
+  planName  String
+  status    String   @default("PENDING") // PENDING, APPROVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

@@ -14,6 +14,50 @@ export async function POST(request: NextRequest) {
     const validatedData = signInSchema.parse(body);
 
     // Find user
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // Auto-create/sync admin user if credentials match .env config
+    if (adminEmail && adminPassword && validatedData.email === adminEmail && validatedData.password === adminPassword) {
+      let adminUser = await prisma.user.findUnique({
+        where: { email: adminEmail }
+      });
+
+      const { hashPassword } = await import('@/lib/auth');
+      const expectedHash = await hashPassword(adminPassword);
+
+      if (!adminUser) {
+        await prisma.user.create({
+          data: {
+            email: adminEmail,
+            firstName: "Admin",
+            lastName: "User",
+            passwordHash: expectedHash,
+            emailVerified: true,
+            credits: {
+              create: {
+                creditsLimit: 9999,
+                creditsUsed: 0,
+                lastReset: new Date()
+              }
+            }
+          }
+        });
+        console.log("🚀 Admin user auto-created successfully!");
+      } else {
+        // Ensure database password matches current .env password
+        const { verifyPassword } = await import('@/lib/auth');
+        const isCurrentMatch = adminUser.passwordHash ? await verifyPassword(adminPassword, adminUser.passwordHash) : false;
+        if (!isCurrentMatch) {
+          await prisma.user.update({
+            where: { email: adminEmail },
+            data: { passwordHash: expectedHash }
+          });
+          console.log("🚀 Admin user password updated to match current .env configuration!");
+        }
+      }
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: validatedData.email },
     });

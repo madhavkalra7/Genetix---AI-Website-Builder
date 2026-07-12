@@ -4,6 +4,7 @@ import { createTRPCRouter } from '../init';
 import { messagesRouter } from '@/modules/messages/server/procedures';
 import { usageRouter } from '@/modules/usage/server/procedures';
 import { subscriptionRouter } from '@/modules/subscription/server/procedures';
+import { adminRouter } from '@/modules/admin/server/procedures';
 
 export const appRouter = createTRPCRouter({
   usage: usageRouter,
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   projects: projectsRouter,
   appProjects: appProjectsRouter, // Exposed separate router for mobile apps
   subscription: subscriptionRouter,
+  admin: adminRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

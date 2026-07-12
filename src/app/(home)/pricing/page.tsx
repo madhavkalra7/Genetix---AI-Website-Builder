@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const plans = [
   {
@@ -82,6 +83,36 @@ export default function Page() {
     }
   }, [subscription]);
 
+  const [isRequestOpen, setIsRequestOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [requestEmail, setRequestEmail] = useState("");
+
+  const requestMutation = useMutation(
+    trpc.subscription.requestCredits.mutationOptions({
+      onSuccess: () => {
+        toast.success("Request sent successfully!", {
+          description: "Your credits will be activated shortly by the administrator."
+        });
+        setIsRequestOpen(false);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to submit credit request");
+      }
+    })
+  );
+
+  const handleSubmitRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestEmail || !selectedPlan) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    requestMutation.mutate({
+      email: requestEmail,
+      planName: selectedPlan.displayName
+    });
+  };
+
   const handleSubscribe = async (plan: typeof plans[0]) => {
     if (!user && !session?.user) {
       toast.error("Please sign in to subscribe");
@@ -94,63 +125,9 @@ export default function Page() {
       return;
     }
 
-    setLoading(plan.name);
-
-    try {
-      // Get PhonePe payment link from environment
-      let phonePeLink = "";
-      if (plan.name === "pro") {
-        phonePeLink = process.env.NEXT_PUBLIC_PHONEPE_PRO_LINK || "";
-      } else if (plan.name === "enterprise") {
-        phonePeLink = process.env.NEXT_PUBLIC_PHONEPE_ENTERPRISE_LINK || "";
-      }
-
-      if (!phonePeLink) {
-        toast.error("Payment link not configured");
-        setLoading(null);
-        return;
-      }
-
-      // Create payment record in database
-      const response = await fetch("/api/payment/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planName: plan.name,
-          amount: plan.priceValue,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create payment");
-      }
-
-      // Store order ID in localStorage for later verification
-      if (data.order_id) {
-        localStorage.setItem("pending_order_id", data.order_id);
-        localStorage.setItem("pending_plan_name", plan.name);
-      }
-
-      // Redirect to PhonePe payment page
-      toast.success("Redirecting to PhonePe...", {
-        description: "After payment, you'll be redirected back automatically",
-      });
-      
-      // Open payment success page in a new tab for user to return after payment
-      window.open(`${window.location.origin}/payment-success`, "_blank");
-      
-      // Redirect to PhonePe
-      setTimeout(() => {
-        window.location.href = phonePeLink;
-      }, 2000);
-    } catch (error: any) {
-      console.error("Payment error:", error);
-      toast.error(error.message || "Failed to initiate payment");
-    } finally {
-      setLoading(null);
-    }
+    setSelectedPlan(plan);
+    setRequestEmail(user?.email || session?.user?.email || "");
+    setIsRequestOpen(true);
   };
 
   return (
@@ -249,6 +226,55 @@ export default function Page() {
         );
         })}
       </div>
+
+      {/* Request Credits Popup Modal */}
+      <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
+        <DialogContent className="bg-neutral-950 border border-white/10 rounded-3xl text-white font-sans p-6 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold font-[Orbitron] text-purple-400">
+              Request Credits Activation
+            </DialogTitle>
+            <DialogDescription className="text-xs text-white/50 font-sans">
+              Enter your email to request activation for the <span className="font-bold text-white font-[Orbitron]">{selectedPlan?.displayName}</span> plan. The administrator will be notified.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitRequest} className="space-y-4 py-3">
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-white/40 uppercase font-bold font-[Orbitron]">Your Email Address</label>
+              <input
+                type="email"
+                required
+                value={requestEmail}
+                onChange={(e) => setRequestEmail(e.target.value)}
+                placeholder="Enter your email..."
+                className="w-full h-10 px-3 bg-black/50 border border-white/15 focus:border-purple-500/50 rounded-xl text-xs text-white font-[Orbitron]"
+              />
+            </div>
+
+            <DialogFooter className="pt-4 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsRequestOpen(false)}
+                className="bg-white/5 hover:bg-white/10 text-white rounded-xl h-10 font-[Orbitron] text-xs cursor-pointer flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={requestMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-bold font-[Orbitron] text-xs cursor-pointer flex-1 flex items-center justify-center gap-1.5"
+              >
+                {requestMutation.isPending ? (
+                  <span className="animate-spin mr-1">🔄</span>
+                ) : null}
+                Send Request
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
