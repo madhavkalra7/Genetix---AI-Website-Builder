@@ -286,7 +286,9 @@ export const codeAgentFunction = inngest.createFunction(
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
-      system: getTechSpecificPrompt(projectTechStack),
+      system: getTechSpecificPrompt(projectTechStack) + (event.data.isApp === true 
+        ? "\n\nCRITICAL CONTEXT: You are building a MOBILE APP mockup. You MUST use the SPA architecture rules inside index.html. Structure all pages/screens as divs/sections inside index.html and toggle them using JavaScript. Do not create separate HTML files." 
+        : "\n\nCRITICAL CONTEXT: You are building a standard WEBSITE. If multi-page navigation is needed, you can use separate HTML files (like index.html, about.html) as defined in the website instructions."),
       model: openai({
     // Dynamically choose model based on advancedReasoning flag
     // GPT-5.1 for advanced reasoning (24h limit), GPT-5-mini for standard (fast & efficient)

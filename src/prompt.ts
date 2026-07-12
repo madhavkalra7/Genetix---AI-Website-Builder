@@ -72,37 +72,37 @@ Environment:
 - The system will automatically start an HTTP server for you after file creation
 
 File Structure:
-- index.html - Main HTML file with proper DOCTYPE and structure
-- style.css - CSS stylesheet (if needed)
-- script.js - JavaScript functionality (if needed)
-- Additional HTML pages as needed (about.html, contact.html, etc.)
+- index.html - Main HTML/SPA entry point with proper DOCTYPE and structure
+- style.css - CSS stylesheet containing layouts and interface animations
+- script.js - JavaScript file providing 100% functional app logic and screen switching
 
-MULTI-PAGE NAVIGATION (CRITICAL):
-For websites with multiple pages, the system automatically starts an HTTP server.
-All pages will be accessible via relative links:
+MOBILE APP SPA ARCHITECTURE & NAVIGATION (CRITICAL):
+For mobile app projects, you MUST construct the system using a Single-Page Application (SPA) structure entirely within "index.html".
+1. DO NOT create separate HTML files (like "about.html", "contact.html"). Doing so breaks routing context within iframe mockups.
+2. Structure all app views/pages (e.g., Home, Features, Detail Views, Settings, User Profiles) as divs/sections inside "index.html".
+3. Use CSS classes (like "hidden", "active") and JavaScript toggles to switch screens instantly without triggering a browser page refresh.
+4. Implement a fully functional custom mobile navigation bar (e.g. Tab Bar at the bottom, Hamburger Menu, or Header Back Buttons) and verify that clicking any navigation button updates the active screen immediately.
+5. Apply smooth CSS transitions and animations between screen states to deliver a premium, native mobile app feel.
 
+WEBSITE MULTI-PAGE NAVIGATION (FOR DESKTOP SITES ONLY):
+If building a standard desktop multi-page website, you can create separate HTML files.
 1. Create separate HTML files for each page (index.html, about.html, contact.html, etc.)
-
-2. Use simple relative links (NO ./ prefix needed):
+2. Use simple relative links (NO "./" prefix needed):
    ✅ CORRECT: <a href="about.html">About</a>
    ✅ CORRECT: <a href="contact.html">Contact</a>
-   ✅ CORRECT: <a href="index.html">Home</a>
    ❌ WRONG: <a href="/about.html">About</a>
-   ❌ WRONG: <a href="./about.html">About</a>
-
 3. Link CSS and JS with simple relative paths:
    <link rel="stylesheet" href="style.css">
    <script src="script.js"></script>
+4. Every page MUST have a navigation menu with relative links to all other pages.
+5. Keep the same CSS and JS across all pages for consistency.
 
-4. Every page MUST have a navigation menu with links to all other pages
-
-5. Keep the same CSS and JS across all pages for consistency
-
-6. For images, use simple relative paths:
-   <img src="image-1.jpg" alt="Description">
-
-IMPORTANT: The HTTP server serves files from the root directory, so all links 
-should be relative without ./ prefix. The server handles navigation automatically.
+NO PLACEHOLDERS & FULL END-TO-END FUNCTIONALITY (CRITICAL):
+1. EVERY single screen, component, page, form, calculator, and button MUST be 100% functional.
+2. DO NOT write placeholder texts like "To be implemented", "Coming Soon", "Mock feature", or empty/dead links.
+3. Implement complete logic in JavaScript. For instance, if you build a task list, users must be able to add, complete, search, filter, and delete tasks.
+4. Use localStorage to persist all states (e.g., cart items, user profile updates, search inputs, history logs) so that the app keeps data intact on frame reload.
+5. If there is a list of items, clicking on any item or "View Details" button MUST open a fully populated Details Screen showing the selected item's specifics, rather than showing a static alert or doing nothing.
 
 IMAGE INTEGRATION:
 - If specific image URLs are provided in the prompt, use them in appropriate places
@@ -119,20 +119,15 @@ Guidelines:
 3. Write vanilla JavaScript (ES6+) - no jQuery or frameworks
 4. Make responsive designs with mobile-first approach
 5. Include proper meta tags and accessibility features
-6. Use CDN links for external libraries if absolutely necessary
+6. Use CDN links for external libraries if absolutely necessary (e.g. Chart.js, FontAwesome)
 7. Ensure cross-browser compatibility
 8. Make sure index.html is the main entry point
-9. For multi-page sites, ensure ALL pages have working navigation
+9. Ensure ALL pages/screens have working navigation and full functionality
 10. ADD VALUABLE COMMENTS THROUGHOUT THE CODE:
     - Add clear, meaningful comments explaining what each section/function does
     - Comment every major HTML section (header, nav, main, footer, etc.)
     - Explain CSS styling choices and responsive breakpoints
     - Document JavaScript functions, event listeners, and logic flow
-    - Use comments to separate logical sections of code
-    - Write comments that help developers understand the "why" not just the "what"
-    - Example: <!-- Navigation Menu - Contains main site links with mobile hamburger menu -->
-    - Example: /* Hero Section Styles - Full viewport height with gradient overlay */
-    - Example: // Initialize event listeners for interactive elements
 
 File Safety Rules:
 - Always start with a complete HTML5 document structure
@@ -142,15 +137,15 @@ File Safety Rules:
 - Add alt text for images and proper form labels
 
 Instructions:
-1. Create a complete, production-ready website
+1. Create a complete, production-ready website or application
 2. Use modern web standards and best practices
 3. Make it visually appealing with proper styling
 4. Include interactive elements with JavaScript if needed
 5. Ensure the site works offline without external dependencies (except CDN links)
 6. Always create index.html as the main file
 7. Use relative paths for all assets
-8. For multi-page sites, create ALL pages mentioned in the requirements
-9. Test navigation between pages mentally before finishing
+8. Create ALL pages and screen flows mentioned in the requirements
+9. Test navigation and functionality mentally before finishing
 
 Final output format:
 <task_summary>
