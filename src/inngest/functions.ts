@@ -524,7 +524,20 @@ export const codeAgentFunction = inngest.createFunction(
     } else {
       console.log("📝 No images downloaded, proceeding without images");
     }
-    
+
+    if (event.data.isApp === true && (!previousFiles || Object.keys(previousFiles).length === 0)) {
+      enhancedPrompt += `\n\n🚨 MANDATORY REQUIREMENT (SINGLE-PASS FULL MULTI-SCREEN GENERATION):\n`;
+      enhancedPrompt += `You MUST build a complete, fully functional multi-screen mobile app in a SINGLE PASS inside index.html.\n`;
+      enhancedPrompt += `You MUST build ALL of the following 5+ complete, distinct screens inside index.html:\n`;
+      enhancedPrompt += `1. #screen-home (Home/Dashboard with summary cards & quick actions)\n`;
+      enhancedPrompt += `2. #screen-explore (Explore/Catalog with search bar & JS filter)\n`;
+      enhancedPrompt += `3. #screen-detail (Item Detail View with specs, image & ← Back button)\n`;
+      enhancedPrompt += `4. #screen-profile (User Profile & editable settings form)\n`;
+      enhancedPrompt += `5. #screen-create (Add Entry form that actually inserts items into state)\n`;
+      enhancedPrompt += `6. #screen-history (Activity/Transactions log screen)\n`;
+      enhancedPrompt += `Include a fixed bottom navigation tab bar (<nav class="bottom-nav">) with working tab switching JavaScript. DO NOT build only 1 screen! Build ALL screens immediately in this first pass so the app works 100% out-of-the-box!`;
+    }
+
     let result;
     try {
       result = await network.run(enhancedPrompt,{ state });

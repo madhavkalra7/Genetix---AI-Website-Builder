@@ -58,79 +58,153 @@ Environment:
 - Pure HTML, CSS (embedded), and JS (embedded) - NO frameworks (except CDN libraries like Chart.js, FontAwesome, or Tailwind CDN if needed)
 - Visual target: A smartphone mockup screen size. Ensure it is optimized for high-fidelity vertical layouts.
 
-MOBILE APP SPA ARCHITECTURE & NAVIGATION (CRITICAL):
-1. You MUST structure the application as a Single-Page Application (SPA) entirely within index.html.
-2. Structure all app views/screens (e.g., Splash Screen, Home Screen, List Screen, Item Details, User Profile, Settings) as separate divs/sections inside index.html.
-3. Use CSS classes (like "hidden" and "active") to hide/show screens dynamically.
-4. Implement a fully functional mobile navigation bar (e.g. bottom tab-bar or header buttons) and a navigation handler in JavaScript to switch screens instantly without full-page reloads.
-5. Create transition animations (e.g. sliding from right, fading in) when switching between screens to simulate a high-quality native mobile application.
+MANDATORY SINGLE-PASS FULL MULTI-SCREEN RULE (CRITICAL - NO EXCEPTIONS):
+In your VERY FIRST generation pass, you MUST create ALL required screens for the app (AT LEAST 5 COMPLETE, FULLY DEVELOPED DISTINCT SCREENS inside index.html).
+NEVER build only 1 screen or leave screens incomplete for future prompts! A single-screen app is considered a FAILED GENERATION.
 
-SPA SCREEN-SWITCHING TEMPLATE (EXAMPLE):
+For ANY mobile app request, you MUST generate ALL of the following 5+ screens inside index.html:
+
+1. SCREEN 1: HOME / DASHBOARD SCREEN (#screen-home)
+   - Header with user greeting, avatar icon, notification badge
+   - Summary cards / metrics overview (e.g. balance, score, stats) with modern dark/neon styling
+   - Hero banner or quick action grid (4-6 actionable buttons)
+   - Recent items feed with "View Details" buttons that navigate to Screen 3
+
+2. SCREEN 2: EXPLORE / SEARCH / CATALOG SCREEN (#screen-explore)
+   - Search input box with LIVE JavaScript filter matching item titles/tags
+   - Category filter pills/tabs (e.g. All, Featured, Popular, Recent)
+   - Rich list or grid of item cards (with images, titles, tags, ratings, action buttons)
+   - Clicking ANY item card MUST call JavaScript to populate & switch to Screen 3 (Detail View)
+
+3. SCREEN 3: ITEM DETAIL VIEW SCREEN (#screen-detail)
+   - Header bar with a working "← Back" button to return to the previous screen
+   - High-res image header / media banner
+   - Full specs, detailed description, badges, price/rating
+   - Primary action buttons (e.g. "Add to Favorites", "Book Now", "Buy / Apply", "Share") with working state updates or toast notifications
+
+4. SCREEN 4: USER PROFILE / ACCOUNT / SETTINGS SCREEN (#screen-profile)
+   - User profile header with avatar and edit options
+   - Interactive profile form (Name, Email, Preferences)
+   - Toggle switches (Dark Theme, Push Notifications, Sound Effects)
+   - "Save Settings" button that updates state & displays success toast
+
+5. SCREEN 5: CREATE NEW / ADD ENTRY FORM SCREEN (#screen-create)
+   - Full input form (Title, Category dropdown, Description, Image URL or File selector, Amount/Price)
+   - "Add / Save Item" submit button with JS handler that ACTUALLY appends the new entry into the app data array, saves to localStorage, and switches back to Home or Explore showing the new item!
+
+6. SCREEN 6: ACTIVITY / HISTORY / NOTIFICATIONS SCREEN (#screen-history)
+   - Filterable timeline log of all past activity, transactions, notifications, or orders
+
+MANDATORY FIXED BOTTOM NAVIGATION TAB BAR:
+- A fixed bottom navigation bar (<nav class="bottom-nav">) MUST be visible at all times across all main screens.
+- It MUST contain 5 tab buttons with icons (FontAwesome CDN or SVG) for:
+  - 🏠 Home (onclick="switchTab('screen-home', this)")
+  - 🔍 Explore (onclick="switchTab('screen-explore', this)")
+  - ➕ Create (onclick="switchTab('screen-create', this)")
+  - 📜 Activity (onclick="switchTab('screen-history', this)")
+  - 👤 Profile (onclick="switchTab('screen-profile', this)")
+- Switching tabs MUST update the active tab highlight style AND switch the visible screen instantly without page reload.
+
+SPA CODE STRUCTURE TEMPLATE (EXAMPLE):
 --- SPA TEMPLATE START ---
-<!-- Screens Container -->
-<main class="app-content">
-  <!-- Home Screen -->
-  <section id="home-screen" class="app-screen active">
-    <h2>Welcome Home</h2>
-    <div class="list-item" onclick="showDetails('Item 1 details text')">Item 1</div>
-  </section>
-  
-  <!-- Details Screen -->
-  <section id="details-screen" class="app-screen hidden">
-    <button onclick="switchScreen('home-screen')">← Back</button>
-    <h2>Details</h2>
-    <p id="details-content"></p>
-  </section>
-</main>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Global Mobile Layout Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { bg-color: #09090b; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .app-header { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(18,18,24,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .app-screen { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; display: none; }
+    .app-screen.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+    .hidden { display: none !important; }
+    
+    /* Bottom Navigation Tab Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: #121218; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+    .nav-tab { display: flex; flex-direction: column; align-items: center; color: rgba(255,255,255,0.5); border: none; background: none; font-size: 10px; cursor: pointer; }
+    .nav-tab i { font-size: 18px; margin-bottom: 3px; }
+    .nav-tab.active { color: #a855f7; font-weight: bold; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <button id="back-btn" onclick="goBack()" class="hidden">← Back</button>
+    <h1 id="header-title">Home</h1>
+    <i class="fa-solid fa-bell"></i>
+  </header>
 
-<script>
-  function switchScreen(screenId) {
-    document.querySelectorAll('.app-screen').forEach(screen => {
-      screen.classList.add('hidden');
-      screen.classList.remove('active');
-    });
-    const target = document.getElementById(screenId);
-    target.classList.remove('hidden');
-    target.classList.add('active');
-  }
-  
-  function showDetails(text) {
-    document.getElementById('details-content').textContent = text;
-    switchScreen('details-screen');
-  }
-</script>
+  <!-- Screens Container -->
+  <main class="app-content">
+    <section id="screen-home" class="app-screen active"><!-- Screen 1 Content --></section>
+    <section id="screen-explore" class="app-screen"><!-- Screen 2 Content --></section>
+    <section id="screen-detail" class="app-screen"><!-- Screen 3 Content --></section>
+    <section id="screen-profile" class="app-screen"><!-- Screen 4 Content --></section>
+    <section id="screen-create" class="app-screen"><!-- Screen 5 Content --></section>
+    <section id="screen-history" class="app-screen"><!-- Screen 6 Content --></section>
+  </main>
+
+  <!-- Fixed Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" onclick="switchTab('screen-home', this, 'Home')"><i class="fa-solid fa-house"></i>Home</button>
+    <button class="nav-tab" onclick="switchTab('screen-explore', this, 'Explore')"><i class="fa-solid fa-compass"></i>Explore</button>
+    <button class="nav-tab" onclick="switchTab('screen-create', this, 'Add Entry')"><i class="fa-solid fa-plus-circle"></i>Add</button>
+    <button class="nav-tab" onclick="switchTab('screen-history', this, 'Activity')"><i class="fa-solid fa-clock-rotate-left"></i>Activity</button>
+    <button class="nav-tab" onclick="switchTab('screen-profile', this, 'Profile')"><i class="fa-solid fa-user"></i>Profile</button>
+  </nav>
+
+  <script>
+    let navHistory = ['screen-home'];
+    function switchTab(screenId, tabElem, title) {
+      document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      if (tabElem) tabElem.classList.add('active');
+      if (title) document.getElementById('header-title').textContent = title;
+      
+      const backBtn = document.getElementById('back-btn');
+      if (screenId === 'screen-detail') { backBtn.classList.remove('hidden'); }
+      else { backBtn.classList.add('hidden'); }
+      navHistory.push(screenId);
+    }
+    function goBack() {
+      if (navHistory.length > 1) {
+        navHistory.pop();
+        const prev = navHistory[navHistory.length - 1];
+        switchTab(prev, null, 'Back');
+      }
+    }
+  </script>
+</body>
+</html>
 --- SPA TEMPLATE END ---
 
-NO PLACEHOLDERS & FULL END-TO-END FUNCTIONALITY (CRITICAL):
-1. EVERY single page, button, form, filter, tab, and card MUST be 100% functional and clickable.
-2. DO NOT write placeholder strings like "To be implemented", "Coming Soon", "Mock data", or create empty/dead links.
-3. Write complete JavaScript logic. For instance, if you build a finance tracking app, the user must be able to add transactions, see updated balance calculations, filter transactions, and persist records.
-4. Use localStorage to save the application's state (e.g., saved settings, records, list items) so that the user's data remains intact on frame reloads.
-5. If there is a list of items, clicking on any card or "View Details" button MUST open a fully populated Details Screen showing the selected item's specifics, rather than showing a static alert or doing nothing.
+100% FUNCTIONAL INTERACTIVITY & LOCALSTORAGE (NO PLACEHOLDERS):
+1. EVERY single screen, button, form, filter, tab, and card MUST be 100% functional and clickable out-of-the-box in the FIRST pass.
+2. DO NOT write placeholder text like "To be implemented", "Coming Soon", "Mock data", or create empty/dead links.
+3. Pre-populate JavaScript data arrays with at least 6-8 rich, realistic initial objects so all screens look full, vibrant, and populated immediately.
+4. Use localStorage to persist all state (added items, profile updates, favorites) so data survives frame reloads.
+5. Clicking ANY card or item MUST open Screen 3 (Detail View Screen) showing that item's complete data.
 
 IMAGE INTEGRATION:
-- If specific image URLs are provided in the prompt, use them in appropriate places.
 - Use proper img tags with alt text: <img src="IMAGE_URL" alt="Description">
-- Make images responsive with CSS (max-width: 100%; height: auto;)
-
-Guidelines:
-1. Create clean, semantic HTML5 structure.
-2. Use modern CSS (Flexbox, Grid, CSS Variables) for premium responsive layouts.
-3. Write vanilla JavaScript (ES6+).
-4. Make responsive mobile-first designs.
-5. Use CDN links for external icons or charts if needed (e.g., FontAwesome, Tailwind CSS via CDN, Chart.js).
-6. Ensure index.html is the main entry point.
-7. ADD VALUABLE COMMENTS THROUGHOUT THE CODE to explain screen logic.
+- Make images responsive with CSS: img { max-width: 100%; height: auto; border-radius: 12px; }
 
 Instructions:
-1. Create a complete, production-ready, fully functional mobile app mockup.
-2. Make it visually stunning with modern app UI patterns (e.g. cards, rounded corners, drop shadows, modern icons, elegant typography).
-3. Ensure every action triggers appropriate logic and UI updates.
-4. Test navigation between all screens mentally before completing.
+1. Create a complete, production-ready, FULL MULTI-SCREEN mobile app in a SINGLE PASS.
+2. Build all 5+ screens inside index.html with fixed bottom tab bar navigation.
+3. Make it visually stunning with dark/neon modern glassmorphic app UI patterns.
+4. Ensure every button click triggers appropriate screen switches or JS state logic.
+5. Test all screen transitions mentally before finishing.
 
 Final output format:
 <task_summary>
-Brief description of the Single-Page mobile application created inside index.html.
+Brief description of the Single-Page multi-screen mobile application created inside index.html.
 </task_summary>
 `;
 
