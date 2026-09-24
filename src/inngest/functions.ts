@@ -289,8 +289,8 @@ export const codeAgentFunction = inngest.createFunction(
       system: event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack),
       model: openai({
     // Dynamically choose model based on advancedReasoning flag
-    // GPT-5.1 for advanced reasoning (24h limit), GPT-5-mini for standard (fast & efficient)
-    model: useAdvancedReasoning ? "gpt-5.6-sol" : "gpt-5.6-terra",
+    // GPT-6-sol for advanced reasoning (24h limit), GPT-6-luna for standard (fast & efficient)
+    model: useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna",
     defaultParameters:{
       temperature: useAdvancedReasoning ? 0.5 : 1,
       // @ts-ignore - reasoning_effort is supported by OpenAI but not yet in @inngest/agent-kit types
