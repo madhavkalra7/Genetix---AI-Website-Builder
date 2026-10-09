@@ -19,6 +19,8 @@ datasource db {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
+  aiquestUserId String?   @unique
+  aiquestIterationsUsed Int @default(0)
   username      String?   @unique
   firstName     String?
   lastName      String?
@@ -39,6 +41,15 @@ model User {
   verificationTokens VerificationToken[]
   passwordResets PasswordReset[]
   credits       UserCredits?
+}
+
+model AiquestHandoffUse {
+  id        String   @id @default(uuid())
+  jti       String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 model Account {

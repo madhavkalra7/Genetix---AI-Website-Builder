@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionByToken } from '@/lib/auth';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -6,6 +7,9 @@ export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
+  const sessionToken = req.cookies.get('session_token')?.value;
+  const session = sessionToken ? await getSessionByToken(sessionToken) : null;
+  if (session?.user.aiquestUserId) return NextResponse.json({ error: 'Prompt Generator is unavailable in World 6.' }, { status: 403 });
   const { idea, mode } = await req.json();
 
     if (!idea || typeof idea !== "string") {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
+  aiquestUserId?: string | null;
   email: string;
   username: string | null;
   firstName: string | null;

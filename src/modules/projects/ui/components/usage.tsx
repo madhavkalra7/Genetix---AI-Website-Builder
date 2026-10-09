@@ -10,8 +10,9 @@ import { useQuery } from "@tanstack/react-query";
 interface Props {
     remainingCredits?: number;
     totalCredits?: number;
+    aiquestMode?: boolean;
 }
-export const Usage = ({ remainingCredits = 0, totalCredits = 3 }: Props) => {
+export const Usage = ({ remainingCredits = 0, totalCredits = 3, aiquestMode = false }: Props) => {
   const { user } = useAuth();
   const trpc = useTRPC();
   
@@ -28,13 +29,13 @@ export const Usage = ({ remainingCredits = 0, totalCredits = 3 }: Props) => {
            <div className="flex items-center gap-x-2">
                 <div>
                     <p className="text-sm">
-                        {remainingCredits} / {totalCredits} {planName} credits remaining
+                        {aiquestMode ? `${remainingCredits} / ${totalCredits} World 6 iterations remaining` : `${remainingCredits} / ${totalCredits} ${planName} credits remaining`}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        {hasProAccess ? "Resets monthly" : "Resets daily"}
+                        {aiquestMode ? 'Three creations or changes per AIQuest account' : hasProAccess ? "Resets monthly" : "Resets daily"}
                     </p>
                 </div>
-                {!hasProAccess && (
+                {!aiquestMode && !hasProAccess && (
                     <Button
                         asChild
                         size="sm"

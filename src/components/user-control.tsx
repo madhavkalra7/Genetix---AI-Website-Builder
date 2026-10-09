@@ -25,6 +25,7 @@ export const UserControl = ({ showName }: Props) => {
 
     // Check both custom auth and NextAuth
     const user = customAuthUser || session?.user;
+    const isAiquest = !!customAuthUser?.aiquestUserId;
     
     if (!user) return null;
 
@@ -48,7 +49,7 @@ export const UserControl = ({ showName }: Props) => {
     const profileImage = customAuthUser?.image || (session?.user as any)?.image;
 
     const handleSignOut = async () => {
-        if (session) {
+        if (session && !isAiquest) {
             // NextAuth logout
             await nextAuthSignOut({ callbackUrl: "/auth/signin" });
         } else {
@@ -81,17 +82,17 @@ export const UserControl = ({ showName }: Props) => {
                             {displayName}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            {user.email}
+                            {isAiquest ? 'AIQuest World 6' : user.email}
                         </p>
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                {!isAiquest && <DropdownMenuItem asChild>
                     <Link href="/pricing" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Subscription
                     </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />

@@ -59,7 +59,7 @@ export const messagesRouter = createTRPCRouter({
             } catch(error){
                 if(error instanceof Error){
                     throw new TRPCError({
-                        code:"BAD_REQUEST", message:"Something went wrong"
+                        code:"BAD_REQUEST", message:error.message
                     });
                 } else{
                     throw new TRPCError({

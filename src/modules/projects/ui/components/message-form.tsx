@@ -53,7 +53,7 @@ export const MessageForm=({ projectId }: Props) => {
         },
         onError:(error)=>{
             toast.error(error.message);
-            if(error.data?.code==="TOO_MANY_REQUESTS"){
+            if(error.data?.code==="TOO_MANY_REQUESTS" && !usage?.aiquestMode){
                 router.push("/pricing");
             }
         }
@@ -79,6 +79,7 @@ export const MessageForm=({ projectId }: Props) => {
                 <Usage 
                     remainingCredits={usage.remainingCredits} 
                     totalCredits={usage.creditsLimit}
+                    aiquestMode={usage.aiquestMode}
                 />
             )}
             <form onSubmit={form.handleSubmit(onSubmit)}

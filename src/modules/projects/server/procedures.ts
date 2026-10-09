@@ -5,6 +5,8 @@ import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
+import { isAiquestUser } from '@/lib/aiquest';
+import { getTemplateById } from '@/lib/templates';
 
 // Function to generate a meaningful 2-word project name from user prompt
 function generateProjectName(prompt: string): string {
@@ -98,6 +100,9 @@ export const projectsRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input,ctx })=> {
+            const aiquestMode = await isAiquestUser(ctx.auth.userId);
+            const techStack = aiquestMode ? 'html-css-js' : input.techStack;
+            const advancedReasoning = aiquestMode ? false : input.advancedReasoning;
 
             console.log("🚀 Project create mutation called");
             console.log("User ID from context:", ctx.auth.userId);
@@ -129,7 +134,7 @@ export const projectsRouter = createTRPCRouter({
             }
             
             // If using advanced reasoning, check 24-hour limit
-            if (input.advancedReasoning) {
+            if (advancedReasoning) {
                 const usage = await prisma.advancedReasoningUsage.findUnique({
                     where: { userId: ctx.auth.userId }
                 });
@@ -164,8 +169,8 @@ export const projectsRouter = createTRPCRouter({
                 data: {
                     userId: ctx.auth.userId,
                     name: projectName, // Use meaningful name instead of random slug
-                    techStack: input.techStack,
-                    advancedReasoning: input.advancedReasoning, // Store GPT-5.1 flag
+                    techStack,
+                    advancedReasoning,
                     messages: {
                         create: {
                             content: input.value, // Save original prompt for display
@@ -176,10 +181,12 @@ export const projectsRouter = createTRPCRouter({
                 }
             });
 
+            const template = aiquestMode && input.templateId ? getTemplateById(input.templateId) : null;
+            const aiquestPrompt = `${template ? `${template.designPrompt}\n\n` : ''}${input.value}\n\nBuild with HTML, CSS, and JavaScript.`;
             await inngest.send({
                 name: "code-agent/run",
                 data: {
-                    value: input.enhancedValue || input.value, // Use enhanced prompt for AI
+                    value: aiquestMode ? aiquestPrompt : input.enhancedValue || input.value,
                     projectId: createdProject.id,
                     templateId: input.templateId, // Pass template ID to inngest
                 },
@@ -252,6 +259,7 @@ export const appProjectsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
+            if (await isAiquestUser(ctx.auth.userId)) throw new TRPCError({ code: 'FORBIDDEN', message: 'Create App is unavailable in World 6.' });
             if (!ctx.auth.userId) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
@@ -311,6 +319,7 @@ export const appProjectsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
+            if (await isAiquestUser(ctx.auth.userId)) throw new TRPCError({ code: 'FORBIDDEN', message: 'Create App is unavailable in World 6.' });
             if (!ctx.auth.userId) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",

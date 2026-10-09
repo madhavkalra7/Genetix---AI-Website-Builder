@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Component to handle useSearchParams inside Suspense
 function PromptGeneratorContent({ initialIdea }: { initialIdea?: string }) {
@@ -154,6 +155,12 @@ function toFiveCompleteSentences(text: string) {
 }
 
 export default function PromptGeneratorPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!loading && user?.aiquestUserId) router.replace("/");
+  }, [loading, user?.aiquestUserId, router]);
+  if (loading || user?.aiquestUserId) return null;
   return (
     <Suspense fallback={<div className="min-h-screen w-full bg-black text-white flex items-center justify-center">Loading...</div>}>
       <PromptGeneratorContent />

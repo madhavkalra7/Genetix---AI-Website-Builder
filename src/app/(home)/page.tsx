@@ -2,7 +2,7 @@
 import ProjectsList from "./ProjectsList";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,13 +37,15 @@ const Page = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.35]);
   const router = useRouter();
   const trpc = useTRPC();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: session } = useSession();
   const { t } = useLanguage();
   
   // Get display name from either auth method
   const displayName = user?.firstName || user?.username || session?.user?.name || 'USER';
   const isLoggedIn = !!(user || session?.user);
+  const isAiquest = !!user?.aiquestUserId;
+  const { data: aiquestUsage } = useQuery({ ...trpc.usage.status.queryOptions(), enabled: isAiquest });
   // Technology stack options
   const techOptions = [
     { value: "react-nextjs", label: t('tech.react'), description: t('tech.reactDesc') },
@@ -61,7 +63,7 @@ const Page = () => {
         if (error.data?.code === "UNAUTHORIZED") {
           router.push("/auth/signin");
         }
-        if (error.data?.code === "TOO_MANY_REQUESTS") {
+        if (error.data?.code === "TOO_MANY_REQUESTS" && !isAiquest) {
           router.push("/pricing");
         }
       },
@@ -103,9 +105,9 @@ const Page = () => {
     createProject.mutate({ 
       value: value, // Original prompt for display
       enhancedValue: enhancedPrompt, // Enhanced prompt with template design
-      techStack: selectedTech,
+      techStack: isAiquest ? "html-css-js" : selectedTech,
       templateId: selectedTemplate?.id, // Pass template ID if selected
-      advancedReasoning: selectedTech === "html-css-js" && advancedReasoning // Only for HTML/CSS/JS
+      advancedReasoning: !isAiquest && selectedTech === "html-css-js" && advancedReasoning
     });
   };
 
@@ -165,6 +167,8 @@ const Page = () => {
       window.removeEventListener('resize', updateScrollProgress);
     };
   }, [isLoggedIn]);
+
+  if (authLoading) return <main className="min-h-screen bg-black" />;
 
   return (
     <main className="min-h-screen w-full bg-black overflow-x-hidden relative">
@@ -245,7 +249,7 @@ const Page = () => {
                   Key takeaways
                 </p>
                 <ul className="mt-3 list-disc pl-5 text-sm text-white/70 space-y-1">
-                  <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>
+                  {!isAiquest && <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>}
                   <li>Generates editable, ownership-friendly source code you can deploy anywhere.</li>
                   <li>Built for real projects with templates, responsive layouts, and live previews.</li>
                 </ul>
@@ -312,8 +316,9 @@ const Page = () => {
             transition={{ duration: 0.9, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
             className="gradient-border backdrop-blur-xl shadow-2xl shadow-purple-900/20 px-8 py-8 w-full text-center space-y-6 mt-1 rounded-2xl"
           >
+            {isAiquest && <p className="text-sm font-[Orbitron] text-purple-200">World 6 · {aiquestUsage?.remainingCredits ?? 3} of 3 iterations remaining</p>}
             {/* Technology Stack Selector */}
-            <div className="w-full">
+            {!isAiquest && <div className="w-full">
               <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
                 {t('home.selectTech')}
               </label>
@@ -342,10 +347,10 @@ const Page = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div>}
             
             {/* AI Model Selection Button (only for HTML/CSS/JS) */}
-            {selectedTech === "html-css-js" && (
+            {!isAiquest && selectedTech === "html-css-js" && (
               <div className="relative w-full">
                 {/* Compact Round Button */}
                 <button
@@ -500,7 +505,7 @@ const Page = () => {
               </div>
               <Magnetic className="mt-2 sm:mt-0">
                 <Button
-                  disabled={createProject.isPending || !value}
+                  disabled={createProject.isPending || !value || (isAiquest && aiquestUsage?.remainingCredits === 0)}
                   onClick={handleCreateProject}
                   className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
                 >
@@ -508,7 +513,7 @@ const Page = () => {
                 </Button>
               </Magnetic>
             </div>
-            {value && (
+            {value && !isAiquest && (
               <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-left">
                 <span className="text-xs sm:text-sm text-white/80 font-[Orbitron]">{t('home.needHelp')}</span>
                 <Button

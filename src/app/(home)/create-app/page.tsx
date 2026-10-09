@@ -22,6 +22,8 @@ import {
   QrCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Simulated build logs for visual excellence
 const SIMULATED_BUILD_LOGS = [
@@ -37,7 +39,7 @@ const SIMULATED_BUILD_LOGS = [
   "✨ App generation complete! Injecting live preview..."
 ];
 
-export default function CreateAppPage() {
+function CreateAppContent() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
@@ -760,4 +762,14 @@ export default function CreateAppPage() {
       </AnimatePresence>
     </div>
   );
+}
+
+export default function CreateAppPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!loading && user?.aiquestUserId) router.replace("/");
+  }, [loading, user?.aiquestUserId, router]);
+  if (loading || user?.aiquestUserId) return null;
+  return <CreateAppContent />;
 }

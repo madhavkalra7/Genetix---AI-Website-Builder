@@ -8,6 +8,12 @@ import { authOptions } from "@/lib/auth-config-simple";
 import { prisma } from "@/lib/db";
 
 export const createTRPCContext = cache(async () => {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("session_token")?.value;
+  const customSession = sessionToken ? await getSessionByToken(sessionToken) : null;
+  if (customSession?.user.aiquestUserId) {
+    return { auth: { userId: customSession.user.id, user: customSession.user, isNextAuth: false } };
+  }
   // Check NextAuth session first
   const nextAuthSession = await getServerSession(authOptions);
   
@@ -29,14 +35,11 @@ export const createTRPCContext = cache(async () => {
   }
   
   // Check custom auth session
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session_token")?.value;
-  
   if (!sessionToken) {
     return { auth: { userId: null, user: null, isNextAuth: false } };
   }
 
-  const session = await getSessionByToken(sessionToken);
+  const session = customSession;
   
   return {
     auth: {

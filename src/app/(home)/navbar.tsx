@@ -36,7 +36,7 @@ const languages = [
 
 export const Navbar =()=>{
     const isScrolled=useScroll();
-    const { user: customAuthUser } = useAuth();
+    const { user: customAuthUser, loading: authLoading } = useAuth();
     const { data: session } = useSession();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
@@ -45,6 +45,7 @@ export const Navbar =()=>{
     
     // Check both custom auth and NextAuth
     const user = customAuthUser || session?.user;
+    const isAiquest = !!customAuthUser?.aiquestUserId;
     
     const selectedLanguage = languages.find(l => l.code === language) || languages[0];
     
@@ -66,14 +67,14 @@ export const Navbar =()=>{
                 </Link>
 
                 {/* Desktop Prompt Generator */}
-                <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
+                {!authLoading && !isAiquest && <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
                     <Link
                         href="/prompt-generator"
                         className="text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]"
                     >
                         {t('nav.promptGenerator')}
                     </Link>
-                </div>
+                </div>}
                 
                 {/* Desktop Auth Buttons + Language Selector */}
                 <div className="hidden md:flex items-center gap-3">
@@ -130,7 +131,7 @@ export const Navbar =()=>{
                     ) : (
                         <div className="flex items-center gap-4">
                             <UserControl showName />
-                            {pathname !== "/create-app" && (
+                            {!isAiquest && pathname !== "/create-app" && (
                                 <div className="relative group/btn flex items-center">
                                     <Link
                                         href="/create-app"
@@ -206,13 +207,13 @@ export const Navbar =()=>{
                         )}
                     </div>
                     
-                    <Link
+                    {!isAiquest && <Link
                         href="/prompt-generator"
                         className="block text-sm font-[Orbitron] font-semibold text-white px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-center"
                         onClick={() => setMobileMenuOpen(false)}
                     >
                         Prompt Generator
-                    </Link>
+                    </Link>}
                     {!user ? (
                         <div className="flex flex-col gap-2">
                             <Button variant="outline" size="sm" asChild className="w-full">
@@ -225,7 +226,7 @@ export const Navbar =()=>{
                     ) : (
                         <div className="flex flex-col items-center gap-3">
                             <UserControl showName />
-                            {pathname !== "/create-app" && (
+                            {!isAiquest && pathname !== "/create-app" && (
                                 <div className="relative group/btn flex items-center pt-2">
                                     <Link
                                         href="/create-app"
