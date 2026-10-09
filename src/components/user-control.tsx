@@ -20,33 +20,27 @@ interface Props {
 }
 
 export const UserControl = ({ showName }: Props) => {
-    const { user: customAuthUser, signOut: customSignOut } = useAuth();
+    const { user: customAuthUser, loading: authLoading, signOut: customSignOut } = useAuth();
     const { data: session } = useSession();
 
     // Check both custom auth and NextAuth
     const user = customAuthUser || session?.user;
     const isAiquest = !!customAuthUser?.aiquestUserId;
     
-    if (!user) return null;
+    if (authLoading || !user) return null;
 
     // Get display name - handle both auth types
     const displayName = customAuthUser
-        ? (customAuthUser.firstName && customAuthUser.lastName
-            ? `${customAuthUser.firstName} ${customAuthUser.lastName}`
-            : customAuthUser.username || customAuthUser.email)
+        ? ([customAuthUser.firstName, customAuthUser.lastName].filter(Boolean).join(' ').trim()
+            || customAuthUser.username || (isAiquest ? 'AIQuest Explorer' : customAuthUser.email))
         : (session?.user?.name || session?.user?.email || 'User');
 
     // Get initials
-    const initials = customAuthUser
-        ? (customAuthUser.firstName && customAuthUser.lastName
-            ? `${customAuthUser.firstName[0]}${customAuthUser.lastName[0]}`
-            : customAuthUser.username?.[0]?.toUpperCase() || customAuthUser.email[0].toUpperCase())
-        : (session?.user?.name
-            ? session.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-            : session?.user?.email?.[0]?.toUpperCase() || 'U');
+    const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2)
+        .map((name: string) => name[0]).join('').toUpperCase() || 'U';
 
     // Get profile image
-    const profileImage = customAuthUser?.image || (session?.user as any)?.image;
+    const profileImage = isAiquest ? undefined : customAuthUser?.image || (session?.user as any)?.image;
 
     const handleSignOut = async () => {
         if (session && !isAiquest) {
