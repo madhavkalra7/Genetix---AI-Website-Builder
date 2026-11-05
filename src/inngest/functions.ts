@@ -33,7 +33,7 @@ export const codeAgentFunction = inngest.createFunction(
     console.log("✅ API keys verified");
 
     const sandboxId = await step.run("get-sandbox-id", async () => {
-      const sandbox = await Sandbox.create("htrjn0k08ekwyjfwkcpo");
+      const sandbox = await Sandbox.create(process.env.E2B_TEMPLATE_ID || "htrjn0k08ekwyjfwkcpo");
       await sandbox.setTimeout(SANDBOX_TIMEOUT);
       return sandbox.sandboxId;
     });
