@@ -13,6 +13,7 @@ import { getReasoningEffort, getResponsesBridgeBaseUrl } from "@/lib/responses-b
 import { validateStaticProject, formatValidationFeedback } from "@/lib/static-validator";
 import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
 import { createBuild, createBuildTracker } from "@/lib/build-tracker";
+import { formatKnowledgeBlock } from "@/lib/knowledge";
 import { runBrowserQa, formatBrowserFindings, type BrowserQaResult } from "@/lib/browser-qa";
 import fs from "fs";
 import path from "path";
@@ -83,7 +84,7 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning, ownerId, supabase } = await step.run("get-project-data", async () => {
+    const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning, ownerId, supabase, knowledge } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
       const isApp = event.data.isApp === true;
 
@@ -91,7 +92,7 @@ export const codeAgentFunction = inngest.createFunction(
         // AppProject logic
         const project = await prisma.appProject.findUnique({
           where: { id: event.data.projectId },
-          select: { name: true, userId: true }
+          select: { name: true, userId: true, user: { select: { knowledge: true } } }
         });
 
         const messages = await prisma.appMessage.findMany({
@@ -121,12 +122,13 @@ export const codeAgentFunction = inngest.createFunction(
           useAdvancedReasoning: false,
           ownerId: project?.userId ?? null,
           supabase: null as { url: string; anonKey: string } | null,
+          knowledge: { project: null as string | null, workspace: project?.user?.knowledge ?? null },
         };
       } else {
         // Standard Project logic
         const project = await prisma.project.findUnique({
           where: { id: event.data.projectId },
-          select: { techStack: true, advancedReasoning: true, userId: true, supabaseUrl: true, supabaseAnonKey: true }
+          select: { techStack: true, advancedReasoning: true, userId: true, supabaseUrl: true, supabaseAnonKey: true, knowledge: true, user: { select: { knowledge: true } } }
         });
 
         const messages = await prisma.message.findMany({
@@ -158,6 +160,7 @@ export const codeAgentFunction = inngest.createFunction(
           supabase: project?.supabaseUrl && project?.supabaseAnonKey
             ? { url: project.supabaseUrl, anonKey: project.supabaseAnonKey }
             : null,
+          knowledge: { project: project?.knowledge ?? null, workspace: project?.user?.knowledge ?? null },
         };
       }
     });
@@ -243,7 +246,10 @@ export const codeAgentFunction = inngest.createFunction(
       parameters: createOrUpdateFilesSchema,
       handler: async ({ files }, { step, network }) => {
         const paths = files.map((f) => f.path).join(", ");
-        void tracker.event(network.state.data.summary ? "fixing" : "writing", paths);
+        // One event per file, carrying the code (powers the live code-writing animation)
+        for (const f of files) {
+          void tracker.event(network.state.data.summary ? "fixing" : "writing", f.path, { file: f.path, code: f.content });
+        }
         const newFiles = await step?.run("createOrUpdateFiles", async () => {
           try {
             const updatedFiles = network.state.data.files || {};
@@ -278,7 +284,10 @@ export const codeAgentFunction = inngest.createFunction(
         })).min(1),
       }),
       handler: async ({ path: filePath, edits }, { step, network }) => {
-        void tracker.event(network.state.data.summary ? "fixing" : "editing", filePath);
+        void tracker.event(network.state.data.summary ? "fixing" : "editing", filePath, {
+          file: filePath,
+          code: edits.map((e) => e.replace).join("\n\n/* … */\n\n"),
+        });
         const outcome = await step?.run("editFile", async () => {
           try {
             const files = network.state.data.files || {};
@@ -872,6 +881,10 @@ export const codeAgentFunction = inngest.createFunction(
     if (event.data.isApp === true && (!previousFiles || Object.keys(previousFiles).length === 0)) {
       enhancedPrompt += `\n\n---\nFIRST BUILD: deliver the complete app in this pass inside index.html — every screen this app needs (decided from its purpose, not a fixed template), all fully working. No placeholder screens or "coming soon".`;
     }
+
+    // 📚 Knowledge: the user's standing instructions (workspace-wide + this project)
+    const knowledgeBlock = formatKnowledgeBlock(knowledge);
+    if (knowledgeBlock) enhancedPrompt = knowledgeBlock + "\n\n" + enhancedPrompt;
 
     // Supabase backend (if the user connected one): real auth + database instead of localStorage
     if (supabase && isStaticProject) {

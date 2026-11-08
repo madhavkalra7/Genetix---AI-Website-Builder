@@ -10,6 +10,7 @@ import {
     slugifyName,
     validateSlug,
 } from "@/modules/publish/shared";
+import { GALLERY_TITLE_MAX_LENGTH } from "@/modules/gallery/shared";
 import { getPublishedSiteUrl } from "./utils";
 
 const projectIdSchema = z.string().min(1, { message: "Project ID is required" });
@@ -54,6 +55,16 @@ export const publishRouter = createTRPCRouter({
                 projectId: projectIdSchema,
                 fragmentId: z.string().min(1).optional(),
                 slug: z.string().trim().toLowerCase().optional(),
+                /** List the site in the public community gallery (unchanged when omitted). */
+                showcase: z.boolean().optional(),
+                /** Gallery title (defaults to the project name; unchanged when omitted). */
+                title: z
+                    .string()
+                    .trim()
+                    .max(GALLERY_TITLE_MAX_LENGTH, {
+                        message: `Title can be at most ${GALLERY_TITLE_MAX_LENGTH} characters`,
+                    })
+                    .optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -96,8 +107,15 @@ export const publishRouter = createTRPCRouter({
 
             const existing = await prisma.publishedSite.findUnique({
                 where: { projectId: project.id },
-                select: { slug: true },
+                select: { slug: true, title: true },
             });
+
+            // Empty title -> project name. Keep the stored title when the caller doesn't send one.
+            const title =
+                input.title !== undefined
+                    ? input.title || project.name.slice(0, GALLERY_TITLE_MAX_LENGTH)
+                    : (existing?.title ?? project.name.slice(0, GALLERY_TITLE_MAX_LENGTH));
+            const showcaseData = input.showcase !== undefined ? { showcase: input.showcase } : {};
 
             const requestedSlug = input.slug || undefined;
             let slug = requestedSlug ?? existing?.slug ?? generateSlug(project.name);
@@ -125,10 +143,22 @@ export const publishRouter = createTRPCRouter({
                 try {
                     const site = await prisma.publishedSite.upsert({
                         where: { projectId: project.id },
-                        create: { projectId: project.id, slug, fragmentId: fragment.id, userId },
-                        update: { slug, fragmentId: fragment.id },
+                        create: {
+                            projectId: project.id,
+                            slug,
+                            fragmentId: fragment.id,
+                            userId,
+                            title,
+                            ...showcaseData,
+                        },
+                        update: { slug, fragmentId: fragment.id, title, ...showcaseData },
                     });
-                    return { slug: site.slug, url: getPublishedSiteUrl(site.slug) };
+                    return {
+                        slug: site.slug,
+                        url: getPublishedSiteUrl(site.slug),
+                        showcase: site.showcase,
+                        title: site.title,
+                    };
                 } catch (error) {
                     if (!isUniqueViolation(error)) throw error;
                     if (requestedSlug || existing) {

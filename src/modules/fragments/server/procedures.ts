@@ -59,6 +59,148 @@ async function isProjectBuilding(projectId: string): Promise<boolean> {
     return !!last && last.role === "USER" && last.createdAt >= since;
 }
 
+// ---------------------------------------------------------------------------
+// Visual edits: zero-token CSS overrides for one element, kept in a marked block
+// ---------------------------------------------------------------------------
+
+const VISUAL_START = "/* genetix:visual-edits:start */";
+const VISUAL_END = "/* genetix:visual-edits:end */";
+
+const COLOR_RE =
+    /^(?:#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|rgba?\(\s*\d{1,3}(?:\.\d+)?%?\s*(?:,\s*\d{1,3}(?:\.\d+)?%?\s*){2}(?:,\s*(?:0|1|0?\.\d+|\d{1,3}%)\s*)?\)|[a-z]{3,20})$/i;
+const pxRe = (max: number) => (v: string) => {
+    if (!/^\d{1,4}(?:\.\d{1,2})?px$/.test(v)) return false;
+    const n = parseFloat(v);
+    return n >= 0 && n <= max;
+};
+
+/** Whitelisted properties and their value validators ("" always means "remove") */
+const VISUAL_PROPERTIES: Record<string, (v: string) => boolean> = {
+    color: (v) => COLOR_RE.test(v),
+    "background-color": (v) => COLOR_RE.test(v),
+    "font-size": (v) => pxRe(400)(v) && parseFloat(v) >= 1,
+    "font-weight": (v) => /^(?:normal|bold|lighter|bolder|[1-9]00)$/.test(v),
+    padding: pxRe(500),
+    "border-radius": pxRe(9999),
+    "text-align": (v) => /^(?:left|right|center|justify|start|end)$/.test(v),
+    opacity: (v) => /^(?:0(?:\.\d{1,3})?|1(?:\.0{1,3})?|\.\d{1,3})$/.test(v),
+    display: (v) => v === "none",
+};
+
+const visualSelectorSchema = z
+    .string()
+    .trim()
+    .min(1, { message: "Selector is required" })
+    .max(500, { message: "Selector is too long" })
+    .refine((s) => !/[{}<;\n\r]|\/\*|\*\//.test(s), { message: "Invalid selector" });
+
+const visualStylesSchema = z
+    .record(z.string(), z.string().trim().max(100))
+    .superRefine((styles, ctx) => {
+        const entries = Object.entries(styles);
+        if (entries.length === 0) {
+            ctx.addIssue({ code: "custom", message: "No style changes" });
+        }
+        for (const [prop, value] of entries) {
+            const validate = VISUAL_PROPERTIES[prop];
+            if (!validate) {
+                ctx.addIssue({ code: "custom", message: `Unsupported property: ${prop}` });
+            } else if (value !== "" && !validate(value)) {
+                ctx.addIssue({ code: "custom", message: `Invalid value for ${prop}` });
+            }
+        }
+    });
+
+type VisualRules = Map<string, Map<string, string>>;
+
+function parseVisualRules(block: string): VisualRules {
+    const rules: VisualRules = new Map();
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(block))) {
+        const selector = m[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
+        if (!selector) continue;
+        const decls = rules.get(selector) ?? new Map<string, string>();
+        for (const decl of m[2].split(";")) {
+            const i = decl.indexOf(":");
+            if (i === -1) continue;
+            const prop = decl.slice(0, i).trim().toLowerCase();
+            const value = decl.slice(i + 1).replace(/!important/i, "").trim();
+            if (prop && value) decls.set(prop, value);
+        }
+        rules.set(selector, decls);
+    }
+    return rules;
+}
+
+function serializeVisualRules(rules: VisualRules): string {
+    const body = Array.from(rules.entries())
+        .filter(([, decls]) => decls.size > 0)
+        .map(([selector, decls]) => {
+            const lines = Array.from(decls.entries()).map(([p, v]) => `  ${p}: ${v} !important;`);
+            return `${selector} {\n${lines.join("\n")}\n}`;
+        });
+    return body.length ? `${VISUAL_START}\n${body.join("\n")}\n${VISUAL_END}` : "";
+}
+
+/** Merge `styles` for `selector` into the marked block of `css` (creating/removing the block as needed). */
+export function upsertVisualRule(css: string, selector: string, styles: Record<string, string>): string {
+    const start = css.indexOf(VISUAL_START);
+    const end = start === -1 ? -1 : css.indexOf(VISUAL_END, start);
+    const hasBlock = start !== -1 && end !== -1;
+    const rules = hasBlock ? parseVisualRules(css.slice(start + VISUAL_START.length, end)) : new Map();
+
+    const decls = rules.get(selector) ?? new Map<string, string>();
+    for (const [prop, value] of Object.entries(styles)) {
+        if (value === "") decls.delete(prop);
+        else decls.set(prop, value);
+    }
+    rules.delete(selector); // re-insert last so the newest rule wins on equal specificity
+    rules.set(selector, decls);
+
+    const block = serializeVisualRules(rules);
+    if (hasBlock) {
+        const before = css.slice(0, start).replace(/\s+$/, "");
+        const after = css.slice(end + VISUAL_END.length).replace(/^\s+/, "");
+        return [before, block, after].filter(Boolean).join("\n\n") + "\n";
+    }
+    if (!block) return css;
+    return `${css.replace(/\s+$/, "")}\n\n${block}\n`;
+}
+
+const STYLE_BLOCK_RE = /<style\b[^>]*data-genetix-visual-edits[^>]*>([\s\S]*?)<\/style>/i;
+
+/** Apply the rule to the project's files: main stylesheet, else a <style> block in index.html */
+function applyVisualRuleToFiles(
+    files: Record<string, string>,
+    selector: string,
+    styles: Record<string, string>,
+): Record<string, string> | null {
+    const keys = Object.keys(files);
+    const base = (k: string) => k.split("/").pop() ?? k;
+    const cssKey =
+        keys.find((k) => base(k) === "style.css" && !isDataUrl(files[k])) ??
+        keys.find((k) => k.toLowerCase().endsWith(".css") && !isDataUrl(files[k]));
+    if (cssKey) {
+        return { ...files, [cssKey]: upsertVisualRule(files[cssKey], selector, styles) };
+    }
+
+    const htmlKey = ["index.html", "/home/user/index.html", "/index.html"].find((k) => typeof files[k] === "string");
+    if (!htmlKey) return null;
+    const html = files[htmlKey];
+    const existing = STYLE_BLOCK_RE.exec(html);
+    const css = upsertVisualRule(existing ? existing[1] : "", selector, styles).trim();
+    const tag = `<style data-genetix-visual-edits>\n${css}\n</style>`;
+    let next: string;
+    if (existing) {
+        next = html.slice(0, existing.index) + tag + html.slice(existing.index + existing[0].length);
+    } else {
+        const close = html.toLowerCase().lastIndexOf("</head>");
+        next = close === -1 ? tag + "\n" + html : html.slice(0, close) + tag + "\n" + html.slice(close);
+    }
+    return { ...files, [htmlKey]: next };
+}
+
 export type FileChange = {
     path: string;
     status: "added" | "removed" | "modified" | "unchanged";
@@ -184,6 +326,76 @@ export const fragmentsRouter = createTRPCRouter({
                 await tx.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
                 if (!message.fragments) {
                     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Could not restore this version" });
+                }
+                return message.fragments;
+            });
+        }),
+
+    // Visual edit: style one element with a CSS override, as a new version (no credits; no AI run)
+    applyVisualEdit: protectedProcedure
+        .input(
+            z.object({
+                fragmentId: z.string().min(1),
+                selector: visualSelectorSchema,
+                styles: visualStylesSchema,
+            }),
+        )
+        .mutation(async ({ input, ctx }) => {
+            const source = await prisma.fragment.findFirst({
+                where: {
+                    id: input.fragmentId,
+                    message: { project: { userId: ctx.auth.userId } },
+                },
+                select: { message: { select: { projectId: true } } },
+            });
+            if (!source) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Version not found" });
+            }
+            const projectId = source.message.projectId;
+
+            if (await isProjectBuilding(projectId)) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Please wait for the current build to finish before saving visual edits",
+                });
+            }
+
+            // Edits always land on top of the newest version
+            const latest = await prisma.fragment.findFirst({
+                where: { message: { projectId, role: "ASSISTANT", type: "RESULT" } },
+                orderBy: { createdAt: "desc" },
+                select: { files: true, sandboxUrl: true },
+            });
+            if (!latest) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "This project has no version to edit yet" });
+            }
+
+            const files = applyVisualRuleToFiles(asFileMap(latest.files), input.selector, input.styles);
+            if (!files) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Visual edits need a stylesheet or index.html" });
+            }
+
+            const selectorLabel = truncate(input.selector, 200);
+            return prisma.$transaction(async (tx) => {
+                const message = await tx.message.create({
+                    data: {
+                        projectId,
+                        role: "ASSISTANT",
+                        type: "RESULT",
+                        content: `Applied visual edits to ${selectorLabel}`,
+                        fragments: {
+                            create: {
+                                title: "Visual edit",
+                                sandboxUrl: latest.sandboxUrl,
+                                files: files as Prisma.InputJsonValue,
+                            },
+                        },
+                    },
+                    include: { fragments: true },
+                });
+                await tx.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
+                if (!message.fragments) {
+                    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Could not save visual edits" });
                 }
                 return message.fragments;
             });

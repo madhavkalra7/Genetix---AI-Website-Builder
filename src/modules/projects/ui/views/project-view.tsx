@@ -17,6 +17,7 @@ import { EyeIcon, CodeIcon, CrownIcon, MessageSquareIcon, CopyIcon, Loader2Icon 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileExplorer } from "@/components/file-explorer";
+import { CodeWritingAnimation } from "@/components/code-writing-animation";
 import { UserControl } from "@/components/user-control";
 import { useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "react-error-boundary";
@@ -71,6 +72,28 @@ export const ProjectView = ({ projectId }: Props) => {
   const handleEditSent = useCallback(() => {
     setMobilePanel("chat");
   }, []);
+
+  // "Building" = same signal as the chat (last message is the USER's request) or a running build.
+  // Shares the cache with MessagesContainer (which polls every 2s), so this adds no requests.
+  const { data: messages } = useQuery(trpc.messages.getMany.queryOptions({ projectId }));
+  const lastMessage = messages?.[messages.length - 1];
+  const awaitingReply = lastMessage?.role === "USER";
+  const { data: latestBuild } = useQuery(
+    trpc.builds.getLatest.queryOptions(
+      { projectId, isApp: false },
+      {
+        refetchInterval: (query) =>
+          awaitingReply || query.state.data?.status === "running" ? 1500 : false,
+        refetchIntervalInBackground: false,
+        retry: 1,
+      },
+    ),
+  );
+  // A "running" row with no pending request is only trusted while it's fresh (guards against stuck rows)
+  const buildRunning =
+    latestBuild?.status === "running" &&
+    Date.now() - new Date(latestBuild.startedAt).getTime() < 30 * 60 * 1000;
+  const isBuilding = awaitingReply || buildRunning;
 
   const duplicateProject = useDuplicateProject(projectId);
 
@@ -191,7 +214,14 @@ export const ProjectView = ({ projectId }: Props) => {
                 )}
               </TabsContent>
               <TabsContent value="code" className="min-h-0 h-full flex-1">
-                {!!activeFragment?.files ? (
+                {isBuilding ? (
+                  <div className="relative h-full min-h-[400px]">
+                    <CodeWritingAnimation
+                      projectId={projectId}
+                      since={awaitingReply ? lastMessage?.createdAt : null}
+                    />
+                  </div>
+                ) : !!activeFragment?.files ? (
                   <div className="relative h-full min-h-[400px]">
                     <FileExplorer
                       key={activeFragment.id}

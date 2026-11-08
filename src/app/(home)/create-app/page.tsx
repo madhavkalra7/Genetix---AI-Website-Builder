@@ -26,6 +26,8 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
+import { ThemePicker } from "@/components/theme-picker";
 
 // Simulated build logs for visual excellence
 const SIMULATED_BUILD_LOGS = [
@@ -45,6 +47,7 @@ function CreateAppContent() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
+  const [themeId, setThemeId] = useState<string | null>(null); // Design theme preset for new apps
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [logIndex, setLogIndex] = useState(0);
@@ -252,8 +255,18 @@ function CreateAppContent() {
     </motion.div>
   ));
 
+  // Reference images (screenshot / sketch / design → app): button, paste and drag-and-drop
+  const attachments = useImageAttachments({ disabled: createAppProject.isPending || createAppMessage.isPending });
+
   const handleGenerate = () => {
     if (!prompt.trim()) return;
+    if (attachments.isProcessing) {
+      toast.info("Still preparing your images — one moment.");
+      return;
+    }
+    const images = attachments.dataUrls.length > 0 ? attachments.dataUrls : undefined;
+    const clearImages = { onSuccess: () => attachments.clear() };
+    if (images) toast.info("Reading your images — this can take a few extra seconds…");
 
     // Direct the AI agent to explicitly produce mobile-first responsive code
     const mobileGuidelines = `
@@ -274,10 +287,11 @@ function CreateAppContent() {
       createAppMessage.mutate({
         projectId: selectedProjectId,
         value: payload.value,
-        enhancedValue: payload.enhancedValue
-      });
+        enhancedValue: payload.enhancedValue,
+        images,
+      }, clearImages);
     } else {
-      createAppProject.mutate(payload);
+      createAppProject.mutate({ ...payload, images, themeId: themeId ?? undefined }, clearImages);
     }
   };
 
@@ -397,14 +411,34 @@ function CreateAppContent() {
                   </p>
                 </div>
 
-                <div className="p-6 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-xl shadow-2xl space-y-4">
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    rows={8}
-                    placeholder="e.g. A fully interactive BMI Calculator with animated weight gauges, history logs, advice based on score, and a sleek neon cyberpunk layout."
-                    className="bg-black/50 border-white/15 focus:border-purple-500/50 rounded-2xl p-4 font-[Orbitron] text-sm resize-none"
+                <div
+                  className="relative p-6 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-xl shadow-2xl space-y-4"
+                  {...attachments.dropHandlers}
+                >
+                  <ImageDropOverlay active={attachments.isDragging} />
+                  <ImageAttachThumbnails
+                    images={attachments.images}
+                    onRemove={attachments.remove}
+                    isProcessing={attachments.isProcessing}
+                    disabled={createAppProject.isPending}
                   />
+                  <div className="relative">
+                    <Textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      onPaste={attachments.onPaste}
+                      rows={8}
+                      placeholder="e.g. A fully interactive BMI Calculator with animated weight gauges, history logs, advice based on score, and a sleek neon cyberpunk layout."
+                      className="bg-black/50 border-white/15 focus:border-purple-500/50 rounded-2xl p-4 pb-12 font-[Orbitron] text-sm resize-none"
+                    />
+                    <ImageAttachButton
+                      onFiles={(files) => void attachments.addFiles(files)}
+                      disabled={!attachments.canAddMore || createAppProject.isPending}
+                      className="absolute left-3 bottom-3 text-white hover:bg-white/10"
+                    />
+                  </div>
+                  <p className="text-[11px] text-white/50 px-1">{IMAGE_ATTACH_HINT} (paste, drop or use the image button · up to 3)</p>
+                  <ThemePicker value={themeId} onChange={setThemeId} disabled={createAppProject.isPending} />
                   <div className="text-[10px] text-white/50 font-[Orbitron] flex items-center justify-between px-1">
                     <span>⚡ Generation Cost: <span className="text-purple-400 font-bold">5 Credits</span></span>
                     {usageStatus && (
@@ -585,11 +619,29 @@ function CreateAppContent() {
 
                 {/* Iteration Prompt box */}
                 <div className="space-y-2">
-                  <div className="p-4 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-md flex gap-2">
+                  <ImageAttachThumbnails
+                    images={attachments.images}
+                    onRemove={attachments.remove}
+                    isProcessing={attachments.isProcessing}
+                    disabled={createAppMessage.isPending}
+                    className="px-2"
+                  />
+                  <div
+                    className="relative p-4 border border-white/10 rounded-3xl bg-white/5 backdrop-blur-md flex gap-2"
+                    {...attachments.dropHandlers}
+                  >
+                    <ImageDropOverlay active={attachments.isDragging} />
+                    <ImageAttachButton
+                      onFiles={(files) => void attachments.addFiles(files)}
+                      disabled={!attachments.canAddMore || createAppMessage.isPending}
+                      className="shrink-0 self-center text-white hover:bg-white/10"
+                      iconClassName="size-4"
+                    />
                     <Textarea
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Ask AI to modify or add screens to your app..."
+                      onPaste={attachments.onPaste}
+                      placeholder="Ask AI to modify or add screens to your app... (paste or drop a screenshot to build from it)"
                       rows={2}
                       className="bg-black/40 border-white/10 rounded-2xl text-xs focus:border-purple-500/40 resize-none font-[Orbitron] py-2"
                     />

@@ -1,12 +1,12 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/inngest/client";
 import { codeAgentFunction } from "@/inngest/functions";
+import { quickEditFunction } from "@/inngest/quick-edit";
 
-// Create an API that serves zero functions
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    /* your functions will be passed here later! */
-    codeAgentFunction,
+    codeAgentFunction, // full build pipeline
+    quickEditFunction, // ⚡ fast targeted edits (click-to-edit)
   ],
 });

@@ -19,10 +19,14 @@ import { TextReveal } from "@/components/animations/text-reveal";
 import { SpotlightCard } from "@/components/animations/spotlight-card";
 import { Magnetic } from "@/components/animations/magnetic-button";
 import { AuroraBackground, Starfield } from "@/components/animations/aurora-background";
+import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
+import { ThemePicker } from "@/components/theme-picker";
 const Page = () => {
   const [value, setValue] = useState("");
+  const [themeId, setThemeId] = useState<string | null>(null); // Design theme preset (null = let AI decide)
   const [selectedTech, setSelectedTech] = useState("html-css-js");
   const [advancedReasoning, setAdvancedReasoning] = useState(false);
+  const [planFirst, setPlanFirst] = useState(false); // "Plan with Genetix first": chat before building
   const [canUseAdvanced, setCanUseAdvanced] = useState(false); // Start with false until API check completes
   const [hoursRemaining, setHoursRemaining] = useState(0);
   const [showModelPopup, setShowModelPopup] = useState(false);
@@ -67,7 +71,7 @@ const Page = () => {
           router.push("/pricing");
         }
       },
-      onSuccess: (data) => {
+      onSuccess: (data, variables) => {
         // Invalidate queries in background (don't await)
         queryClient.invalidateQueries(
           trpc.projects.getMany.queryOptions(),
@@ -83,13 +87,22 @@ const Page = () => {
         // Clear the loading toast after redirect
         setTimeout(() => {
           toast.dismiss("project-create");
-          toast.success("🚀 Project created! AI is generating your code...");
+          toast.success(variables.planOnly
+            ? "Project created! Genetix has a few questions to plan it with you."
+            : "🚀 Project created! AI is generating your code...");
         }, 500);
       },
     })
   );
 
+  // Reference images (screenshot / sketch / design → app): button, paste and drag-and-drop
+  const attachments = useImageAttachments({ disabled: createProject.isPending || createProject.isSuccess });
+
   const handleCreateProject = () => {
+    if (attachments.isProcessing) {
+      toast.info("Still preparing your images — one moment.");
+      return;
+    }
     const selectedTechOption = techOptions.find(tech => tech.value === selectedTech);
     
     let enhancedPrompt = value;
@@ -107,8 +120,14 @@ const Page = () => {
       enhancedValue: enhancedPrompt, // Enhanced prompt with template design
       techStack: isAiquest ? "html-css-js" : selectedTech,
       templateId: selectedTemplate?.id, // Pass template ID if selected
-      advancedReasoning: !isAiquest && selectedTech === "html-css-js" && advancedReasoning
+      advancedReasoning: !isAiquest && selectedTech === "html-css-js" && advancedReasoning,
+      planOnly: !isAiquest && planFirst ? true : undefined,
+      images: attachments.dataUrls.length > 0 ? attachments.dataUrls : undefined,
+      themeId: themeId ?? undefined,
     });
+    if (attachments.dataUrls.length > 0) {
+      toast.info("Reading your images — this can take a few extra seconds…");
+    }
   };
 
   useEffect(() => {
@@ -316,8 +335,10 @@ const Page = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
             className="gradient-border backdrop-blur-xl shadow-2xl shadow-purple-900/20 px-8 py-8 w-full text-center space-y-6 mt-1 rounded-2xl"
+            {...attachments.dropHandlers}
           >
-            {isAiquest && <p className="text-sm font-[Orbitron] text-purple-200">World 6 · {aiquestUsage?.remainingCredits ?? 3} of 3 iterations remaining</p>}
+            <ImageDropOverlay active={attachments.isDragging} />
+            {isAiquest &&<p className="text-sm font-[Orbitron] text-purple-200">World 6 · {aiquestUsage?.remainingCredits ?? 3} of 3 iterations remaining</p>}
             {/* Technology Stack Selector */}
             {!isAiquest && <div className="w-full">
               <label className="block text-white/80 text-sm font-[Orbitron] mb-3 text-left">
@@ -452,7 +473,25 @@ const Page = () => {
                 )}
               </div>
             )}
-            
+
+            {/* Design theme presets (server appends the preset's prompt block by id) */}
+            <ThemePicker
+              value={themeId}
+              onChange={setThemeId}
+              disabled={createProject.isPending}
+            />
+
+            {/* Attached reference images (screenshot / sketch / design) */}
+            <div className="space-y-2 text-left">
+              <ImageAttachThumbnails
+                images={attachments.images}
+                onRemove={attachments.remove}
+                isProcessing={attachments.isProcessing}
+                disabled={createProject.isPending}
+              />
+              <p className="text-[11px] text-white/50">{IMAGE_ATTACH_HINT} (paste, drop or use the image button · up to 3)</p>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-start gap-3">
               <div className="relative flex-1 flex">
                 <textarea
@@ -461,8 +500,14 @@ const Page = () => {
                   placeholder={t('home.placeholder')}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
+                  onPaste={attachments.onPaste}
                   rows={4}
                   style={{ minHeight: '50px', maxHeight: '120px' }}
+                />
+                <ImageAttachButton
+                  onFiles={(files) => void attachments.addFiles(files)}
+                  disabled={!attachments.canAddMore || createProject.isPending || createProject.isSuccess}
+                  className="absolute right-3 bottom-3 text-white hover:bg-white/10"
                 />
                 <button
                   type="button"
@@ -516,6 +561,18 @@ const Page = () => {
                 </Button>
               </Magnetic>
             </div>
+            {!isAiquest && (
+              <label className="flex w-fit cursor-pointer items-center gap-2 text-left text-xs sm:text-sm text-white/80 font-[Orbitron] select-none">
+                <input
+                  type="checkbox"
+                  checked={planFirst}
+                  onChange={(e) => setPlanFirst(e.target.checked)}
+                  className="size-4 accent-purple-500 cursor-pointer"
+                />
+                Plan with Genetix first
+                <span className="text-[11px] text-white/50 font-sans">(free chat, build when ready)</span>
+              </label>
+            )}
             {value && !isAiquest && (
               <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-left">
                 <span className="text-xs sm:text-sm text-white/80 font-[Orbitron]">{t('home.needHelp')}</span>

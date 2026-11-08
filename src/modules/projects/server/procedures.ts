@@ -10,6 +10,9 @@ import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
 import { enforceBuildRateLimit } from '@/lib/rate-limit';
+import { enforcePlanRateLimit, generatePlanReply } from '@/modules/plan/server/plan-chat';
+import { appendImageBrief, imagesInputSchema, resolveImageBrief, withImageMarker } from '@/lib/image-brief';
+import { appendThemeBlock } from '@/lib/theme-presets';
 
 export const projectsRouter = createTRPCRouter({
     // Rename (pencil edit). Owner only.
@@ -88,7 +91,10 @@ export const projectsRouter = createTRPCRouter({
                 enhancedValue: z.string().optional(), // Enhanced prompt for AI
                 techStack: z.string().optional().default("react-nextjs"),
                 templateId: z.string().optional(), // Template ID if user selected a template
-                advancedReasoning: z.boolean().optional().default(false) // GPT-5.1 flag
+                advancedReasoning: z.boolean().optional().default(false), // GPT-5.1 flag
+                planOnly: z.boolean().optional(), // Plan with Genetix first: chat only, no build/credits
+                images: imagesInputSchema, // Reference screenshots/sketches → written brief (never stored)
+                themeId: z.string().max(64).optional(), // Preset id from src/lib/theme-presets (unknown ids ignored)
             }),
         )
         .mutation(async ({ input,ctx })=> {
@@ -109,6 +115,46 @@ export const projectsRouter = createTRPCRouter({
 
             // Per-user build rate limit, checked before any credit or advanced-reasoning claim.
             await enforceBuildRateLimit(ctx.auth.userId);
+
+            // Plan-first: no credits, no advanced-reasoning claim, no build. Create the project with
+            // the user's first message plus Genetix's first planning reply. The reply is generated
+            // BEFORE the project is created so a failed OpenAI call never leaves a dangling project.
+            if (input.planOnly) {
+                if (aiquestMode) {
+                    throw new TRPCError({ code: "FORBIDDEN", message: "Plan mode is unavailable in World 6." });
+                }
+                if (input.value.length > 4000) {
+                    throw new TRPCError({ code: "BAD_REQUEST", message: "Message is too long for planning (max 4000 characters)" });
+                }
+                await enforcePlanRateLimit(ctx.auth.userId);
+                const planImageCount = input.images?.length ?? 0;
+                const [projectName, reply] = await Promise.all([
+                    generateProjectName(input.value, "web"),
+                    // Theme + image brief go into the planning context; the chat stores only the user's text
+                    resolveImageBrief(input.images, input.value).then((brief) =>
+                        generatePlanReply({
+                            history: [],
+                            message: appendImageBrief(appendThemeBlock(input.value, input.themeId), brief, planImageCount),
+                            techStack,
+                        }),
+                    ),
+                ]);
+                const now = Date.now();
+                return prisma.project.create({
+                    data: {
+                        userId: ctx.auth.userId,
+                        name: projectName,
+                        techStack,
+                        advancedReasoning: false,
+                        messages: {
+                            create: [
+                                { content: withImageMarker(input.value, planImageCount), role: "USER", type: "RESULT", createdAt: new Date(now), updatedAt: new Date(now) },
+                                { content: reply, role: "ASSISTANT", type: "RESULT", createdAt: new Date(now + 1), updatedAt: new Date(now + 1) },
+                            ],
+                        },
+                    },
+                });
+            }
 
             // Advanced reasoning 24-hour limit: checked BEFORE spending a credit, and claimed
             // atomically so parallel requests can't both pass.
@@ -171,6 +217,10 @@ export const projectsRouter = createTRPCRouter({
                     }
                 }
             
+            // Image brief runs in parallel with naming; resolveImageBrief never rejects (null on failure)
+            const imageCount = input.images?.length ?? 0;
+            const imageBriefPromise = resolveImageBrief(input.images, input.value);
+
             // Generate meaningful project name from user prompt
             const projectName = await generateProjectName(input.value, "web");
             console.log("📝 Generated project name:", projectName);
@@ -185,7 +235,7 @@ export const projectsRouter = createTRPCRouter({
                         advancedReasoning,
                         messages: {
                             create: {
-                                content: input.value, // Save original prompt for display
+                                content: withImageMarker(input.value, imageCount), // Save original prompt for display
                                 role: "USER",
                                 type: "RESULT",
                             }
@@ -195,10 +245,16 @@ export const projectsRouter = createTRPCRouter({
 
                 const template = aiquestMode && input.templateId ? getTemplateById(input.templateId) : null;
                 const aiquestPrompt = `${template ? `${template.designPrompt}\n\n` : ''}${input.value}\n\nBuild with HTML, CSS, and JavaScript.`;
+                const imageBrief = await imageBriefPromise;
+                const buildPrompt = appendImageBrief(
+                    appendThemeBlock(aiquestMode ? aiquestPrompt : input.enhancedValue || input.value, input.themeId),
+                    imageBrief,
+                    imageCount,
+                );
                 await inngest.send({
                     name: "code-agent/run",
                     data: {
-                        value: aiquestMode ? aiquestPrompt : input.enhancedValue || input.value,
+                        value: buildPrompt,
                         projectId: createdProject.id,
                         templateId: input.templateId, // Pass template ID to inngest
                         creditCost: 1,
@@ -290,6 +346,8 @@ export const appProjectsRouter = createTRPCRouter({
             z.object({
                 value: z.string().min(1, { message: "Prompt is required" }).max(10000),
                 enhancedValue: z.string().optional(),
+                images: imagesInputSchema,
+                themeId: z.string().max(64).optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -319,6 +377,9 @@ export const appProjectsRouter = createTRPCRouter({
                 }
             }
 
+            const imageCount = input.images?.length ?? 0;
+            const imageBriefPromise = resolveImageBrief(input.images, input.value); // never rejects
+
             const projectName = await generateProjectName(input.value, "app");
 
             try {
@@ -328,7 +389,7 @@ export const appProjectsRouter = createTRPCRouter({
                         name: projectName,
                         messages: {
                             create: {
-                                content: input.value,
+                                content: withImageMarker(input.value, imageCount),
                                 role: "USER",
                                 type: "RESULT",
                             },
@@ -336,10 +397,11 @@ export const appProjectsRouter = createTRPCRouter({
                     },
                 });
 
+                const imageBrief = await imageBriefPromise;
                 await inngest.send({
                     name: "code-agent/run",
                     data: {
-                        value: input.enhancedValue || input.value,
+                        value: appendImageBrief(appendThemeBlock(input.enhancedValue || input.value, input.themeId), imageBrief, imageCount),
                         projectId: createdProject.id,
                         isApp: true,
                         creditCost: 5,
@@ -358,6 +420,8 @@ export const appProjectsRouter = createTRPCRouter({
                 projectId: z.string().min(1),
                 value: z.string().min(1).max(10000),
                 enhancedValue: z.string().optional(),
+                images: imagesInputSchema,
+                themeId: z.string().max(64).optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -402,10 +466,12 @@ export const appProjectsRouter = createTRPCRouter({
             }
 
             try {
+                const imageCount = input.images?.length ?? 0;
+                const imageBrief = await resolveImageBrief(input.images, input.value); // null on failure
                 const createdMessage = await prisma.appMessage.create({
                     data: {
                         appProjectId: input.projectId,
-                        content: input.value,
+                        content: withImageMarker(input.value, imageCount),
                         role: "USER",
                         type: "RESULT",
                     },
@@ -420,7 +486,7 @@ export const appProjectsRouter = createTRPCRouter({
                 await inngest.send({
                     name: "code-agent/run",
                     data: {
-                        value: input.enhancedValue || input.value,
+                        value: appendImageBrief(appendThemeBlock(input.enhancedValue || input.value, input.themeId), imageBrief, imageCount),
                         projectId: input.projectId,
                         isApp: true,
                         creditCost: 5,

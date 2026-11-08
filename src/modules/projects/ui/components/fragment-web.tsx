@@ -1,10 +1,16 @@
 import { Fragment } from "@/generated/prisma";
 import { useCallback, useEffect, useState } from "react";
-import { ExternalLinkIcon , MousePointerClickIcon, RefreshCcwIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ExternalLinkIcon, GaugeIcon, MousePointerClickIcon, RefreshCcwIcon, ShieldCheckIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { HTMLPreview, type SelectedElementInfo } from "@/components/html-preview";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { HTMLPreview, type ElementStylePreview, type SelectedElementInfo } from "@/components/html-preview";
+import { SiteAuditPanel } from "@/components/site-audit-panel";
+import { SecurityScanPanel } from "@/components/security-scan-panel";
 import { hasStaticEntry } from "@/lib/static-html";
 import { ElementEditPanel } from "./element-edit-panel";
 
@@ -21,10 +27,57 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
         const [fragmentKey, setFragmentKey] = useState(0);
         const [selectMode, setSelectMode] = useState(false);
         const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
+        const [selectionKey, setSelectionKey] = useState(0);
+        const [stylePreview, setStylePreview] = useState<ElementStylePreview | null>(null);
+        const [auditOpen, setAuditOpen] = useState(false);
+        const [securityOpen, setSecurityOpen] = useState(false);
+
+        const trpc = useTRPC();
+        const queryClient = useQueryClient();
+        const router = useRouter();
+        const { data: usage } = useQuery({ ...trpc.usage.status.queryOptions(), enabled: !!projectId });
+
+        // One quick AI edit (audit / security fixes); same credit handling as the chat form
+        const quickEdit = useMutation(
+            trpc.messages.create.mutationOptions({
+                onSuccess: () => {
+                    if (projectId) {
+                        queryClient.invalidateQueries(trpc.messages.getMany.queryOptions({ projectId }));
+                    }
+                    queryClient.invalidateQueries(trpc.usage.status.queryOptions());
+                    toast.success("Fix requested — rebuilding");
+                    setAuditOpen(false);
+                    setSecurityOpen(false);
+                    onEditSent?.();
+                },
+                onError: (error) => {
+                    toast.error(error.message);
+                    if (error.data?.code === "TOO_MANY_REQUESTS" && !usage?.aiquestMode) {
+                        router.push("/pricing");
+                    }
+                },
+            }),
+        );
+        const quickEditPending = quickEdit.isPending;
+        const mutateQuickEdit = quickEdit.mutate;
+        const sendQuickEdit = useCallback(
+            (request: string) => {
+                if (!projectId || !request || quickEditPending) return;
+                mutateQuickEdit({ projectId, value: request, mode: "quick" });
+            },
+            [projectId, quickEditPending, mutateQuickEdit],
+        );
 
         const exitSelectMode = useCallback(() => {
             setSelectMode(false);
             setSelectedElement(null);
+            setStylePreview(null);
+        }, []);
+
+        const handleElementSelected = useCallback((info: SelectedElementInfo) => {
+            setSelectedElement(info);
+            setSelectionKey((k) => k + 1);
+            setStylePreview(null);
         }, []);
 
         // A different version is shown: drop any selection made on the old one
@@ -112,6 +165,26 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
                                 </Button>
                             </Hint>
                         )}
+                        <Hint text="SEO & accessibility audit" side="bottom" align="start">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                aria-label="SEO & accessibility audit"
+                                onClick={() => setAuditOpen(true)}
+                            >
+                                <GaugeIcon/>
+                            </Button>
+                        </Hint>
+                        <Hint text="Security scan" side="bottom" align="start">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                aria-label="Security scan"
+                                onClick={() => setSecurityOpen(true)}
+                            >
+                                <ShieldCheckIcon/>
+                            </Button>
+                        </Hint>
                         <Hint text={`${getProjectType()} Preview`} side="bottom">
                             <Button 
                                 size="sm" 
@@ -138,21 +211,50 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
                             files={data.files as {[path: string]: string}} 
                             className="w-full h-full"
                             selectMode={selectMode}
-                            onElementSelected={projectId ? setSelectedElement : undefined}
+                            onElementSelected={projectId ? handleElementSelected : undefined}
                             onSelectModeExit={exitSelectMode}
+                            stylePreview={stylePreview}
                         />
                         {projectId && selectMode && (
                             <ElementEditPanel
                                 projectId={projectId}
+                                fragmentId={data.id}
                                 element={selectedElement}
+                                selectionKey={selectionKey}
                                 onCancel={exitSelectMode}
                                 onSent={() => {
                                     exitSelectMode();
                                     onEditSent?.();
                                 }}
+                                onVisualSaved={exitSelectMode}
+                                onPreviewChange={setStylePreview}
                             />
                         )}
                     </div>
+                    <SiteAuditPanel
+                        open={auditOpen}
+                        onOpenChange={setAuditOpen}
+                        files={data.files as {[path: string]: string}}
+                        onFixWithAi={projectId ? sendQuickEdit : undefined}
+                        fixPending={quickEditPending}
+                    />
+                    <Dialog open={securityOpen} onOpenChange={setSecurityOpen}>
+                        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>Security scan</DialogTitle>
+                                <DialogDescription>
+                                    Looks for exposed API keys, unsafe code and insecure links in this version.
+                                </DialogDescription>
+                            </DialogHeader>
+                            {securityOpen && (
+                                <SecurityScanPanel
+                                    files={data.files as {[path: string]: string}}
+                                    onFixWithAi={projectId ? sendQuickEdit : undefined}
+                                    fixPending={quickEditPending}
+                                />
+                            )}
+                        </DialogContent>
+                    </Dialog>
                 </div>
             );
         }

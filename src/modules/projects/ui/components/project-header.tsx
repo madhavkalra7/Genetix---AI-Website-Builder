@@ -12,7 +12,9 @@ import { useTRPC }  from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { EditableProjectName } from "@/components/editable-project-name";
 import { PublishDialog } from "@/components/publish-dialog";
+import { PublishSecurityCheck } from "@/components/publish-security-check";
 import { SupabaseDialog } from "@/components/supabase-dialog";
+import { KnowledgeDialog } from "@/components/knowledge-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRadioGroup,DropdownMenuRadioItem,DropdownMenuSeparator,DropdownMenuSub,DropdownMenuSubContent,DropdownMenuSubTrigger,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
 
 interface Props {
@@ -101,11 +103,13 @@ export const ProjectHeader=({ projectId }: Props)=>{
         />
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
+            <KnowledgeDialog projectId={projectId}/>
             <SupabaseDialog projectId={projectId}/>
             <PublishDialog
                 projectId={projectId}
                 projectName={project.name}
                 techStack={project.techStack}
+                securitySlot={<PublishSecurityCheck projectId={projectId} />}
             />
         </div>
     </header>

@@ -3,8 +3,44 @@ import { format } from "date-fns";
 import { Fragment, MessageRole, MessageType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { ChevronRightIcon,Code2Icon } from "lucide-react";
+import { ChevronRightIcon,Code2Icon,HammerIcon,Loader2Icon } from "lucide-react";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { Button } from "@/components/ui/button";
+import { PlanMarkdown } from "@/modules/plan/ui/plan-markdown";
 import { VersionActions } from "./version-actions";
+
+export const BUILD_FROM_PLAN_PROMPT = "Build it now based on our plan above.";
+
+/** "Build this" CTA under the latest plan reply: starts a normal build (same mutation as the chat form). */
+const BuildThisButton = ({ projectId }: { projectId: string }) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const createMessage = useMutation(trpc.messages.create.mutationOptions({
+    onSuccess: () => {
+      queryClient.invalidateQueries(trpc.messages.getMany.queryOptions({ projectId }));
+      queryClient.invalidateQueries(trpc.usage.status.queryOptions());
+    },
+    onError: (error) => {
+      toast.error(error.message || "Couldn't start the build. Please try again.");
+    },
+  }));
+  const isPending = createMessage.isPending || createMessage.isSuccess;
+  return (
+    <Button
+      type="button"
+      variant="venom"
+      size="sm"
+      className="w-fit px-4"
+      disabled={isPending}
+      onClick={() => createMessage.mutate({ projectId, value: BUILD_FROM_PLAN_PROMPT })}
+    >
+      {isPending ? <Loader2Icon className="size-4 animate-spin" /> : <HammerIcon className="size-4" />}
+      Build this
+    </Button>
+  );
+};
 
 interface UserMessageProps {
   content: string;
@@ -78,6 +114,9 @@ interface AssistantMessageProps {
     onFragmentClick: (fragment: Fragment) => void;
     type: MessageType;
     version?: VersionContext;
+    /** Project id + flag: show the "Build this" CTA (only on the latest plan reply) */
+    projectId?: string;
+    showBuildThis?: boolean;
 }
 
 const AssistantMessage = ({content,
@@ -86,7 +125,11 @@ const AssistantMessage = ({content,
     isActiveFragment,
     onFragmentClick,
     type,
-    version}: AssistantMessageProps) => {
+    version,
+    projectId,
+    showBuildThis}: AssistantMessageProps) => {
+    // Plan replies: ASSISTANT + RESULT with no fragment (builds always produce a fragment or an ERROR)
+    const isPlanReply = type === "RESULT" && !fragment;
     return (
         <div className={cn("flex flex-col group px-2 pb-4",
             type==="ERROR" && "text-red-700 dark:text-red-500"
@@ -106,7 +149,12 @@ const AssistantMessage = ({content,
 
             </div>
             <div className="pl-8.5 flex flex-col gap-y-4 min-w-0">
-                <span className="break-words [overflow-wrap:anywhere]">{content}</span>
+                {isPlanReply ? (
+                  <PlanMarkdown content={content} />
+                ) : (
+                  <span className="break-words [overflow-wrap:anywhere]">{content}</span>
+                )}
+                {isPlanReply && showBuildThis && projectId && <BuildThisButton projectId={projectId} />}
                 {fragment && type=="RESULT" && (
                   <FragmentCard
                     fragment={fragment}
@@ -129,6 +177,9 @@ interface MessageCardProps {
   onFragmentClick: (fragment: Fragment) => void;
   type: MessageType;
   version?: VersionContext;
+  projectId?: string;
+  /** True only for the most recent plan reply when it is also the latest message */
+  showBuildThis?: boolean;
 }
 
 export const MessageCard = ({
@@ -140,10 +191,12 @@ export const MessageCard = ({
   onFragmentClick,
   type,
   version,
+  projectId,
+  showBuildThis,
 }: MessageCardProps) => {
   if (role === "ASSISTANT") {
     return (
-        <AssistantMessage content={content} fragment={fragment} createdAt={createdAt} isActiveFragment={isActiveFragment} onFragmentClick={onFragmentClick} type={type} version={version} />
+        <AssistantMessage content={content} fragment={fragment} createdAt={createdAt} isActiveFragment={isActiveFragment} onFragmentClick={onFragmentClick} type={type} version={version} projectId={projectId} showBuildThis={showBuildThis} />
     );
   }
   return <UserMessage content={content} />;

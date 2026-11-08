@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
 import { refundCredit } from "@/lib/credit-refund";
 import { enforceBuildRateLimit } from "@/lib/rate-limit";
+import { appendImageBrief, imagesInputSchema, resolveImageBrief, withImageMarker } from "@/lib/image-brief";
 export const messagesRouter = createTRPCRouter({
     getMany: protectedProcedure
         .input(
@@ -38,6 +39,10 @@ export const messagesRouter = createTRPCRouter({
                     .min(1, { message: "Message is required"})
                     .max(10000,{ message: "Message is too long"}),
                 projectId: z.string().min(1, { message: "Project ID is required" }),
+                // "quick": fast targeted edit (click-to-edit) — one focused AI call, no full pipeline
+                mode: z.enum(["build", "quick"]).optional(),
+                // Reference screenshots/sketches (data URLs); turned into a written brief, never stored
+                images: imagesInputSchema,
             }),
         )
         .mutation(async ({ input,ctx })=> {
@@ -72,18 +77,30 @@ export const messagesRouter = createTRPCRouter({
             }
             // If anything below fails, the build never starts: give the credit back.
             try {
+                const imageCount = input.images?.length ?? 0;
+                const imageBrief = await resolveImageBrief(input.images, input.value);
                 const createdMessage=await prisma.message.create({
                     data: {
                         projectId: input.projectId,
-                        content:input.value,
+                        content: withImageMarker(input.value, imageCount),
                         role: "USER",
                         type: "RESULT",
                     },
                 });
+                // Quick edits only for static projects that already have a version to edit
+                const STATIC_STACKS = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"];
+                const canQuickEdit =
+                    input.mode === "quick" &&
+                    imageCount === 0 && // reference images need the full build pipeline
+                    STATIC_STACKS.includes(existingProject.techStack) &&
+                    !!(await prisma.fragment.findFirst({
+                        where: { message: { projectId: input.projectId } },
+                        select: { id: true },
+                    }));
                 await inngest.send({
-                    name: "code-agent/run",
+                    name: canQuickEdit ? "code-agent/quick-edit" : "code-agent/run",
                     data: {
-                        value: input.value,
+                        value: appendImageBrief(input.value, imageBrief, imageCount),
                         projectId: input.projectId,
                         creditCost: 1,
                     },

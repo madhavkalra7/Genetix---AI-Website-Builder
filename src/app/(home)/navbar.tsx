@@ -66,13 +66,22 @@ export const Navbar =()=>{
                     <span className="font-semibold text-md text-white">Genetix</span>
                 </Link>
 
-                {/* Desktop Prompt Generator */}
-                {!authLoading && !isAiquest && <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
-                    <Link
+                {/* Desktop Prompt Generator + Gallery */}
+                {!authLoading && <div className="hidden md:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+                    {!isAiquest && <Link
                         href="/prompt-generator"
                         className="text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]"
                     >
                         {t('nav.promptGenerator')}
+                    </Link>}
+                    <Link
+                        href="/gallery"
+                        className={cn(
+                            "text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]",
+                            pathname === "/gallery" && "border-purple-400/60 bg-white/20"
+                        )}
+                    >
+                        Gallery
                     </Link>
                 </div>}
                 
@@ -214,6 +223,13 @@ export const Navbar =()=>{
                     >
                         Prompt Generator
                     </Link>}
+                    <Link
+                        href="/gallery"
+                        className="block text-sm font-[Orbitron] font-semibold text-white px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Gallery
+                    </Link>
                     {!user ? (
                         <div className="flex flex-col gap-2">
                             <Button variant="venom" size="sm" asChild className="w-full">

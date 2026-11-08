@@ -28,6 +28,7 @@ model User {
   image         String?   // Profile picture from OAuth
   emailVerified Boolean   @default(false)
   isActive      Boolean   @default(true)
+  knowledge     String?   // Workspace Knowledge: rules applied to all of this user's projects
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -211,6 +212,8 @@ model Project {
   // Optional Supabase backend for generated apps (anon key is public by design)
   supabaseUrl        String?
   supabaseAnonKey    String?
+  // Project Knowledge: brand, rules and context the AI follows on every build
+  knowledge          String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -375,10 +378,14 @@ model PublishedSite {
   projectId  String   @unique
   fragmentId String
   userId     String
+  showcase   Boolean  @default(false) // listed in the public community gallery
+  title      String?
+  remixCount Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([userId])
+  @@index([showcase, updatedAt])
 }
 
 // Sliding-window rate limiting (key = "<action>:<userId|ip>")

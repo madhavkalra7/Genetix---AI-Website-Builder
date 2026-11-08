@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon, ExternalLinkIcon, GlobeIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
     Dialog,
     DialogContent,
@@ -26,12 +27,15 @@ import {
     slugifyName,
     validateSlug,
 } from "@/modules/publish/shared";
+import { GALLERY_TITLE_MAX_LENGTH } from "@/modules/gallery/shared";
 
 interface PublishDialogProps {
     projectId: string;
     projectName: string;
     techStack: string;
     className?: string;
+    /** Slot for a security scan panel (e.g. <SecurityScanPanel/>) rendered inside the dialog body. */
+    securitySlot?: ReactNode;
 }
 
 const suggestSlug = (name: string) => {
@@ -40,12 +44,20 @@ const suggestSlug = (name: string) => {
     return `${base.length < 2 ? "site" : base}-${suffix}`;
 };
 
-export function PublishDialog({ projectId, projectName, techStack, className }: PublishDialogProps) {
+export function PublishDialog({
+    projectId,
+    projectName,
+    techStack,
+    className,
+    securitySlot,
+}: PublishDialogProps) {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [slug, setSlug] = useState("");
     const [copied, setCopied] = useState(false);
+    const [showcase, setShowcase] = useState(false);
+    const [title, setTitle] = useState("");
 
     const publishable = isPublishableTechStack(techStack);
 
@@ -59,7 +71,9 @@ export function PublishDialog({ projectId, projectName, techStack, className }: 
     useEffect(() => {
         if (!open || siteQuery.isLoading) return;
         setSlug(site?.slug ?? suggestSlug(projectName));
-    }, [open, siteQuery.isLoading, site?.slug]);
+        setShowcase(site?.showcase ?? false);
+        setTitle(site?.title ?? projectName.slice(0, GALLERY_TITLE_MAX_LENGTH));
+    }, [open, siteQuery.isLoading, site?.slug, site?.showcase, site?.title]);
 
     const invalidate = () => queryClient.invalidateQueries(trpc.publish.get.queryFilter({ projectId }));
 
@@ -95,7 +109,7 @@ export function PublishDialog({ projectId, projectName, techStack, className }: 
             toast.error(slugError);
             return;
         }
-        publish.mutate({ projectId, slug });
+        publish.mutate({ projectId, slug, showcase, title: title.trim() });
     };
 
     const handleCopy = async () => {
@@ -220,6 +234,42 @@ export function PublishDialog({ projectId, projectName, techStack, className }: 
                                 {slugError ?? "Lowercase letters, numbers and hyphens (3-40 characters)."}
                             </p>
                         </div>
+
+                        <div className="grid gap-3 rounded-md border p-3 min-w-0">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="grid gap-0.5 min-w-0">
+                                    <Label htmlFor="publish-showcase">Show in the Genetix community gallery</Label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Anyone can view it and remix a copy into their own project.
+                                    </p>
+                                </div>
+                                <Switch
+                                    id="publish-showcase"
+                                    checked={showcase}
+                                    onCheckedChange={setShowcase}
+                                    disabled={busy}
+                                    className="mt-0.5"
+                                />
+                            </div>
+                            <div className="grid gap-1.5 min-w-0">
+                                <Label htmlFor="publish-title">Title</Label>
+                                <Input
+                                    id="publish-title"
+                                    value={title}
+                                    maxLength={GALLERY_TITLE_MAX_LENGTH}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder={projectName}
+                                    autoComplete="off"
+                                    disabled={busy}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Shown on your gallery card ({title.length}/{GALLERY_TITLE_MAX_LENGTH}). Leave empty to use the project name.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Security scan slot: another component (e.g. <SecurityScanPanel/>) is passed in via props. */}
+                        {securitySlot}
                     </div>
                 )}
 

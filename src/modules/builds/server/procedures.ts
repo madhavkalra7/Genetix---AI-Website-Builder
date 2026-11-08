@@ -3,11 +3,15 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/db";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 
-export type BuildEvent = { at: string; stage: string; detail?: string };
+export type BuildEvent = { seq?: number; at: string; stage: string; detail?: string; file?: string; code?: string };
 
 // Keep the polled payload small even if a run logs a lot of events
 const MAX_EVENTS = 80;
 const MAX_DETAIL_LENGTH = 200;
+const MAX_FILE_LENGTH = 200;
+const MAX_CODE_LENGTH = 6000;
+/** Only the most recent code snippets are sent (they feed the live code-writing animation). */
+const MAX_EVENTS_WITH_CODE = 3;
 
 /** Defensive parse of the events JSON written by the build pipeline. */
 const normalizeEvents = (raw: unknown): BuildEvent[] => {
@@ -24,19 +28,32 @@ const normalizeEvents = (raw: unknown): BuildEvent[] => {
     const events: BuildEvent[] = [];
     for (const item of ordered) {
         if (!item || typeof item !== "object") continue;
-        const { at, stage, detail } = item as Record<string, unknown>;
+        const { seq, at, stage, detail, file, code } = item as Record<string, unknown>;
         if (typeof stage !== "string" || !stage) continue;
         const atString =
             typeof at === "string" ? at : at instanceof Date ? at.toISOString() : typeof at === "number" ? new Date(at).toISOString() : "";
         events.push({
+            ...(typeof seq === "number" && Number.isFinite(seq) ? { seq } : {}),
             at: atString,
             stage,
             ...(typeof detail === "string" && detail
                 ? { detail: detail.length > MAX_DETAIL_LENGTH ? detail.slice(0, MAX_DETAIL_LENGTH - 1) + "…" : detail }
                 : {}),
+            ...(typeof file === "string" && file ? { file: file.slice(0, MAX_FILE_LENGTH) } : {}),
+            ...(typeof code === "string" && code ? { code: code.slice(0, MAX_CODE_LENGTH) } : {}),
         });
     }
-    return events.slice(-MAX_EVENTS);
+    const recent = events.slice(-MAX_EVENTS);
+    // Keep polling light: strip code from all but the latest few events that carry it
+    let withCode = 0;
+    for (let i = recent.length - 1; i >= 0; i--) {
+        if (recent[i].code !== undefined && ++withCode > MAX_EVENTS_WITH_CODE) {
+            const { code: _dropped, ...rest } = recent[i];
+            void _dropped;
+            recent[i] = rest;
+        }
+    }
+    return recent;
 };
 
 export const buildsRouter = createTRPCRouter({

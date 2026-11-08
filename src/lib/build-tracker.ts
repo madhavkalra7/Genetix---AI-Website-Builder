@@ -14,7 +14,10 @@ export type BuildStage =
   | "starting" | "searching" | "planning" | "writing" | "editing" | "checking" | "fixing"
   | "reviewing" | "browser-testing" | "design-review" | "saving" | "done" | "failed";
 
-export interface BuildEvent { seq: number; at: string; stage: BuildStage; detail?: string }
+export interface BuildEvent { seq: number; at: string; stage: BuildStage; detail?: string; file?: string; code?: string }
+
+/** Max code characters stored per event (feeds the live code-writing animation). */
+const MAX_EVENT_CODE = 6000;
 
 export async function createBuild(data: {
   projectId: string; isApp: boolean; userId: string | null; model: string; reasoningEffort: string;
@@ -42,7 +45,7 @@ export function createBuildTracker(buildId: string | null) {
     id: buildId,
 
     /** Append a progress event (idempotent across Inngest replays). */
-    event(stage: BuildStage, detail?: string) {
+    event(stage: BuildStage, detail?: string, extra?: { file?: string; code?: string }) {
       const mySeq = ++seq;
       if (!buildId) return Promise.resolve();
       return run(async () => {
@@ -51,7 +54,19 @@ export function createBuildTracker(buildId: string | null) {
           stored = (Array.isArray(build?.events) ? build!.events : []) as unknown as BuildEvent[];
         }
         if (stored.some((e) => e.seq === mySeq)) return; // already recorded (Inngest replay)
-        stored.push({ seq: mySeq, at: new Date().toISOString(), stage, ...(detail ? { detail: detail.slice(0, 200) } : {}) });
+        stored.push({
+          seq: mySeq,
+          at: new Date().toISOString(),
+          stage,
+          ...(detail ? { detail: detail.slice(0, 200) } : {}),
+          ...(extra?.file ? { file: extra.file.slice(0, 200) } : {}),
+          ...(extra?.code ? { code: extra.code.slice(0, MAX_EVENT_CODE) } : {}),
+        });
+        // Keep the row small: only the latest 3 events keep their code
+        let withCode = 0;
+        for (let i = stored.length - 1; i >= 0; i--) {
+          if (stored[i].code && ++withCode > 3) delete stored[i].code;
+        }
         await prisma.build.update({
           where: { id: buildId },
           data: { stage, events: stored as unknown as Prisma.InputJsonValue },

@@ -9,7 +9,44 @@ export interface SelectedElementInfo {
   text: string;
   html: string;
   rect: { x: number; y: number; width: number; height: number };
+  /** Computed style of the element (for the Visual edit controls) */
+  computed?: ElementComputedStyle;
+  /** True when the element has no child elements (its text can be edited directly) */
+  isLeaf?: boolean;
 }
+
+export interface ElementComputedStyle {
+  color: string;
+  backgroundColor: string;
+  fontSize: string;
+  fontWeight: string;
+  padding: string;
+  borderRadius: string;
+  textAlign: string;
+  opacity: string;
+  display: string;
+}
+
+/** Live, unsaved style/text changes shown on the selected element */
+export interface ElementStylePreview {
+  selector: string;
+  /** CSS property (kebab-case) -> value; applied with !important. Empty values are ignored. */
+  styles: Record<string, string>;
+  /** Replacement text for leaf elements */
+  text?: string;
+}
+
+const COMPUTED_KEYS: (keyof ElementComputedStyle)[] = [
+  "color",
+  "backgroundColor",
+  "fontSize",
+  "fontWeight",
+  "padding",
+  "borderRadius",
+  "textAlign",
+  "opacity",
+  "display",
+];
 
 interface HTMLPreviewProps {
   files: { [path: string]: string };
@@ -19,9 +56,16 @@ interface HTMLPreviewProps {
   onElementSelected?: (info: SelectedElementInfo) => void;
   /** The user pressed Escape inside the preview while selecting */
   onSelectModeExit?: () => void;
+  /** Visual edits being previewed on the selected element (null/undefined = none, reverts) */
+  stylePreview?: ElementStylePreview | null;
 }
 
-type SelectApi = { enable: () => void; disable: () => void };
+type SelectApi = {
+  enable: () => void;
+  disable: () => void;
+  preview?: (selector: string, styles: Record<string, string>, text?: string) => void;
+  revert?: () => void;
+};
 
 /**
  * Element picker injected into the preview document. Re-installed on every write
@@ -33,7 +77,7 @@ type SelectApi = { enable: () => void; disable: () => void };
  */
 const SELECT_SCRIPT = `<script data-genetix>(function(){
 try{if(window.__genetixSelect)window.__genetixSelect.disable();}catch(e){}
-var active=false,locked=null,hovered=null,overlay=null,label=null;
+var active=false,locked=null,hovered=null,overlay=null,label=null,pv=null;
 var MAX_DEPTH=6;
 function isOurs(el){return el===overlay||el===label;}
 function ensureOverlay(){
@@ -92,6 +136,30 @@ function draw(el){
   var top=r.top-20;if(top<0)top=Math.min(r.bottom+2,window.innerHeight-20);
   label.style.top=top+'px';label.style.left=Math.max(0,r.left)+'px';
 }
+function computedOf(el){
+  try{var cs=window.getComputedStyle(el);
+  return {color:cs.color,backgroundColor:cs.backgroundColor,fontSize:cs.fontSize,fontWeight:cs.fontWeight,
+    padding:cs.paddingTop,borderRadius:cs.borderTopLeftRadius,textAlign:cs.textAlign,opacity:cs.opacity,display:cs.display};}
+  catch(e){return null;}
+}
+function restore(){
+  if(!pv)return;
+  var el=pv.el;
+  if(pv.style===null)el.removeAttribute('style');else el.setAttribute('style',pv.style);
+  if(pv.text!==null)el.textContent=pv.text;
+  pv=null;
+}
+function revert(){restore();if(active)draw(locked||hovered);}
+function preview(selector,styles,text){
+  var el=locked;
+  if(!el||(selector&&selectorFor(el)!==selector)){try{el=selector?document.querySelector(selector):null;}catch(e){el=null;}}
+  if(!el)return;
+  if(!pv||pv.el!==el){restore();pv={el:el,style:el.getAttribute('style'),text:el.children.length===0?el.textContent:null};}
+  if(pv.style===null)el.removeAttribute('style');else el.setAttribute('style',pv.style);
+  if(styles){for(var k in styles){if(Object.prototype.hasOwnProperty.call(styles,k)&&styles[k])el.style.setProperty(k,String(styles[k]),'important');}}
+  if(pv.text!==null)el.textContent=typeof text==='string'?text:pv.text;
+  if(active)draw(locked||hovered);
+}
 function onMove(e){if(!active||locked)return;var el=pick(e.target);if(el!==hovered){hovered=el;draw(el);}}
 function onLeave(e){if(!active||locked)return;if(!e.relatedTarget){hovered=null;draw(null);}}
 function block(e){if(!active)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();}
@@ -99,12 +167,13 @@ function onClick(e){
   if(!active)return;
   block(e);
   var el=pick(e.target);if(!el)return;
+  restore();
   locked=el;hovered=el;draw(el);
   var r=el.getBoundingClientRect();
   var text=(el.innerText||el.textContent||'').replace(/\\s+/g,' ').trim();
   window.parent.postMessage({type:'genetix-select',selector:selectorFor(el),tag:el.tagName.toLowerCase(),
     text:text.slice(0,200),html:(el.outerHTML||'').slice(0,1500),
-    rect:{x:r.left,y:r.top,width:r.width,height:r.height}},'*');
+    rect:{x:r.left,y:r.top,width:r.width,height:r.height},computed:computedOf(el),isLeaf:el.children.length===0},'*');
 }
 function onKey(e){if(!active)return;if(e.key==='Escape'){block(e);window.parent.postMessage({type:'genetix-select-cancel'},'*');}}
 function onScroll(){if(active)draw(locked||hovered);}
@@ -123,7 +192,7 @@ window.__genetixSelect={
     if(document.documentElement)document.documentElement.style.cursor='crosshair';
   },
   disable:function(){
-    if(!active)return;active=false;locked=null;hovered=null;
+    if(!active)return;restore();active=false;locked=null;hovered=null;
     window.removeEventListener('mousemove',onMove,opts);
     window.removeEventListener('mouseout',onLeave,opts);
     window.removeEventListener('click',onClick,opts);
@@ -136,7 +205,9 @@ window.__genetixSelect={
     overlay=null;label=null;
     if(document.documentElement)document.documentElement.style.cursor='';
   },
-  clear:function(){locked=null;hovered=null;if(overlay)draw(null);}
+  clear:function(){restore();locked=null;hovered=null;if(overlay)draw(null);},
+  preview:preview,
+  revert:revert
 };
 })();</script>`;
 
@@ -146,6 +217,7 @@ export function HTMLPreview({
   selectMode = false,
   onElementSelected,
   onSelectModeExit,
+  stylePreview,
 }: HTMLPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [currentPage, setCurrentPage] = useState<string>("index.html");
@@ -181,12 +253,20 @@ export function HTMLPreview({
       if (data.type === "genetix-select" && selectModeRef.current) {
         const rect = data.rect && typeof data.rect === "object" ? data.rect : {};
         const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+        const rawComputed = data.computed && typeof data.computed === "object" ? data.computed : null;
+        let computed: ElementComputedStyle | undefined;
+        if (rawComputed) {
+          computed = {} as ElementComputedStyle;
+          for (const key of COMPUTED_KEYS) computed[key] = String(rawComputed[key] ?? "").slice(0, 100);
+        }
         onElementSelectedRef.current?.({
           selector: String(data.selector ?? "").slice(0, 500),
           tag: String(data.tag ?? "").slice(0, 40),
           text: String(data.text ?? "").slice(0, 200),
           html: String(data.html ?? "").slice(0, 1500),
           rect: { x: num(rect.x), y: num(rect.y), width: num(rect.width), height: num(rect.height) },
+          computed,
+          isLeaf: data.isLeaf === true,
         });
         return;
       }
@@ -233,6 +313,20 @@ export function HTMLPreview({
       // The preview document may be mid-navigation; the next write re-applies the mode
     }
   }, [selectMode, selectable, files, currentPage, pages]);
+
+  // Live visual-edit preview on the selected element (reverted when cleared)
+  useEffect(() => {
+    if (!selectable) return;
+    const win = iframeRef.current?.contentWindow as (Window & { __genetixSelect?: SelectApi }) | null | undefined;
+    const api = win?.__genetixSelect;
+    if (!api?.preview || !api.revert) return;
+    try {
+      if (stylePreview) api.preview(stylePreview.selector, stylePreview.styles, stylePreview.text);
+      else api.revert();
+    } catch {
+      // Document is being rewritten; the next run re-applies
+    }
+  }, [stylePreview, selectable, files, currentPage, pages]);
 
   if (!findHtml(files)) {
     return (

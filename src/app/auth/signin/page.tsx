@@ -66,7 +66,10 @@ export default function SignInPage() {
 
       await refreshUser();
       toast.success("Welcome back!");
-      router.push("/");
+      // Return to where the user came from (e.g. /gallery after "Remix"); same-site paths only
+      const redirect = new URLSearchParams(window.location.search).get("redirect");
+      const safeRedirect = redirect && /^\/(?![\/\\])/.test(redirect) ? redirect : "/";
+      router.push(safeRedirect);
       router.refresh();
     } catch (error: any) {
       toast.error(error.message || "Failed to sign in");

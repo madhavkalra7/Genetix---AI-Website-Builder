@@ -59,6 +59,11 @@ export const MessagesContainer = ({
         (message) => message.role==="ASSISTANT" && message.type==="RESULT" && !!message.fragments
     )?.fragments?.id ?? null;
     const version={ projectId, latestFragmentId, isBuilding: isLastMessageUser };
+    // Plan replies are ASSISTANT/RESULT messages without a fragment; offer "Build this" on the latest one only.
+    const buildThisMessageId=
+        lastMessage?.role==="ASSISTANT" && lastMessage.type==="RESULT" && !lastMessage.fragments
+            ? lastMessage.id
+            : null;
 
     return(
         <div className="flex flex-col flex-1 min-h-0">
@@ -78,6 +83,8 @@ export const MessagesContainer = ({
                             }}
                             type={message.type}
                             version={version}
+                            projectId={projectId}
+                            showBuildThis={message.id===buildThisMessageId}
                         />
                     ))}
                     {isLastMessageUser && <MessageLoading projectId={projectId} since={lastMessage.createdAt}/>}
