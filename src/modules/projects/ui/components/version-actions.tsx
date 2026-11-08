@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CopyIcon, GitCompareIcon, HistoryIcon, Loader2Icon, MoreHorizontalIcon } from "lucide-react";
+import { CopyIcon, GitCompareIcon, HistoryIcon, Loader2Icon, MoreHorizontalIcon, Undo2Icon } from "lucide-react";
 import { useTRPC } from "@/trpc/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -70,8 +70,21 @@ export function VersionActions({
     );
     const duplicate = useDuplicateProject(projectId);
 
+    // ↩️ Revert: delete the latest version + the chat since the previous version
+    const revert = useMutation(
+        trpc.messages.revertLast.mutationOptions({
+            onSuccess: () => {
+                toast.success("Reverted to the previous version");
+                queryClient.invalidateQueries(trpc.messages.getMany.queryOptions({ projectId }));
+            },
+            onError: (error) => {
+                toast.error(error.message || "Couldn't revert");
+            },
+        }),
+    );
+
     const isLatest = !latestFragmentId || latestFragmentId === fragmentId;
-    const busy = restore.isPending || duplicate.isPending;
+    const busy = restore.isPending || duplicate.isPending || revert.isPending;
 
     return (
         <>
@@ -100,6 +113,20 @@ export function VersionActions({
                         <GitCompareIcon />
                         <span>Compare with latest</span>
                     </DropdownMenuItem>
+                    {isLatest && (
+                        <DropdownMenuItem
+                            disabled={isBuilding || revert.isPending}
+                            className="text-red-400 focus:text-red-300"
+                            onSelect={() => {
+                                if (window.confirm("Revert to the previous version?\n\nThis permanently deletes this version and the chat messages since the previous version.")) {
+                                    revert.mutate({ projectId });
+                                }
+                            }}
+                        >
+                            <Undo2Icon />
+                            <span>{isBuilding ? "Revert (wait for build)" : "Revert to previous version"}</span>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                         disabled={duplicate.isPending}

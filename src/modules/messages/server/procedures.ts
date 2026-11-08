@@ -111,4 +111,50 @@ export const messagesRouter = createTRPCRouter({
                 throw error;
             }
         }),
+    // ↩️ Revert: delete the latest version AND everything said since the previous version
+    // (the prompt that produced it, plan chats, the reply + fragment), returning the project
+    // to the previous version. No AI, no credits.
+    revertLast: protectedProcedure
+        .input(z.object({ projectId: z.string().min(1) }))
+        .mutation(async ({ input, ctx }) => {
+            const project = await prisma.project.findFirst({
+                where: { id: input.projectId, userId: ctx.auth.userId },
+                select: { id: true },
+            });
+            if (!project) throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+
+            const versions = await prisma.message.findMany({
+                where: { projectId: input.projectId, role: "ASSISTANT", fragments: { isNot: null } },
+                orderBy: { createdAt: "desc" },
+                take: 2,
+                select: { id: true, createdAt: true, fragments: { select: { id: true } } },
+            });
+            if (versions.length < 2) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "This is the first version — there's nothing to revert to." });
+            }
+
+            // Don't pull the rug out from under a running build
+            const last = await prisma.message.findFirst({
+                where: { projectId: input.projectId },
+                orderBy: { createdAt: "desc" },
+                select: { role: true, createdAt: true },
+            });
+            const running = await prisma.build.findFirst({
+                where: { projectId: input.projectId, isApp: false, status: "running", startedAt: { gte: new Date(Date.now() - 20 * 60 * 1000) } },
+                select: { id: true },
+            });
+            if (running || (last?.role === "USER" && last.createdAt > versions[0].createdAt)) {
+                throw new TRPCError({ code: "CONFLICT", message: "Please wait for the current build to finish before reverting." });
+            }
+
+            const previous = versions[1];
+            const { count } = await prisma.$transaction(async (tx) => {
+                const deleted = await tx.message.deleteMany({
+                    where: { projectId: input.projectId, createdAt: { gt: previous.createdAt } },
+                });
+                await tx.project.update({ where: { id: input.projectId }, data: { updatedAt: new Date() } });
+                return deleted;
+            });
+            return { deletedMessages: count, restoredFragmentId: previous.fragments?.id ?? null };
+        }),
 });

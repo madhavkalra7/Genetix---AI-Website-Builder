@@ -16,7 +16,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { FadeIn } from "@/components/animations/fade-in";
 import { TextReveal } from "@/components/animations/text-reveal";
-import { SpotlightCard } from "@/components/animations/spotlight-card";
 import { Magnetic } from "@/components/animations/magnetic-button";
 import { AuroraBackground, Starfield } from "@/components/animations/aurora-background";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
@@ -258,23 +257,6 @@ const Page = () => {
               Genetix is an AI website builder that converts natural-language prompts into
               production-ready, deployable source code with real images and responsive layouts.
             </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <SpotlightCard className="mt-8 w-full max-w-2xl mx-auto px-6 py-4 text-left">
-                <p className="text-white/90 text-sm font-[Orbitron] tracking-wide">
-                  Key takeaways
-                </p>
-                <ul className="mt-3 list-disc pl-5 text-sm text-white/70 space-y-1">
-                  {!isAiquest && <li>Supports 5 stacks: React/Next.js, HTML/CSS/JS, Vue/Nuxt, Angular, SvelteKit.</li>}
-                  <li>Generates editable, ownership-friendly source code you can deploy anywhere.</li>
-                  <li>Built for real projects with templates, responsive layouts, and live previews.</li>
-                </ul>
-              </SpotlightCard>
-            </motion.div>
-
             {/* Templates Button */}
             <motion.div
               className="mt-8 inline-block"

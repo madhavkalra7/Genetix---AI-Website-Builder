@@ -30,8 +30,10 @@ export const MessagesContainer = ({
 ));
 
     useEffect(() => {
+        // Latest assistant message that HAS a version. Plan-mode replies have no fragment;
+        // picking them left the preview stuck on the loading screen.
         const lastAssistantMessage=messages.findLast(
-            (message) => message.role==="ASSISTANT"
+            (message) => message.role==="ASSISTANT" && !!message.fragments
         );
         if(lastAssistantMessage?.fragments && lastAssistantMessage.id!==lastAssistantMessageIdRef.current){
             setActiveFragment(lastAssistantMessage.fragments);

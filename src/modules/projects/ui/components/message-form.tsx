@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import TextareaAutosize from "react-textarea-autosize";
@@ -13,6 +13,7 @@ import { Form , FormField } from "@/components/ui/form";
 import { Usage } from "./usage";
 import { useRouter } from "next/navigation";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
+import { SpeechInputButton } from "@/components/speech-input-button";
 
 
 
@@ -38,6 +39,8 @@ export const MessageForm=({ projectId }: Props) => {
     const router=useRouter();
 
     const{ data:usage }=useQuery(trpc.usage.status.queryOptions());
+    // Text typed before dictation started (speech is appended after it)
+    const speechBaseRef = useRef("");
     const form=useForm<z.infer<typeof formSchema>>({
         resolver:zodResolver(formSchema),
         defaultValues:{
@@ -198,6 +201,15 @@ export const MessageForm=({ projectId }: Props) => {
                             </kbd>
                             &nbsp;to submit
                         </div>
+                        {/* 🎤 Speech to text: dictation is appended after whatever was already typed */}
+                        <SpeechInputButton
+                            disabled={isPending}
+                            onStart={() => { speechBaseRef.current = form.getValues("value").trim(); }}
+                            onTranscript={(text) => {
+                                const base = speechBaseRef.current;
+                                form.setValue("value", base ? `${base} ${text}` : text, { shouldValidate: true, shouldDirty: true });
+                            }}
+                        />
                         {!isPlanMode && (
                             <ImageAttachButton
                                 onFiles={(files)=>void attachments.addFiles(files)}

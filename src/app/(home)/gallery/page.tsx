@@ -49,12 +49,14 @@ interface GallerySite {
     author: string;
 }
 
-function SitePreview({ url, title }: { url: string; title: string }) {
+function SitePreview({ slug, title }: { slug: string; title: string }) {
     return (
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-white/5">
             {/* Live, non-interactive thumbnail: render at 4x size and scale down to 25% */}
+            {/* Loaded from this app's own /s/<slug> route (same origin), so thumbnails render
+                even if the public publishing domain is misconfigured */}
             <iframe
-                src={url}
+                src={`/s/${encodeURIComponent(slug)}`}
                 title={`Preview of ${title}`}
                 sandbox="allow-scripts"
                 loading="lazy"
@@ -88,7 +90,7 @@ function GalleryCard({
                 className="block"
                 aria-label={`Open ${site.title}`}
             >
-                <SitePreview url={site.url} title={site.title} />
+                <SitePreview slug={site.slug} title={site.title} />
             </a>
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="min-w-0">
