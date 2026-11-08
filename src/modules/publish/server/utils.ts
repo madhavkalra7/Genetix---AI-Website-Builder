@@ -54,3 +54,9 @@ export function getPublishBaseUrl(): string {
 }
 
 export const getPublishedSiteUrl = (slug: string) => `${getPublishBaseUrl()}/s/${slug}/`;
+
+/** Base URL of the main app (no trailing slash), e.g. for "Made with Genetix" badge links. */
+export function getAppBaseUrl(): string {
+  const app = getAppUrl();
+  return app ? toBase(app) : "http://localhost:3000";
+}

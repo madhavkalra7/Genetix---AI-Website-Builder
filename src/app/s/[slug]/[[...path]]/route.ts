@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/db";
-import { getDedicatedPublishOrigin } from "@/modules/publish/server/utils";
+import { getAppBaseUrl, getDedicatedPublishOrigin } from "@/modules/publish/server/utils";
+import { badgeHtml, insertBeforeBodyEnd } from "@/modules/publish/badge";
+import { recordSiteVisit } from "@/modules/analytics/server/record-visit";
 
 // Public hosting for published static sites: /s/<slug>/<path>
 export const runtime = "nodejs";
@@ -125,7 +127,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
 
     const site = await prisma.publishedSite.findUnique({
         where: { slug },
-        select: { fragmentId: true },
+        select: { id: true, fragmentId: true, showBadge: true },
     });
     if (!site) return notFound("This site does not exist or has been unpublished.");
 
@@ -201,10 +203,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
     } else if (contentType.startsWith("text/html")) {
         // Serving a directory's index.html without a trailing slash (Next.js strips trailing
         // slashes by default): pin relative URLs ("style.css") to the directory with <base>.
+        let html = content;
         if (isDirIndex && !endsWithSlash) {
             const dir = `${url.pathname.replace(/\/+$/, "")}/`;
-            body = insertAtHeadStart(content, `<base href="${escapeAttr(dir)}">${HASH_LINK_SCRIPT}`);
+            html = insertAtHeadStart(html, `<base href="${escapeAttr(dir)}">${HASH_LINK_SCRIPT}`);
         }
+        if (site.showBadge) {
+            html = insertBeforeBodyEnd(html, badgeHtml(getAppBaseUrl(), slug));
+        }
+        body = html;
+
+        // Page view analytics (HTML documents only). Runs after the response is sent;
+        // recordSiteVisit never rejects and skips HEAD requests and bots.
+        after(
+            recordSiteVisit({
+                siteId: site.id,
+                path: resolvedKey,
+                method: request.method,
+                headers: request.headers,
+                host: requestHost,
+            })
+        );
     }
 
     const headers: Record<string, string> = {

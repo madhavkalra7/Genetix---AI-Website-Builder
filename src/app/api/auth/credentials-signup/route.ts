@@ -10,6 +10,7 @@ import {
 } from '@/lib/auth';
 import { isSmtpConfigured, sendVerificationEmail } from '@/lib/email';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { attachReferral } from '@/modules/referrals/server/service';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
@@ -18,6 +19,8 @@ const signUpSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
+  // Optional ?ref=<code> captured on the signup page; validated in attachReferral.
+  referralCode: z.string().max(64).optional(),
 });
 
 const ALREADY_EXISTS = 'User with this email or username already exists';
@@ -125,6 +128,15 @@ export async function POST(request: NextRequest) {
             currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
           },
         });
+      }
+    }
+
+    // Referral: only recorded here. Credits are granted once the email is verified.
+    if (validatedData.referralCode) {
+      try {
+        await attachReferral(userId, validatedData.referralCode);
+      } catch (referralError) {
+        console.error('Failed to attach referral:', referralError);
       }
     }
 

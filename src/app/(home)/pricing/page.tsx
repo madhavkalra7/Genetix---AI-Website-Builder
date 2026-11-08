@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, CheckCircle2 } from "lucide-react";
+import { Check, CheckCircle2, Gift } from "lucide-react";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -146,6 +147,17 @@ export default function Page() {
         <p className="text-muted-foreground text-lg">
           Start building amazing websites with AI-powered tools
         </p>
+      </div>
+
+      <div className="max-w-6xl mx-auto mb-10">
+        <Link
+          href="/referrals"
+          className="flex flex-col sm:flex-row items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-3 text-sm hover:bg-purple-500/20 transition-colors"
+        >
+          <Gift className="h-4 w-4 text-purple-300" />
+          <span className="font-semibold text-white">Earn free credits — invite a friend</span>
+          <span className="text-white/60">You both get 50 credits when they join.</span>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">

@@ -20,10 +20,13 @@ import { Magnetic } from "@/components/animations/magnetic-button";
 import { AuroraBackground, Starfield } from "@/components/animations/aurora-background";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
 import { ThemePicker } from "@/components/theme-picker";
+import { StarterGallery } from "@/components/starter-gallery";
+import { STARTER_PROMPTS } from "@/lib/starter-prompts";
 const Page = () => {
   const [value, setValue] = useState("");
   const [themeId, setThemeId] = useState<string | null>(null); // Design theme preset (null = let AI decide)
   const [selectedTech, setSelectedTech] = useState("html-css-js");
+  const autoTechRef = useRef("html-css-js"); // Last stack set automatically (default or by a starter card)
   const [advancedReasoning, setAdvancedReasoning] = useState(false);
   const [planFirst, setPlanFirst] = useState(false); // "Plan with Genetix first": chat before building
   const [canUseAdvanced, setCanUseAdvanced] = useState(false); // Start with false until API check completes
@@ -570,88 +573,32 @@ const Page = () => {
                 </Button>
               </div>
             )}
-            <div className="flex flex-wrap justify-center gap-3 text-sm">
-              {/* Dynamic prompts based on selected technology */}
-              {selectedTech === "react-nextjs" && [
-                t('prompt.landing'), t('prompt.dashboard'), t('prompt.kanban'), t('prompt.ecommerce')
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-              
-              {selectedTech === "html-css-js" && [
-                t('prompt.netflix'), t('prompt.portfolio'), t('prompt.tictactoe'), t('prompt.rockpaper')
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-              
-              {selectedTech === "vue-nuxt" && [
-                "Create Dashboard", "Build Portfolio Site", "Create Blog Platform", "Build E-commerce App"
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-              
-              {selectedTech === "angular" && [
-                "Create Admin Panel", "Build Task Manager", "Create Data Visualization", "Build Enterprise App"
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-              
-              {selectedTech === "svelte-kit" && [
-                "Create Fast Website", "Build Interactive App", "Create Minimalist Design", "Build Lightweight Tool"
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-              
-              {/* Default fallback for other technologies */}
-              {!["react-nextjs", "html-css-js", "vue-nuxt", "angular", "svelte-kit"].includes(selectedTech) && [
-                "Create Web Application", "Build Dashboard", "Create API", "Build User Interface"
-              ].map((prompt) => (
-                <Button
-                  key={prompt}
-                  variant="outline"
-                  onClick={() => setValue(prompt)}
-                  className="text-white bg-white/10 hover:bg-white border border-white/30 hover:text-gray-900 rounded-full px-4 py-2 transition font-[Orbitron]"
-                >
-                  {prompt}
-                </Button>
-              ))}
-            </div>
           </motion.div>
+          {/* Starter gallery: visual idea cards that fill the prompt box */}
+          <FadeIn className="w-full mt-10">
+            <StarterGallery
+              activeId={STARTER_PROMPTS.find((s) => s.prompt === value)?.id ?? null}
+              onSelect={(prompt, starter) => {
+                setValue(prompt);
+                // Follow the starter's stack only while the user hasn't picked one themselves.
+                // AIQuest users stay locked to HTML/CSS/JS.
+                const userChangedStack = selectedTech !== autoTechRef.current;
+                if (!isAiquest && starter.techStack && !userChangedStack) {
+                  autoTechRef.current = starter.techStack;
+                  if (starter.techStack !== selectedTech) {
+                    setSelectedTech(starter.techStack);
+                    if (starter.techStack !== "html-css-js") setAdvancedReasoning(false);
+                  }
+                }
+                const box = document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Describe what you want to build"]');
+                if (box) {
+                  box.scrollIntoView({ behavior: "smooth", block: "center" });
+                  box.focus({ preventScroll: true });
+                  requestAnimationFrame(() => box.setSelectionRange(prompt.length, prompt.length));
+                }
+              }}
+            />
+          </FadeIn>
         </div>
       </section>
       {/* Projects List Section */}

@@ -3,6 +3,23 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/db";
 import { isEmailVerified, deleteAllUserSessions } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { REFERRAL_COOKIE } from "@/lib/referrals";
+import { applyReferralForNewUser, grantReferralRewardIfEligible } from "@/modules/referrals/server/service";
+
+/**
+ * The signup page stores ?ref=<code> in the gx_ref cookie so it survives the OAuth round trip.
+ * The NextAuth callback runs inside the /api/auth/[...nextauth] route handler, where
+ * next/headers cookies() is available. Returns null if the cookie is missing/unreadable.
+ */
+async function readReferralCookie(): Promise<string | null> {
+  try {
+    const store = await cookies();
+    return store.get(REFERRAL_COOKIE)?.value ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -58,6 +75,12 @@ export const authOptions: NextAuthOptions = {
               });
             }
             console.log("✅ OAuth user created successfully");
+
+            // Referral: OAuth proves the email, so attach + reward right away. Never blocks login.
+            const referralCode = await readReferralCookie();
+            if (referralCode) {
+              await applyReferralForNewUser(newUser.id, referralCode);
+            }
           } else {
             console.log("OAuth user already exists:", user.email);
 
@@ -77,6 +100,8 @@ export const authOptions: NextAuthOptions = {
               await prisma.verificationToken.deleteMany({
                 where: { userId: existingUser.id, type: "EMAIL_VERIFICATION" },
               });
+              // The email is now proven: pay out a referral recorded at credentials signup.
+              await grantReferralRewardIfEligible(existingUser.id);
             }
 
             // Update user image if changed

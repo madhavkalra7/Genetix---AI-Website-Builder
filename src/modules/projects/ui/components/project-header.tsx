@@ -15,6 +15,7 @@ import { PublishDialog } from "@/components/publish-dialog";
 import { PublishSecurityCheck } from "@/components/publish-security-check";
 import { SupabaseDialog } from "@/components/supabase-dialog";
 import { KnowledgeDialog } from "@/components/knowledge-dialog";
+import { ShareDialog } from "@/components/share-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRadioGroup,DropdownMenuRadioItem,DropdownMenuSeparator,DropdownMenuSub,DropdownMenuSubContent,DropdownMenuSubTrigger,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
 
 interface Props {
@@ -105,6 +106,7 @@ export const ProjectHeader=({ projectId }: Props)=>{
         <div className="flex shrink-0 items-center gap-1.5">
             <KnowledgeDialog projectId={projectId}/>
             <SupabaseDialog projectId={projectId}/>
+            <ShareDialog projectId={projectId} projectName={project.name}/>
             <PublishDialog
                 projectId={projectId}
                 projectName={project.name}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon, ExternalLinkIcon, GlobeIcon, Loader2Icon } from "lucide-react";
@@ -28,6 +29,7 @@ import {
     validateSlug,
 } from "@/modules/publish/shared";
 import { GALLERY_TITLE_MAX_LENGTH } from "@/modules/gallery/shared";
+import { SiteAnalytics } from "@/components/site-analytics";
 
 interface PublishDialogProps {
     projectId: string;
@@ -58,6 +60,7 @@ export function PublishDialog({
     const [copied, setCopied] = useState(false);
     const [showcase, setShowcase] = useState(false);
     const [title, setTitle] = useState("");
+    const [showBadge, setShowBadge] = useState(true);
 
     const publishable = isPublishableTechStack(techStack);
 
@@ -66,6 +69,13 @@ export function PublishDialog({
         enabled: open && publishable,
     });
     const site = siteQuery.data ?? null;
+    // Removing the badge is a paid-plan perk (also enforced on the server).
+    const badgeAccess = useQuery({
+        ...trpc.publish.badgeAccess.queryOptions(),
+        enabled: open && publishable,
+        staleTime: 5 * 60_000,
+    });
+    const canRemoveBadge = badgeAccess.data?.canRemoveBadge ?? false;
 
     // Prefill the address field whenever the dialog opens
     useEffect(() => {
@@ -73,7 +83,8 @@ export function PublishDialog({
         setSlug(site?.slug ?? suggestSlug(projectName));
         setShowcase(site?.showcase ?? false);
         setTitle(site?.title ?? projectName.slice(0, GALLERY_TITLE_MAX_LENGTH));
-    }, [open, siteQuery.isLoading, site?.slug, site?.showcase, site?.title]);
+        setShowBadge(site?.showBadge ?? true);
+    }, [open, siteQuery.isLoading, site?.slug, site?.showcase, site?.title, site?.showBadge]);
 
     const invalidate = () => queryClient.invalidateQueries(trpc.publish.get.queryFilter({ projectId }));
 
@@ -109,7 +120,7 @@ export function PublishDialog({
             toast.error(slugError);
             return;
         }
-        publish.mutate({ projectId, slug, showcase, title: title.trim() });
+        publish.mutate({ projectId, slug, showcase, title: title.trim(), showBadge });
     };
 
     const handleCopy = async () => {
@@ -138,7 +149,7 @@ export function PublishDialog({
                     <span className="hidden sm:inline">Publish</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Publish your site</DialogTitle>
                     <DialogDescription>
@@ -267,6 +278,32 @@ export function PublishDialog({
                                 </p>
                             </div>
                         </div>
+
+                        <div className="flex items-start justify-between gap-3 rounded-md border p-3 min-w-0">
+                            <div className="grid gap-0.5 min-w-0">
+                                <Label htmlFor="publish-badge">Show &apos;Made with Genetix&apos; badge</Label>
+                                {canRemoveBadge ? (
+                                    <p className="text-xs text-muted-foreground">
+                                        A small link in the bottom-right corner of your site.
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground">
+                                        <Link href="/pricing" className="text-primary hover:underline">
+                                            Upgrade to remove the badge
+                                        </Link>
+                                    </p>
+                                )}
+                            </div>
+                            <Switch
+                                id="publish-badge"
+                                checked={canRemoveBadge ? showBadge : true}
+                                onCheckedChange={setShowBadge}
+                                disabled={busy || !canRemoveBadge}
+                                className="mt-0.5"
+                            />
+                        </div>
+
+                        {site && <SiteAnalytics projectId={projectId} />}
 
                         {/* Security scan slot: another component (e.g. <SecurityScanPanel/>) is passed in via props. */}
                         {securitySlot}

@@ -12,6 +12,9 @@ import { buildsRouter } from '@/modules/builds/server/procedures';
 import { planRouter } from '@/modules/plan/server/procedures';
 import { knowledgeRouter } from '@/modules/knowledge/server/procedures';
 import { galleryRouter } from '@/modules/gallery/server/procedures';
+import { analyticsRouter } from '@/modules/analytics/server/procedures';
+import { shareRouter } from '@/modules/share/server/procedures';
+import { referralsRouter } from '@/modules/referrals/server/procedures';
 
 export const appRouter = createTRPCRouter({
   usage: usageRouter,
@@ -27,6 +30,9 @@ export const appRouter = createTRPCRouter({
   plan: planRouter,
   knowledge: knowledgeRouter,
   gallery: galleryRouter,
+  analytics: analyticsRouter,
+  share: shareRouter,
+  referrals: referralsRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

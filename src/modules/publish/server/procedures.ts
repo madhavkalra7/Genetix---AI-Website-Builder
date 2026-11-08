@@ -12,6 +12,7 @@ import {
 } from "@/modules/publish/shared";
 import { GALLERY_TITLE_MAX_LENGTH } from "@/modules/gallery/shared";
 import { getPublishedSiteUrl } from "./utils";
+import { isPaidUser } from "./plan";
 
 const projectIdSchema = z.string().min(1, { message: "Project ID is required" });
 
@@ -49,6 +50,11 @@ export const publishRouter = createTRPCRouter({
             return { ...site, url: getPublishedSiteUrl(site.slug) };
         }),
 
+    /** Whether the current user may hide the "Made with Genetix" badge (paid plans only). */
+    badgeAccess: protectedProcedure.query(async ({ ctx }) => ({
+        canRemoveBadge: await isPaidUser(ctx.auth.userId),
+    })),
+
     publish: protectedProcedure
         .input(
             z.object({
@@ -65,6 +71,8 @@ export const publishRouter = createTRPCRouter({
                         message: `Title can be at most ${GALLERY_TITLE_MAX_LENGTH} characters`,
                     })
                     .optional(),
+                /** Show the "Made with Genetix" badge. Only paid plans may turn it off. */
+                showBadge: z.boolean().optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -116,6 +124,13 @@ export const publishRouter = createTRPCRouter({
                     ? input.title || project.name.slice(0, GALLERY_TITLE_MAX_LENGTH)
                     : (existing?.title ?? project.name.slice(0, GALLERY_TITLE_MAX_LENGTH));
             const showcaseData = input.showcase !== undefined ? { showcase: input.showcase } : {};
+            // Free plans always show the badge (also re-enabled on republish after a downgrade).
+            const paid = await isPaidUser(userId);
+            const badgeData = !paid
+                ? { showBadge: true }
+                : input.showBadge !== undefined
+                  ? { showBadge: input.showBadge }
+                  : {};
 
             const requestedSlug = input.slug || undefined;
             let slug = requestedSlug ?? existing?.slug ?? generateSlug(project.name);
@@ -150,14 +165,16 @@ export const publishRouter = createTRPCRouter({
                             userId,
                             title,
                             ...showcaseData,
+                            ...badgeData,
                         },
-                        update: { slug, fragmentId: fragment.id, title, ...showcaseData },
+                        update: { slug, fragmentId: fragment.id, title, ...showcaseData, ...badgeData },
                     });
                     return {
                         slug: site.slug,
                         url: getPublishedSiteUrl(site.slug),
                         showcase: site.showcase,
                         title: site.title,
+                        showBadge: site.showBadge,
                     };
                 } catch (error) {
                     if (!isUniqueViolation(error)) throw error;

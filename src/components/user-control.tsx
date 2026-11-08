@@ -12,8 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings } from "lucide-react";
+import { Gift, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
+import { useReferralClaim } from "@/modules/referrals/ui/use-referral-claim";
 
 interface Props {
     showName?: boolean;
@@ -26,6 +27,9 @@ export const UserControl = ({ showName }: Props) => {
     // Check both custom auth and NextAuth
     const user = customAuthUser || session?.user;
     const isAiquest = !!customAuthUser?.aiquestUserId;
+
+    // Apply a referral code stored at signup (?ref=...) once the user is logged in.
+    useReferralClaim(!authLoading && !!user && !isAiquest);
     
     if (authLoading || !user) return null;
 
@@ -85,6 +89,12 @@ export const UserControl = ({ showName }: Props) => {
                     <Link href="/pricing" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Subscription
+                    </Link>
+                </DropdownMenuItem>}
+                {!isAiquest && <DropdownMenuItem asChild>
+                    <Link href="/referrals" className="cursor-pointer">
+                        <Gift className="mr-2 h-4 w-4" />
+                        Invite friends (+50 credits)
                     </Link>
                 </DropdownMenuItem>}
                 <DropdownMenuSeparator />

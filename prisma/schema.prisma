@@ -29,6 +29,9 @@ model User {
   emailVerified Boolean   @default(false)
   isActive      Boolean   @default(true)
   knowledge     String?   // Workspace Knowledge: rules applied to all of this user's projects
+  referralCode        String?   @unique // share link code: /auth/signup?ref=<code>
+  referredById        String?   // who invited this user
+  referralRewardedAt  DateTime? // when both sides got their referral credits
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -42,6 +45,8 @@ model User {
   verificationTokens VerificationToken[]
   passwordResets PasswordReset[]
   credits       UserCredits?
+
+  @@index([referredById])
 }
 
 model AiquestHandoffUse {
@@ -214,6 +219,9 @@ model Project {
   supabaseAnonKey    String?
   // Project Knowledge: brand, rules and context the AI follows on every build
   knowledge          String?
+  // Public share link (/share/<shareId>): anyone can view the latest version and remix it
+  shareId            String?  @unique
+  shareEnabled       Boolean  @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -381,6 +389,7 @@ model PublishedSite {
   showcase   Boolean  @default(false) // listed in the public community gallery
   title      String?
   remixCount Int      @default(0)
+  showBadge  Boolean  @default(true) // "Made with Genetix" badge on the published site
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -395,4 +404,17 @@ model RateLimitHit {
   createdAt DateTime @default(now())
 
   @@index([key, createdAt])
+}
+
+// Privacy-friendly analytics for published sites (page views; no cookies, hashed visitor id)
+model SiteVisit {
+  id          String   @id @default(cuid())
+  siteId      String   // PublishedSite.id
+  path        String
+  country     String?
+  referrer    String?  // referrer host only
+  visitorHash String   // daily-rotating hash of ip + user agent (not reversible)
+  createdAt   DateTime @default(now())
+
+  @@index([siteId, createdAt])
 }

@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
+import { DEFAULT_REFERRAL_CREDITS } from "@/lib/referrals";
+import { readStoredReferralCode, storeReferralCode } from "@/modules/referrals/ui/referral-storage";
 
 export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   // Set after a successful signup: no session exists until the email is verified.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  // Referral code from ?ref=<code> (or one stored on an earlier visit). Persisted in
+  // localStorage + the gx_ref cookie so it also survives the Google/GitHub OAuth redirect.
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    const code = (fromUrl && storeReferralCode(fromUrl)) || readStoredReferralCode();
+    setReferralCode(code);
+  }, []);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -42,6 +53,7 @@ export default function SignUpPage() {
           username: formData.username || undefined,
           firstName: formData.firstName || undefined,
           lastName: formData.lastName || undefined,
+          referralCode: referralCode || undefined,
         }),
       });
 
@@ -103,6 +115,12 @@ export default function SignUpPage() {
                 Join the AI revolution 🚀
               </p>
             </div>
+
+            {referralCode && (
+              <div className="mb-6 rounded-xl border border-purple-400/40 bg-purple-500/10 px-4 py-3 text-center text-sm text-purple-100">
+                🎁 You&apos;ll get {DEFAULT_REFERRAL_CREDITS} bonus credits when you verify your email
+              </div>
+            )}
 
             {pendingEmail ? (
               <div className="text-center space-y-6">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hashPassword, verifyPasswordResetToken } from '@/lib/auth';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { grantReferralRewardIfEligible } from '@/modules/referrals/server/service';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -52,6 +53,10 @@ export async function POST(request: NextRequest) {
       // Sign out everywhere (someone else may have known the old password).
       await tx.session.deleteMany({ where: { userId } });
     });
+
+    // A reset link also proves inbox ownership (it marks the email verified above), so a
+    // pending referral reward can be paid now.
+    await grantReferralRewardIfEligible(userId);
 
     const response = NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken, verifyPassword } from '@/lib/auth';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { grantReferralRewardIfEligible } from '@/modules/referrals/server/service';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -65,6 +66,9 @@ export async function POST(request: NextRequest) {
         where: { userId: verification.userId, type: 'EMAIL_VERIFICATION' },
       });
     });
+
+    // Referral credits are only paid out once the invited user has proven their email.
+    await grantReferralRewardIfEligible(verification.userId);
 
     return NextResponse.json({
       success: true,
