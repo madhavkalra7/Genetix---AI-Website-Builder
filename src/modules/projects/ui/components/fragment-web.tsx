@@ -1,10 +1,11 @@
 import { Fragment } from "@/generated/prisma";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLinkIcon , RefreshCcwIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { set } from "date-fns";
 import { Hint } from "@/components/ui/hint";
 import { HTMLPreview } from "@/components/html-preview";
+import { buildStandaloneHtml, hasStaticEntry } from "@/lib/static-html";
 
 interface Props {
     data: Fragment;
@@ -13,85 +14,55 @@ interface Props {
 export function FragmentWeb({ data }: Props){
         const [copied, setCopied] = useState(false);
         const [fragmentKey, setFragmentKey] = useState(0);
+        const blobUrlRef = useRef<string | null>(null);
+
+        // Free the last full-screen blob when leaving the page
+        useEffect(() => () => {
+            if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+        }, []);
 
         const onRefresh = () => {
             setFragmentKey((prev) => prev + 1);
         };
 
-        const handleCopy = () => {
-            navigator.clipboard.writeText(data.sandboxUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+        const handleCopy = async () => {
+            if (!data.sandboxUrl) return;
+            try {
+                await navigator.clipboard.writeText(data.sandboxUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch {
+                toast.error("Couldn't copy the URL");
+            }
         };
 
-        // Function to open static project in new tab
+        // Open the static project in a new tab (same rendering as the inline preview)
         const openStaticInNewTab = () => {
-            if (!data.files || typeof data.files !== 'object') return;
-            
-            const files = data.files as {[path: string]: string};
-            const indexHtml = files['index.html'];
-            
-            if (!indexHtml) return;
+            if (!hasStaticEntry(data.files)) return;
 
-            // Combine all files into a single HTML document
-            let combinedHTML = indexHtml;
+            const html = buildStandaloneHtml(data.files);
+            if (!html) {
+                toast.error("No index.html found to open");
+                return;
+            }
 
-            // Get all CSS files
-            const cssFiles = Object.keys(files).filter(filename => 
-                filename.endsWith('.css') && files[filename]
-            );
+            // Don't revoke right after opening: a slow tab would load a dead URL (blank page).
+            // Keep it alive (so reloading the tab works) and only free the previous one.
+            if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+            const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+            blobUrlRef.current = blobUrl;
 
-            // Get all JS files  
-            const jsFiles = Object.keys(files).filter(filename => 
-                filename.endsWith('.js') && files[filename]
-            );
-
-            // Inject all CSS files
-            cssFiles.forEach(cssFile => {
-                const cssContent = files[cssFile];
-                if (cssContent) {
-                    const cssInjection = `<style>\n/* ${cssFile} */\n${cssContent}\n</style>`;
-                    
-                    if (combinedHTML.includes('</head>')) {
-                        combinedHTML = combinedHTML.replace('</head>', `${cssInjection}\n</head>`);
-                    } else if (combinedHTML.includes('<head>')) {
-                        combinedHTML = combinedHTML.replace('<head>', `<head>\n${cssInjection}`);
-                    } else {
-                        combinedHTML = combinedHTML.replace('<html>', `<html>\n<head>\n${cssInjection}\n</head>`);
-                    }
-                }
-            });
-
-            // Inject all JS files
-            jsFiles.forEach(jsFile => {
-                const jsContent = files[jsFile];
-                if (jsContent) {
-                    const jsInjection = `<script>\n/* ${jsFile} */\n${jsContent}\n</script>`;
-                    
-                    if (combinedHTML.includes('</body>')) {
-                        combinedHTML = combinedHTML.replace('</body>', `${jsInjection}\n</body>`);
-                    } else {
-                        combinedHTML += jsInjection;
-                    }
-                }
-            });
-
-            // Create a blob URL and open in new tab
-            const blob = new Blob([combinedHTML], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Open in new tab
-            const newWindow = window.open(blobUrl, '_blank');
-            
-            // Clean up blob URL after some time
-            setTimeout(() => {
-                URL.revokeObjectURL(blobUrl);
-            }, 1000);
+            const newWindow = window.open(blobUrl, "_blank");
+            if (!newWindow) {
+                toast.error("Pop-up blocked. Allow pop-ups for this site to open the full-screen preview.");
+                return;
+            }
+            // The generated site must not be able to control the Genetix tab
+            try { newWindow.opener = null; } catch { /* ignore */ }
         };
 
         // Check if this is a static project that can be previewed locally
-        const isStaticProject = data.files && typeof data.files === 'object' && 
-            ('index.html' in data.files);
+        const isStaticProject = hasStaticEntry(data.files);
 
         // Get project type for display
         const getProjectType = () => {
@@ -179,7 +150,7 @@ export function FragmentWeb({ data }: Props){
                         className="flex-1 justify-start text-start font-normal"
                     >
                         <span className="truncate">
-                            {data.sandboxUrl}
+                            {copied ? "Copied!" : data.sandboxUrl}
                         </span>
                     </Button>
                     </Hint>

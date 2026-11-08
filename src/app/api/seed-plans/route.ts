@@ -3,7 +3,13 @@ import { prisma } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
+  // SECURITY: this overwrites plan prices/credits. Never public in production; elsewhere
+  // require SEED_KEY when configured (send it as the x-seed-key header).
+  const seedKey = process.env.SEED_KEY;
+  if (process.env.NODE_ENV === "production" || (seedKey && req.headers.get("x-seed-key") !== seedKey)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const plans = [
       {

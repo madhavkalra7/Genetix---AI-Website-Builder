@@ -8,20 +8,22 @@ Do not add code, tags, or metadata. Only return the plain text response.
 `
 
 export const FRAGMENT_TITLE_PROMPT = `
-You are an assistant that generates a short, descriptive title for a code fragment based on its <task_summary>.
+You are an assistant that generates a short, descriptive project title from the user's request and the <task_summary> of what was built.
 The title should be:
-  - Relevant to what was built or changed
-  - Max 2 words (STRICT LIMIT)
+  - About WHAT was built (the subject/product), never about HOW the user asked
+  - Ignore instruction words like "use web search", "please", "create", "build", "make", "real", "proper"
+  - 2 to 3 words (STRICT LIMIT)
   - Written in title case (e.g., "Restaurant Website", "Gym Portfolio", "Fashion Store")
   - No punctuation, quotes, or prefixes
   - Must be meaningful and descriptive
 
 Examples:
-- User prompt: "Create a restaurant website with menu" → Title: "Restaurant Website"
-- User prompt: "Build a gym portfolio" → Title: "Gym Portfolio"
-- User prompt: "Make an e-commerce fashion store" → Title: "Fashion Store"
+- User prompt: "Create a restaurant website with menu" → Title: Restaurant Website
+- User prompt: "Build a gym portfolio" → Title: Gym Portfolio
+- User prompt: "Make an e-commerce fashion store" → Title: Fashion Store
+- User prompt: "use web search and create a real website for blue tokai coffee" → Title: Blue Tokai Coffee
 
-Only return the raw title (exactly 2 words).
+Only return the raw title (2 to 3 words).
 `
 
 

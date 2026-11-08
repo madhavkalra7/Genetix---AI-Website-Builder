@@ -61,8 +61,9 @@ export const MessageForm=({ projectId }: Props) => {
 
     ))
 
-    const onSubmit=async (values:z.infer<typeof formSchema>) =>{
-        await createMessage.mutateAsync({
+    const onSubmit=(values:z.infer<typeof formSchema>) =>{
+        // Errors are surfaced via onError toast; mutate avoids an unhandled rejection
+        createMessage.mutate({
             value: values.value,
             projectId,
         });

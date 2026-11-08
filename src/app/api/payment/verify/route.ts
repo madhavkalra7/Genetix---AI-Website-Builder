@@ -6,7 +6,9 @@ import { authOptions } from "@/lib/auth-config-simple";
 import { getSessionByToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
-export async function POST(request: NextRequest) {
+// Legacy handler kept for reference. DO NOT re-enable as-is: it is not tied to a real, verified gateway payment.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function legacyPOST(request: NextRequest) {
   try {
     const {
       razorpay_order_id,
@@ -132,4 +134,18 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * SECURITY: disabled. This endpoint marked a payment as SUCCESS / applied a plan based only on
+ * client-supplied data (no server-side check with the payment gateway, no amount check), so any
+ * logged-in user could grant themselves a paid plan for free. Nothing in the UI creates gateway
+ * orders today; paid credits go through Pricing → "Request credits" → admin approval.
+ * Re-implement with server-side gateway verification before enabling.
+ */
+export async function POST() {
+  return NextResponse.json(
+    { error: "Online payment activation is currently unavailable. Your request will be processed manually." },
+    { status: 410 }
+  );
 }

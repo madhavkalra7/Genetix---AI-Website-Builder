@@ -1,6 +1,7 @@
 import { CopyCheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { useState, useMemo, useCallback, Fragment, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Hint } from "@/components/ui/hint";
 import { Button } from "@/components/ui/button";
 import { CodeView } from "@/components/code-view";
@@ -101,12 +102,14 @@ interface FileExplorerProps {
     files:FileCollection;
     onFileUpdate?: (filePath: string, content: string) => void;
     sandboxUrl?: string;
+    projectId?: string;
 };
 
 export const FileExplorer=({
     files,
     onFileUpdate,
     sandboxUrl,
+    projectId: projectIdProp,
 }:FileExplorerProps) => {
     const [copied, setCopied] = useState(false);
     const [isZipping, setIsZipping] = useState(false);
@@ -127,11 +130,15 @@ export const FileExplorer=({
         }
     },[files]);
 
-    const handleCopy=useCallback(()=>{
+    const handleCopy=useCallback(async ()=>{
         if(selectedFile){
-            navigator.clipboard.writeText(files[selectedFile]);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            try {
+                await navigator.clipboard.writeText(files[selectedFile]);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (e) {
+                toast.error("Couldn't copy to clipboard");
+            }
         }
     }, [selectedFile, files]);
 
@@ -155,7 +162,7 @@ export const FileExplorer=({
             document.body.appendChild(a);
             a.click();
             a.remove();
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
         } catch (e) {
             console.error("ZIP download failed", e);
         } finally {
@@ -166,9 +173,8 @@ export const FileExplorer=({
     const [explaining, setExplaining] = useState(false);
     const router = useRouter();
 
-    // Get projectId from file paths (assuming all files start with projectId or pass as prop)
-    // You may want to pass projectId as a prop for reliability
-    const projectId = Object.keys(files)[0]?.split("/")[0] || "";
+    // Prefer the projectId prop; fall back to guessing from file paths
+    const projectId = projectIdProp || Object.keys(files)[0]?.split("/")[0] || "";
 
     const handleExplain = async () => {
         setExplaining(true);
@@ -184,9 +190,11 @@ export const FileExplorer=({
             if (data.explanation) {
                 localStorage.setItem(`genetix_explanation_${projectId}`, data.explanation);
                 router.push(`/project/${projectId}/explanation`);
+            } else {
+                toast.error(data.error || "Couldn't explain project");
             }
         } catch (e) {
-            // Optionally show error
+            toast.error("Couldn't explain project");
         } finally {
             setExplaining(false);
         }
@@ -248,9 +256,11 @@ export const FileExplorer=({
                             }
                         } else {
                             console.error("Failed to update sandbox file:", result.error);
+                            toast.error(result.error || "Failed to update sandbox file");
                         }
                     } catch (e) {
                         console.error("Failed to update sandbox file:", e);
+                        toast.error("Failed to update sandbox file");
                     }
                 }
             }

@@ -36,6 +36,7 @@ export const ProjectView = ({ projectId }: Props) => {
   );
   
   const hasProAccess = subscription?.plan?.name === "pro" || subscription?.plan?.name === "enterprise";
+  const isAiquest = !!user?.aiquestUserId;
   const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
   const [tabState, setTabState] = useState<"preview" | "code">("preview");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -95,7 +96,7 @@ export const ProjectView = ({ projectId }: Props) => {
                 </TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-x-2">
-                {!hasProAccess && (
+                {!hasProAccess && !isAiquest && (
                   <Button asChild size="sm" variant="tertiary">
                     <Link href="/pricing">
                       <CrownIcon /> Upgrade
@@ -116,6 +117,8 @@ export const ProjectView = ({ projectId }: Props) => {
               {!!activeFragment?.files ? (
                 <div className="relative h-full min-h-[400px]">
                   <FileExplorer
+                    key={activeFragment.id}
+                    projectId={projectId}
                     files={activeFragment.files as { [path: string]: string }}
                     sandboxUrl={activeFragment.sandboxUrl}
                     onFileUpdate={handleFileUpdate}

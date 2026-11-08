@@ -116,7 +116,7 @@ export default function Page() {
   const handleSubscribe = async (plan: typeof plans[0]) => {
     if (!user && !session?.user) {
       toast.error("Please sign in to subscribe");
-      router.push("/sign-in");
+      router.push("/auth/signin");
       return;
     }
 

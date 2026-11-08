@@ -8,19 +8,30 @@ import { consumeCredits } from "@/lib/usage";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 
-// Function to generate a meaningful 2-word project name from user prompt
+// Placeholder 2-word project name from the user prompt (shown while the first build runs).
+// After the first successful build, the Inngest function replaces it with an AI-generated title.
 function generateProjectName(prompt: string): string {
-    // Remove common words
-    const commonWords = [
-        'create', 'build', 'make', 'design', 'develop', 'generate', 'a', 'an', 
-        'the', 'my', 'new', 'modern', 'simple', 'basic', 'advanced', 'with', 
-        'for', 'and', 'or', 'but', 'website', 'app', 'application', 'page'
-    ];
-    
-    // Clean and tokenize
-    const words = prompt
+    // Instruction phrases that describe HOW to build, not WHAT to build
+    const cleanedPrompt = prompt
         .toLowerCase()
-        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .replace(/\b(use|using|with|via|do|perform)\s+(a\s+)?(web|internet|google|online)\s+search(es|ing)?\b/g, ' ')
+        .replace(/\b(search|look up|research)\s+(the\s+)?(web|internet|online)\b/g, ' ');
+
+    // Remove common / filler words
+    const commonWords = [
+        'create', 'build', 'make', 'design', 'develop', 'generate', 'a', 'an',
+        'the', 'my', 'new', 'modern', 'simple', 'basic', 'advanced', 'with',
+        'for', 'and', 'or', 'but', 'website', 'app', 'application', 'page',
+        'use', 'using', 'web', 'search', 'please', 'want', 'need', 'can', 'you',
+        'could', 'would', 'should', 'like', 'some', 'that', 'this', 'just', 'also',
+        'real', 'proper', 'good', 'best', 'nice', 'cool', 'beautiful', 'awesome',
+        'give', 'help', 'write', 'code', 'fully', 'functional', 'responsive', 'are',
+        'its', 'into', 'from', 'all', 'very', 'then', 'which', 'one', 'have', 'has',
+    ];
+
+    // Clean and tokenize
+    const words = cleanedPrompt
+        .replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ') // Remove punctuation (keep non-English letters + vowel signs)
         .split(/\s+/)
         .filter(word => word.length > 2 && !commonWords.includes(word));
     
@@ -108,12 +119,62 @@ export const projectsRouter = createTRPCRouter({
             console.log("User ID from context:", ctx.auth.userId);
             console.log("Input:", { value: input.value, techStack: input.techStack, advancedReasoning: input.advancedReasoning });
 
+            if (!ctx.auth.userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Not authenticated",
+                });
+            }
+
+            // Advanced reasoning 24-hour limit: checked BEFORE spending a credit, and claimed
+            // atomically so parallel requests can't both pass.
+            const hours24 = 24 * 60 * 60 * 1000;
+            let claimedAdvancedReasoning = false;
+            let previousAdvancedUse: Date | null = null;
+            if (advancedReasoning) {
+                const now = new Date();
+                const existing = await prisma.advancedReasoningUsage.findUnique({
+                    where: { userId: ctx.auth.userId },
+                });
+                previousAdvancedUse = existing?.lastUsedAt ?? null;
+                if (existing) {
+                    const { count } = await prisma.advancedReasoningUsage.updateMany({
+                        where: { userId: ctx.auth.userId, lastUsedAt: { lt: new Date(now.getTime() - hours24) } },
+                        data: { lastUsedAt: now },
+                    });
+                    claimedAdvancedReasoning = count === 1;
+                } else {
+                    try {
+                        await prisma.advancedReasoningUsage.create({ data: { userId: ctx.auth.userId, lastUsedAt: now } });
+                        claimedAdvancedReasoning = true;
+                    } catch {
+                        claimedAdvancedReasoning = false; // created concurrently by another request
+                    }
+                }
+                if (!claimedAdvancedReasoning) {
+                    const last = (await prisma.advancedReasoningUsage.findUnique({ where: { userId: ctx.auth.userId } }))?.lastUsedAt ?? now;
+                    const hoursRemaining = Math.max(1, Math.ceil((hours24 - (now.getTime() - last.getTime())) / (60 * 60 * 1000)));
+                    throw new TRPCError({
+                        code: "TOO_MANY_REQUESTS",
+                        message: `Advanced Reasoning is limited to once per 24 hours. Available again in ${hoursRemaining} hours.`
+                    });
+                }
+            }
+
             try{
                 console.log("Attempting to consume credits...");
                 await consumeCredits();
                 console.log("✅ Credits consumed successfully");
                 } catch(error){
                     console.error("❌ Credit consumption failed:", error);
+                    // Give back the advanced-reasoning slot if no credit could be spent
+                    if (claimedAdvancedReasoning) {
+                        if (previousAdvancedUse) {
+                            await prisma.advancedReasoningUsage.update({ where: { userId: ctx.auth.userId }, data: { lastUsedAt: previousAdvancedUse } }).catch(() => {});
+                        } else {
+                            await prisma.advancedReasoningUsage.deleteMany({ where: { userId: ctx.auth.userId } }).catch(() => {});
+                        }
+                    }
                     if(error instanceof Error){
                         console.error("Error message:", error.message);
                         throw new TRPCError({
@@ -125,41 +186,6 @@ export const projectsRouter = createTRPCRouter({
                         });
                     }
                 }
-
-            if (!ctx.auth.userId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "Not authenticated",
-                });
-            }
-            
-            // If using advanced reasoning, check 24-hour limit
-            if (advancedReasoning) {
-                const usage = await prisma.advancedReasoningUsage.findUnique({
-                    where: { userId: ctx.auth.userId }
-                });
-                
-                if (usage) {
-                    const now = new Date();
-                    const timeSinceLastUse = now.getTime() - usage.lastUsedAt.getTime();
-                    const hours24 = 24 * 60 * 60 * 1000;
-                    
-                    if (timeSinceLastUse < hours24) {
-                        const hoursRemaining = Math.ceil((hours24 - timeSinceLastUse) / (60 * 60 * 1000));
-                        throw new TRPCError({
-                            code: "TOO_MANY_REQUESTS",
-                            message: `Advanced Reasoning is limited to once per 24 hours. Available again in ${hoursRemaining} hours.`
-                        });
-                    }
-                }
-                
-                // Update or create usage record
-                await prisma.advancedReasoningUsage.upsert({
-                    where: { userId: ctx.auth.userId },
-                    update: { lastUsedAt: new Date() },
-                    create: { userId: ctx.auth.userId, lastUsedAt: new Date() }
-                });
-            }
             
             // Generate meaningful project name from user prompt
             const projectName = generateProjectName(input.value);

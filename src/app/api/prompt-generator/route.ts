@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
     if (!idea || typeof idea !== "string") {
       return NextResponse.json({ error: "Invalid idea" }, { status: 400 });
     }
+    if (idea.length > 4000) {
+      return NextResponse.json({ error: "Idea is too long (max 4000 characters)" }, { status: 400 });
+    }
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Server is not configured with OPENAI_API_KEY" }, { status: 500 });
@@ -64,8 +67,9 @@ Follow these rules strictly:
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      const message = err?.error?.message || err?.message || `Model error (${res.status})`;
-      return NextResponse.json({ error: message }, { status: 400 });
+      // Log upstream details server-side only; don't leak them to the client
+      console.error("Prompt generator upstream error:", res.status, err?.error?.message || err?.message);
+      return NextResponse.json({ error: "Couldn't generate a prompt right now. Please try again." }, { status: 502 });
     }
 
   const data = await res.json();
@@ -74,6 +78,7 @@ Follow these rules strictly:
 
     return NextResponse.json({ prompt });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });
+    console.error("Prompt generator error:", e?.message);
+    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

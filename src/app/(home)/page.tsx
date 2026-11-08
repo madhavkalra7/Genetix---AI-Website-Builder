@@ -505,7 +505,7 @@ const Page = () => {
               </div>
               <Magnetic className="mt-2 sm:mt-0">
                 <Button
-                  disabled={createProject.isPending || !value || (isAiquest && aiquestUsage?.remainingCredits === 0)}
+                  disabled={createProject.isPending || createProject.isSuccess || !value || (isAiquest && aiquestUsage?.remainingCredits === 0)}
                   onClick={handleCreateProject}
                   className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
                 >

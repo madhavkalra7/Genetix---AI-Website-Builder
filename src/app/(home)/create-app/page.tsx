@@ -48,6 +48,8 @@ function CreateAppContent() {
   const [logIndex, setLogIndex] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const logIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Server timestamp of the USER message that started the current generation
+  const generationStartedAtRef = useRef<number | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isQrZoomed, setIsQrZoomed] = useState(false);
   const [activeFragmentMessageId, setActiveFragmentMessageId] = useState<string | null>(null);
@@ -98,6 +100,7 @@ function CreateAppContent() {
       
       setLogs(SIMULATED_BUILD_LOGS.slice(0, logsToShowCount));
       setLogIndex(logsToShowCount - 1);
+      generationStartedAtRef.current = new Date(latestMessage.createdAt).getTime();
       setIsGenerating(true);
     }
   }, [selectedProjectId, isCompiling, latestMessage, appProjects]);
@@ -127,6 +130,8 @@ function CreateAppContent() {
   const createAppProject = useMutation(
     trpc.appProjects.create.mutationOptions({
       onSuccess: (data) => {
+        setPrompt("");
+        generationStartedAtRef.current = new Date(data.createdAt).getTime();
         setSelectedProjectId(data.id);
         setActiveFragmentMessageId(null);
         queryClient.invalidateQueries(trpc.appProjects.getMany.queryOptions());
@@ -146,7 +151,9 @@ function CreateAppContent() {
   // Project message iteration mutation
   const createAppMessage = useMutation(
     trpc.appProjects.createMessage.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (data) => {
+        setPrompt("");
+        generationStartedAtRef.current = new Date(data.createdAt).getTime();
         refetchMessages();
         setActiveFragmentMessageId(null);
         refetchUsage();
@@ -191,12 +198,22 @@ function CreateAppContent() {
     if (isGenerating && selectedProjectId) {
       pollInterval = setInterval(async () => {
         const { data } = await refetchMessages();
-        const hasFragment = data?.some((m) => m.role === "ASSISTANT" && m.fragments);
-        if (hasFragment) {
-          // Found generated preview, finish generating
+        const last = data && data.length > 0 ? data[data.length - 1] : null;
+        const startedAt = generationStartedAtRef.current;
+        // Finish once the latest message is an ASSISTANT reply newer than the USER message that started generation
+        if (
+          last &&
+          last.role === "ASSISTANT" &&
+          (startedAt === null || new Date(last.createdAt).getTime() >= startedAt)
+        ) {
           setIsGenerating(false);
+          generationStartedAtRef.current = null;
           if (logIntervalRef.current) clearInterval(logIntervalRef.current);
-          toast.success("🚀 App generated successfully!");
+          if (last.fragments) {
+            toast.success("🚀 App generated successfully!");
+          } else {
+            toast.error("Generation failed");
+          }
         }
       }, 2000);
     }
@@ -233,9 +250,6 @@ function CreateAppContent() {
     } else {
       createAppProject.mutate(payload);
     }
-    
-    // Clear prompt input box after sending
-    setPrompt("");
   };
 
   return (
@@ -510,7 +524,7 @@ function CreateAppContent() {
                     />
                     <Button
                       onClick={handleGenerate}
-                      disabled={!prompt.trim() || createAppProject.isPending}
+                      disabled={!prompt.trim() || createAppMessage.isPending}
                       className="bg-white text-black hover:bg-white/90 font-[Orbitron] font-bold text-xs rounded-2xl px-4 cursor-pointer"
                     >
                       Send

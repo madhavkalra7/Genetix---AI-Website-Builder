@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -50,6 +52,7 @@ export default function SignUpPage() {
         throw new Error(data.error || "Failed to create account");
       }
 
+      await refreshUser();
       toast.success("Account created successfully!");
       router.push("/");
       router.refresh();

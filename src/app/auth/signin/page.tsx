@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -34,6 +36,7 @@ export default function SignInPage() {
         throw new Error(data.error || "Failed to sign in");
       }
 
+      await refreshUser();
       toast.success("Welcome back!");
       router.push("/");
       router.refresh();
@@ -88,12 +91,6 @@ export default function SignInPage() {
                   <Label htmlFor="password" className="text-white/80 font-[Orbitron]">
                     Password
                   </Label>
-                  <Link 
-                    href="/auth/forgot-password" 
-                    className="text-xs text-white/60 hover:text-purple-300 font-[Orbitron]"
-                  >
-                    Forgot?
-                  </Link>
                 </div>
                 <Input
                   id="password"

@@ -19,16 +19,9 @@ const ProjectsList = () => {
   // Use either custom auth user or NextAuth user
   const user = customAuthUser || session?.user;
 
-  const { data:projects, isLoading, error }=useQuery(trpc.projects.getMany.queryOptions());
-
-  console.log("ProjectsList render:", { 
-    customAuthUser, 
-    sessionUser: session?.user, 
-    finalUser: user,
-    projects, 
-    isLoading, 
-    error 
-  });
+  const { data:projects, isLoading, error }=useQuery(
+    trpc.projects.getMany.queryOptions(undefined, { enabled: !!user })
+  );
 
   if(!user){
     return null;
@@ -51,7 +44,14 @@ const ProjectsList = () => {
           {(customAuthUser?.firstName || session?.user?.name || 'Your')}&apos;s Genetix
         </h2>
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {(!projects || projects?.length===0) && (
+            {error && (
+              <div className="col-span-full text-center py-8">
+                <p className="text-sm text-red-400">
+                  Failed to load projects. Please try again.
+                </p>
+              </div>
+            )}
+            {!error && (!projects || projects?.length===0) && (
               <div className="col-span-full text-center py-8">
                 <p className="text-sm text-muted-foreground">
                   No projects found

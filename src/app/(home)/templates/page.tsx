@@ -38,7 +38,7 @@ export default function TemplatesPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pt-16">
       {/* Full Screen Preview Modal */}
       {previewTemplate && selectedTemplateData && (
         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm">
@@ -83,7 +83,7 @@ export default function TemplatesPage() {
       )}
 
       {/* Header with Search Bar */}
-      <div className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
+      <div className="border-b border-white/10 backdrop-blur-sm sticky top-16 z-40 bg-black/80">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div>

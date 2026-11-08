@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { getRequestUserId } from "@/lib/request-auth";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -72,17 +73,26 @@ async function generateWithGPT(prompt: string, systemPrompt?: string): Promise<s
   }
 }
 
+const MAX_FILES_CHARS = 300_000;
+
 export async function POST(req: NextRequest) {
   try {
+    // Must be logged in: this endpoint returns project source code and spends OpenAI tokens.
+    const userId = await getRequestUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const body = await req.json();
-    // If filesOnly is true, return files for the projectId
+    // If filesOnly is true, return files for the projectId (only the caller's own project)
     if (body.filesOnly && body.projectId) {
       // Fetch latest Fragment for projectId by joining through Message
       const { prisma } = await import("@/lib/db");
       const fragment = await prisma.fragment.findFirst({
         where: {
           message: {
-            projectId: body.projectId
+            projectId: String(body.projectId),
+            project: { userId },
           }
         },
         orderBy: { createdAt: "desc" },
@@ -124,6 +134,9 @@ export async function POST(req: NextRequest) {
     const fileSummaries = Object.entries(files)
       .map(([path, content]) => `=== FILE: ${path} ===\n${content}`)
       .join("\n\n");
+    if (fileSummaries.length > MAX_FILES_CHARS) {
+      return NextResponse.json({ error: "Project is too large to explain." }, { status: 413 });
+    }
     
     const prompt = `Please analyze and explain this project. Remember to show only KEY CODE SNIPPETS (5-15 lines max per file), not the entire code.\n\nProject Files:\n\n${fileSummaries}`;
 

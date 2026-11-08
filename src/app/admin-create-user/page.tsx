@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
           This folder requires specific permissions. If you are authorized, please login using your administrator account.
         </p>
         <Button 
-          onClick={() => router.push("/sign-in")} 
+          onClick={() => router.push("/auth/signin")} 
           className="bg-purple-600 hover:bg-purple-700 text-white font-[Orbitron] rounded-xl px-6 cursor-pointer"
         >
           Go to Sign In

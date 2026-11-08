@@ -43,46 +43,44 @@ export async function consumeCredits(amount: number = 1) {
 
   console.log("✅ consumeCredits: User found:", user.email, "deducting:", amount);
   
-  // Get or create user credits
-  let userCredits = await prisma.userCredits.findUnique({
+  // Get or create user credits (free plan: 3 credits). upsert avoids a create race.
+  await prisma.userCredits.upsert({
     where: { userId: user.id },
-  });
-
-  // If no credits record exists, create one with free plan (3 credits)
-  if (!userCredits) {
-    userCredits = await prisma.userCredits.create({
-      data: {
-        userId: user.id,
-        creditsUsed: 0,
-        creditsLimit: 3, // Free plan default
-        lastReset: new Date(),
-      },
-    });
-    console.log("✅ Created new credits record for user");
-  }
-
-  // Check if user has enough credits
-  const remainingCredits = userCredits.creditsLimit - userCredits.creditsUsed;
-  
-  if (remainingCredits < amount) {
-    console.error("❌ Insufficient credits:", {
-      creditsUsed: userCredits.creditsUsed,
-      creditsLimit: userCredits.creditsLimit,
-      remaining: remainingCredits,
-      required: amount,
-    });
-    throw new Error("Insufficient credits");
-  }
-
-  // Consume credits
-  const updated = await prisma.userCredits.update({
-    where: { userId: user.id },
-    data: {
-      creditsUsed: {
-        increment: amount,
-      },
+    update: {},
+    create: {
+      userId: user.id,
+      creditsUsed: 0,
+      creditsLimit: 3, // Free plan default
+      lastReset: new Date(),
     },
   });
+
+  // Atomic check-and-consume (compare-and-swap on creditsUsed) so parallel requests
+  // can't all pass the balance check and overspend.
+  let updated: { creditsUsed: number; creditsLimit: number } | null = null;
+  for (let attempt = 0; attempt < 5 && !updated; attempt++) {
+    const current = await prisma.userCredits.findUniqueOrThrow({ where: { userId: user.id } });
+    const remainingCredits = current.creditsLimit - current.creditsUsed;
+
+    if (remainingCredits < amount) {
+      console.error("❌ Insufficient credits:", {
+        creditsUsed: current.creditsUsed,
+        creditsLimit: current.creditsLimit,
+        remaining: remainingCredits,
+        required: amount,
+      });
+      throw new Error("Insufficient credits");
+    }
+
+    const { count } = await prisma.userCredits.updateMany({
+      where: { userId: user.id, creditsUsed: current.creditsUsed },
+      data: { creditsUsed: { increment: amount } },
+    });
+    if (count === 1) {
+      updated = { creditsUsed: current.creditsUsed + amount, creditsLimit: current.creditsLimit };
+    }
+  }
+  if (!updated) throw new Error("Could not consume credits, please try again");
 
   console.log("✅ Credits consumed successfully:", {
     used: updated.creditsUsed,

@@ -67,15 +67,18 @@ export async function getSessionByToken(token: string) {
 
   if (!session) return null;
   if (session.expiresAt < new Date()) {
-    await prisma.session.delete({ where: { id: session.id } });
+    await prisma.session.deleteMany({ where: { id: session.id } });
     return null;
   }
+  // Deactivated users must not keep working sessions
+  if (!session.user.isActive) return null;
 
   return session;
 }
 
 export async function deleteSession(token: string) {
-  await prisma.session.delete({ where: { token } });
+  // deleteMany: logging out with a stale/unknown token must not throw (500) and keep the cookie
+  await prisma.session.deleteMany({ where: { token } });
 }
 
 export async function deleteAllUserSessions(userId: string) {

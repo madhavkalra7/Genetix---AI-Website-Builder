@@ -1,29 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSandbox } from "@/inngest/utils";
+import { getRequestUserId } from "@/lib/request-auth";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    const { sandboxId, filePath, content } = await req.json();
-
-    console.log("Received request to update sandbox file:", { sandboxId, filePath, contentLength: content?.length });
-
-    if (!sandboxId || !filePath || content === undefined) {
-      console.error("Missing required fields:", { sandboxId: !!sandboxId, filePath: !!filePath, content: content !== undefined });
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Must be logged in and own the sandbox (sandbox IDs are visible in preview URLs).
+    const userId = await getRequestUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Get sandbox instance and update file
-    console.log("Connecting to sandbox:", sandboxId);
+    const { sandboxId, filePath, content } = await req.json();
+
+    if (!sandboxId || !filePath || content === undefined) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    if (
+      typeof sandboxId !== "string" || typeof filePath !== "string" || typeof content !== "string" ||
+      !/^[A-Za-z0-9_-]+$/.test(sandboxId) || filePath.split(/[\\/]/).includes("..")
+    ) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const [ownsWebFragment, ownsAppFragment] = await Promise.all([
+      prisma.fragment.findFirst({
+        where: { sandboxUrl: { contains: sandboxId }, message: { project: { userId } } },
+        select: { id: true },
+      }),
+      prisma.appFragment.findFirst({
+        where: { sandboxUrl: { contains: sandboxId }, appMessage: { appProject: { userId } } },
+        select: { id: true },
+      }),
+    ]);
+    if (!ownsWebFragment && !ownsAppFragment) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const sandbox = await getSandbox(sandboxId);
-    
-    console.log("Writing file:", filePath);
     await sandbox.files.write(filePath, content);
-    
-    console.log("File updated successfully");
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update sandbox file:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: "Failed to update file: " + message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update file" }, { status: 500 });
   }
 }

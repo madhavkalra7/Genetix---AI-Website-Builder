@@ -16,6 +16,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = signUpSchema.parse(body);
 
+    // SECURITY: admin rights are granted by email. Signup has no email verification, so the
+    // admin email must never be claimable through public signup.
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    if (adminEmail && validatedData.email.trim().toLowerCase() === adminEmail) {
+      return NextResponse.json(
+        { error: 'User with this email or username already exists' },
+        { status: 400 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: {

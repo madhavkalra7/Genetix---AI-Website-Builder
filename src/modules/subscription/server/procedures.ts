@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { prisma } from "@/lib/db";
 
@@ -61,15 +62,28 @@ export const subscriptionRouter = createTRPCRouter({
     .input(
       z.object({
         email: z.string().email(),
-        planName: z.string()
+        planName: z.string().trim().min(1).max(60)
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // SECURITY: credits are granted to the request's email on approval, so always use the
+      // logged-in account's email (never a client-supplied one), and escape values put into HTML.
+      const me = await prisma.user.findUnique({ where: { id: ctx.auth.userId }, select: { email: true } });
+      if (!me?.email) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
+      }
+      const escapeHtml = (s: string) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      const requestEmail = me.email;
+      const requestPlan = input.planName;
+      const safeEmail = escapeHtml(requestEmail);
+      const safePlan = escapeHtml(requestPlan);
+
       // 1. Save request in database
       const createdRequest = await prisma.creditRequest.create({
         data: {
-          email: input.email,
-          planName: input.planName,
+          email: requestEmail,
+          planName: requestPlan,
           status: "PENDING"
         }
       });
@@ -96,8 +110,8 @@ export const subscriptionRouter = createTRPCRouter({
           await transporter.sendMail({
             from: `"Genetix Credit Manager" <${smtpUser}>`,
             to: "madhavkalra2005@gmail.com",
-            subject: `🚨 [CREDIT REQUEST] New subscription request for ${input.planName}`,
-            text: `Hello Madhav,\n\nA user has requested credits after selecting a subscription plan.\n\nUser Email: ${input.email}\nPlan Selected: ${input.planName}\n\nYou can approve this request from the Admin Dashboard at: /admin-create-user\n\nBest,\nGenetix Team`,
+            subject: `🚨 [CREDIT REQUEST] New subscription request for ${requestPlan.replace(/[\r\n]/g, " ")}`,
+            text: `Hello Madhav,\n\nA user has requested credits after selecting a subscription plan.\n\nUser Email: ${requestEmail}\nPlan Selected: ${requestPlan}\n\nYou can approve this request from the Admin Dashboard at: /admin-create-user\n\nBest,\nGenetix Team`,
             html: `
               <div style="font-family: sans-serif; padding: 20px; color: #333;">
                 <h2 style="color: #a855f7;">🚨 New Credit Request Received</h2>
@@ -106,11 +120,11 @@ export const subscriptionRouter = createTRPCRouter({
                 <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                   <tr>
                     <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">User Email</td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${input.email}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${safeEmail}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Plan Selected</td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${input.planName}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${safePlan}</td>
                   </tr>
                 </table>
                 <p>You can review and approve this request instantly from your admin dashboard:</p>

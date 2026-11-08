@@ -9,6 +9,7 @@ import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
 import { getTemplateById } from "@/lib/templates";
 import { searchWeb, isWebSearchEnabled, MAX_WEB_SEARCHES_PER_RUN, WEB_SEARCH_INSTRUCTIONS } from "@/lib/web-search";
+import { getReasoningEffort, getResponsesBridgeBaseUrl } from "@/lib/responses-bridge";
 import fs from "fs";
 import path from "path";
 
@@ -307,6 +308,18 @@ export const codeAgentFunction = inngest.createFunction(
       }
     });
 
+  // 🧠 Fixed reasoning effort (not user-configurable):
+  //   Advanced Reasoning → gpt-6-sol, medium | Simple & Fast (all stacks) + App builder → gpt-6-luna, low
+  const isAppBuild = event.data.isApp === true;
+  const agentModel = useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna";
+  const reasoningEffort = getReasoningEffort({ isApp: isAppBuild, advancedReasoning: useAdvancedReasoning });
+  const reasoningBridgeUrl = getResponsesBridgeBaseUrl();
+  console.log(
+    reasoningBridgeUrl
+      ? `🧠 ${agentModel} reasoning=${reasoningEffort} (${isAppBuild ? "app" : useAdvancedReasoning ? "advanced" : "simple & fast"}) via ${reasoningBridgeUrl}`
+      : `⚠️ No APP_URL / NEXT_PUBLIC_APP_URL / NEXTAUTH_URL set: ${agentModel} running WITHOUT reasoning`
+  );
+
   // ✅ OpenAI-powered Agent
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
@@ -316,16 +329,26 @@ export const codeAgentFunction = inngest.createFunction(
       system:
         (webSearchEnabled ? WEB_SEARCH_INSTRUCTIONS + "\n\n" : "") +
         (event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack)),
-      model: openai({
-    // Dynamically choose model based on advancedReasoning flag
-    // GPT-6-sol for advanced reasoning (24h limit), GPT-6-luna for standard (fast & efficient)
-    model: useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna",
-    defaultParameters:{
-      temperature: useAdvancedReasoning ? 0.5 : 1,
-      // @ts-ignore - reasoning_effort is supported by OpenAI but not yet in @inngest/agent-kit types
-      reasoning_effort: "none", // Disable reasoning to allow function tools in /v1/chat/completions
-    },
-      }),   
+      model: reasoningBridgeUrl
+        ? // Reasoning tokens via the Responses API bridge
+          // (Chat Completions rejects reasoning + function tools on gpt-6 models).
+          openai({
+            model: agentModel,
+            baseUrl: reasoningBridgeUrl,
+            defaultParameters: {
+              // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
+              reasoning_effort: reasoningEffort,
+            },
+          })
+        : // Fallback (no public app URL): direct Chat Completions without reasoning
+          openai({
+            model: agentModel,
+            defaultParameters: {
+              temperature: useAdvancedReasoning ? 0.5 : 1,
+              // @ts-ignore - reasoning_effort is supported by OpenAI but not yet in @inngest/agent-kit types
+              reasoning_effort: "none", // Disable reasoning to allow function tools in /v1/chat/completions
+            },
+          }),
       tools: webSearchEnabled
         ? [terminalTool, createOrUpdateFilesTool, readFilesTool, webSearchTool]
         : [terminalTool, createOrUpdateFilesTool, readFilesTool],
@@ -607,36 +630,43 @@ export const codeAgentFunction = inngest.createFunction(
       }),
     });
 
-    const { 
+    // Title generator sees the user's actual request (not only the summary) so names like
+    // "use web search and create ..." become a real title instead of "Use Web".
+    const summaryText = result.state.data.summary || "";
+    const {
       output: fragmentTitleOutput
-     }= await fragmentTitleGenerator.run(result.state.data.summary);
-    const { 
+     }= await fragmentTitleGenerator.run(
+       `User request: ${String(event.data.value || "").slice(0, 1000)}\n\n${summaryText}`
+     );
+    const {
       output: responseOutput
-     }= await responseGenerator.run(result.state.data.summary);
+     }= await responseGenerator.run(summaryText || "The task could not be completed.");
+
+     // Safely read the first text message from an agent's output (output may be empty)
+     const firstText = (output: Message[]): string | null => {
+       const msg = output.find((m) => m.type === "text");
+       if (!msg || msg.type !== "text") return null;
+       const text = Array.isArray(msg.content) ? msg.content.map((c) => c.text).join("") : msg.content;
+       return text?.trim() || null;
+     };
 
      const generateFragmentTitle = () => {
-      const output=fragmentTitleOutput[0];
-       if (output.type !== "text") {
-         return "Fragment";
-       }
-       if(Array.isArray(output.content)){
-        return output.content.map((txt)=>txt).join("")
-       } else{
-        return output.content;
-       }
+       const raw = firstText(fragmentTitleOutput);
+       if (!raw) return "Fragment";
+       const cleaned = raw
+         .replace(/^title\s*:\s*/i, "")
+         .replace(/["'`*_#<>]/g, "")
+         .replace(/\s+/g, " ")
+         .trim()
+         .split(" ")
+         .slice(0, 4)
+         .join(" ")
+         .slice(0, 40)
+         .trim();
+       return cleaned || "Fragment";
      };
 
-     const generateResponse = () => {
-      const output=responseOutput[0];
-       if (output.type !== "text") {
-         return "Here you go";
-       }
-       if(Array.isArray(output.content)){
-        return output.content.map((txt)=>txt).join("")
-       } else{
-        return output.content;
-       }
-     };
+     const generateResponse = () => firstText(responseOutput) || "Here you go";
 
 
     const isError =
@@ -682,6 +712,27 @@ export const codeAgentFunction = inngest.createFunction(
       const host = sandbox.getHost(3000);
       return `https://${host}`;
     });
+
+    // On the first successful build, replace the keyword-based placeholder project name
+    // with the AI-generated title (there is no manual rename feature to overwrite).
+    const isFirstBuild = !previousMessages.some((m) => m.role === "assistant");
+    if (isFirstBuild && !isError) {
+      const aiTitle = generateFragmentTitle();
+      if (aiTitle && aiTitle !== "Fragment") {
+        await step.run("rename-project", async () => {
+          try {
+            if (event.data.isApp === true) {
+              await prisma.appProject.update({ where: { id: event.data.projectId }, data: { name: aiTitle } });
+            } else {
+              await prisma.project.update({ where: { id: event.data.projectId }, data: { name: aiTitle } });
+            }
+            console.log("📝 Project renamed to:", aiTitle);
+          } catch (e) {
+            console.error("⚠️ Could not rename project:", e);
+          }
+        });
+      }
+    }
 
      await step.run("save-result", async () => {
       const isApp = event.data.isApp === true;
