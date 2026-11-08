@@ -188,11 +188,7 @@ export default function GalleryPage() {
             <section className="relative overflow-hidden border-b border-white/10">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.18),transparent_60%)]" />
                 <div className="relative mx-auto max-w-7xl px-4 py-12 text-center sm:py-16">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-200">
-                        <SparklesIcon className="size-3.5" />
-                        Community gallery
-                    </span>
-                    <h1 className="mt-4 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text font-[Orbitron] text-3xl font-bold text-transparent sm:text-5xl">
+                    <h1 className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text font-[Orbitron] text-3xl font-bold text-transparent sm:text-5xl">
                         Made with Genetix
                     </h1>
                     <p className="mx-auto mt-3 max-w-xl text-sm text-gray-400 sm:text-base">

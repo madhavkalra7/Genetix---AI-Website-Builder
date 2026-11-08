@@ -2,7 +2,6 @@
 
 import { memo, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { SparklesIcon } from "lucide-react";
 import { useTRPC } from "@/trpc/client";
 import { cn } from "@/lib/utils";
 import { stageLabel } from "@/components/build-progress";
@@ -674,7 +673,6 @@ function LiveEditor({ events, stage, status, qaIssues, startedAt }: LiveEditorPr
                     })}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5 px-3 text-xs">
-                    <SparklesIcon className="size-3.5 text-violet-300" aria-hidden />
                     <span className="hidden bg-gradient-to-r from-sky-300 via-violet-300 to-pink-300 bg-clip-text font-medium text-transparent sm:inline">
                         Genetix is writing your code
                     </span>
@@ -771,9 +769,6 @@ function ThinkingState({ label }: { label: string }) {
             </div>
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
                 <div className="gx-fade-in flex max-w-full items-center gap-3 rounded-xl border border-white/10 bg-[#0f131b]/90 px-4 py-3 font-sans shadow-2xl shadow-sky-500/10 backdrop-blur">
-                    <span className="relative flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500/20 via-violet-500/20 to-pink-500/20">
-                        <SparklesIcon className="size-4 text-violet-200" aria-hidden />
-                    </span>
                     <div className="min-w-0">
                         <div className="truncate text-sm font-medium text-zinc-100">{label}</div>
                         <div className="text-xs text-zinc-500">Code will appear here as it&apos;s written</div>
