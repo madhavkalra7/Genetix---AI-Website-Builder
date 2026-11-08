@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Starfield, AuroraBackground } from "@/components/animations/aurora-background";
 import { HTMLPreview } from "@/components/html-preview";
+import { EditableProjectName } from "@/components/editable-project-name";
 import { 
   SparklesIcon, 
   SmartphoneIcon, 
@@ -60,9 +61,25 @@ function CreateAppContent() {
   );
 
   // Fetch user credit usage/balance
+  const renameAppProject = useMutation(
+    trpc.appProjects.rename.mutationOptions({
+      onSuccess: async (_data, variables) => {
+        await Promise.all([
+          queryClient.invalidateQueries(trpc.appProjects.getMany.queryFilter()),
+          queryClient.invalidateQueries(trpc.appProjects.getOne.queryFilter({ id: variables.id })),
+        ]);
+      },
+    })
+  );
+  const handleRenameAppProject = async (id: string, name: string) => {
+    await renameAppProject.mutateAsync({ id, name });
+  };
+
   const { data: usageStatus, refetch: refetchUsage } = useQuery(
     trpc.usage.status.queryOptions()
   );
+
+  const selectedProject = appProjects?.find((p) => p.id === selectedProjectId);
 
   // Fetch messages/fragments for the selected mobile app project
   const { data: messages, refetch: refetchMessages } = useQuery(
@@ -296,26 +313,47 @@ function CreateAppContent() {
             <div className="text-sm text-white/50 text-center py-4">Loading...</div>
           ) : appProjects && appProjects.length > 0 ? (
             appProjects.map((proj) => (
-              <button
+              <div
                 key={proj.id}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selectedProjectId === proj.id}
                 onClick={() => {
                   setSelectedProjectId(proj.id);
                   setIsGenerating(false);
                 }}
-                className={`w-full p-3 rounded-xl border text-left transition-all duration-300 flex items-center justify-between group ${
+                onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedProjectId(proj.id);
+                    setIsGenerating(false);
+                  }
+                }}
+                className={`w-full p-3 rounded-xl border text-left cursor-pointer transition-all duration-300 flex items-center justify-between group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500/60 ${
                   selectedProjectId === proj.id
                     ? "bg-purple-950/40 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
                     : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
                 }`}
               >
-                <div className="truncate pr-2">
-                  <p className="text-xs font-semibold text-white truncate">{proj.name}</p>
+                <div className="min-w-0 flex-1 pr-2">
+                  <EditableProjectName
+                    as="p"
+                    name={proj.name}
+                    onSave={(name) => handleRenameAppProject(proj.id, name)}
+                    revealOnHover
+                    className="gap-1"
+                    nameClassName="text-xs font-semibold text-white"
+                    inputClassName="font-[Orbitron]"
+                    buttonClassName="p-0.5 text-white/40 hover:text-white"
+                    iconClassName="size-3 text-current"
+                  />
                   <p className="text-[10px] text-white/40 mt-1">
                     {new Date(proj.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <SmartphoneIcon className={`w-3.5 h-3.5 shrink-0 ${selectedProjectId === proj.id ? "text-purple-400" : "text-white/30 group-hover:text-white/60"}`} />
-              </button>
+              </div>
             ))
           ) : (
             <div className="text-xs text-white/30 text-center py-8">No app projects created yet.</div>
@@ -429,12 +467,24 @@ function CreateAppContent() {
                     >
                       <PlusIcon className="w-4 h-4" />
                     </Button>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400 font-[Orbitron]">Mobile Application</span>
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-bold font-[Orbitron] text-white">
-                          {appProjects?.find((p) => p.id === selectedProjectId)?.name || "App Project"}
-                        </h2>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0">
+                        {selectedProject ? (
+                          <EditableProjectName
+                            key={selectedProject.id}
+                            as="h2"
+                            name={selectedProject.name}
+                            onSave={(name) => handleRenameAppProject(selectedProject.id, name)}
+                            className="max-w-full"
+                            nameClassName="text-xl font-bold font-[Orbitron] text-white"
+                            inputClassName="w-[min(20rem,100%)]"
+                            buttonClassName="text-white/50 hover:text-white"
+                            iconClassName="size-4 text-current"
+                          />
+                        ) : (
+                          <h2 className="text-xl font-bold font-[Orbitron] text-white truncate min-w-0">App Project</h2>
+                        )}
                         <Button
                           size="sm"
                           onClick={() => setIsZoomed(true)}

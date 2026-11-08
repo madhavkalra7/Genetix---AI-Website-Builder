@@ -2,12 +2,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import {useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSession } from "next-auth/react";
 import { StaggerContainer, StaggerItem } from "@/components/animations/fade-in";
 import { SpotlightCard } from "@/components/animations/spotlight-card";
+import { EditableProjectName } from "@/components/editable-project-name";
 
 
 
@@ -21,6 +22,18 @@ const ProjectsList = () => {
 
   const { data:projects, isLoading, error }=useQuery(
     trpc.projects.getMany.queryOptions(undefined, { enabled: !!user })
+  );
+
+  const queryClient = useQueryClient();
+  const renameProject = useMutation(
+    trpc.projects.rename.mutationOptions({
+      onSuccess: async (_data, variables) => {
+        await Promise.all([
+          queryClient.invalidateQueries(trpc.projects.getMany.queryFilter()),
+          queryClient.invalidateQueries(trpc.projects.getOne.queryFilter({ id: variables.id })),
+        ]);
+      },
+    })
   );
 
   if(!user){
@@ -61,7 +74,7 @@ const ProjectsList = () => {
             {projects?.map(project=>(
               <StaggerItem key={project.id} className="transition-transform duration-300 hover:-translate-y-1">
                 <SpotlightCard className="h-full">
-                  <Link href={`/projects/${project.id}`} className="block p-3 sm:p-4">
+                  <Link href={`/projects/${project.id}`} className="group block p-3 sm:p-4">
                     <div className="flex items-center gap-x-3 sm:gap-x-4 w-full">
                       <Image
                         src="/logo.png"
@@ -71,9 +84,17 @@ const ProjectsList = () => {
                         className="object-contain flex-shrink-0 sm:w-8 sm:h-8"
                         />
                         <div className="flex flex-col flex-1 min-w-0">
-                          <h3 className="truncate font-medium text-sm sm:text-base text-white">
-                            {project.name}
-                          </h3>
+                          <EditableProjectName
+                            as="h3"
+                            name={project.name}
+                            onSave={async (name) => {
+                              await renameProject.mutateAsync({ id: project.id, name });
+                            }}
+                            revealOnHover
+                            nameClassName="font-medium text-sm sm:text-base text-white"
+                            buttonClassName="text-white/50 hover:text-white"
+                            iconClassName="text-current"
+                          />
                           <p className="text-xs sm:text-sm text-white/50 truncate">
                             {formatDistanceToNow(project.updatedAt, {
                               addSuffix: true,

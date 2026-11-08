@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import{
     ChevronDownIcon,
     ChevronLeftIcon,
@@ -10,6 +10,7 @@ import{
 
 import { useTRPC }  from "@/trpc/client";
 import { Button } from "@/components/ui/button";
+import { EditableProjectName } from "@/components/editable-project-name";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRadioGroup,DropdownMenuRadioItem,DropdownMenuSeparator,DropdownMenuSub,DropdownMenuSubContent,DropdownMenuSubTrigger,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
 
 interface Props {
@@ -22,18 +23,39 @@ export const ProjectHeader=({ projectId }: Props)=>{
     );
 
     const { setTheme, theme }=useTheme();
+    const queryClient=useQueryClient();
+    const renameProject=useMutation(trpc.projects.rename.mutationOptions({
+        onSuccess: async ()=>{
+            await Promise.all([
+                queryClient.invalidateQueries(trpc.projects.getOne.queryFilter({ id: projectId })),
+                queryClient.invalidateQueries(trpc.projects.getMany.queryFilter()),
+            ]);
+        },
+    }));
 
     return (
     <header className="p-2 flex justify-between items-center border-b min-w-0">
-        <DropdownMenu>
+        <EditableProjectName
+            name={project.name}
+            onSave={async (name)=>{
+                await renameProject.mutateAsync({ id: projectId, name });
+            }}
+            className="gap-0.5"
+            editingClassName="gap-1.5 pl-2 py-0.5 w-full max-w-sm"
+            editingPrefix={<Image src="/logo.png" alt="Genetix" width={18} height={18} className="shrink-0"/>}
+            nameClassName="text-sm font-medium"
+            inputClassName="h-7 bg-transparent border-border focus:border-primary/60 focus:ring-primary/30"
+            renderDisplay={({ nameElement, pencil })=>(
+                <>
+                <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="focus-visible:ring-0 hover:bg-transparent hover:opacity-75 transition-opacity pl-2 min-w-0 max-w-full"
+                    className="focus-visible:ring-0 hover:bg-transparent hover:opacity-75 transition-opacity pl-2 min-w-0 max-w-full shrink"
                 >
                     <Image src="/logo.png" alt="Genetix" width={18} height={18}/>
-                    <span className="text-sm font-medium truncate">{project.name}</span>
+                    {nameElement}
                     <ChevronDownIcon/>
                 </Button>
             </DropdownMenuTrigger>
@@ -70,6 +92,10 @@ export const ProjectHeader=({ projectId }: Props)=>{
                 </DropdownMenuSub>
             </DropdownMenuContent>
         </DropdownMenu>
+                {pencil}
+                </>
+            )}
+        />
     </header>
     )
 };

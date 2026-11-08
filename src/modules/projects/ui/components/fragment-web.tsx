@@ -1,11 +1,11 @@
 import { Fragment } from "@/generated/prisma";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { ExternalLinkIcon , RefreshCcwIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { HTMLPreview } from "@/components/html-preview";
-import { buildStandaloneHtml, hasStaticEntry } from "@/lib/static-html";
+import { hasStaticEntry } from "@/lib/static-html";
 
 interface Props {
     data: Fragment;
@@ -14,12 +14,6 @@ interface Props {
 export function FragmentWeb({ data }: Props){
         const [copied, setCopied] = useState(false);
         const [fragmentKey, setFragmentKey] = useState(0);
-        const blobUrlRef = useRef<string | null>(null);
-
-        // Free the last full-screen blob when leaving the page
-        useEffect(() => () => {
-            if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-        }, []);
 
         const onRefresh = () => {
             setFragmentKey((prev) => prev + 1);
@@ -36,30 +30,8 @@ export function FragmentWeb({ data }: Props){
             }
         };
 
-        // Open the static project in a new tab (same rendering as the inline preview)
-        const openStaticInNewTab = () => {
-            if (!hasStaticEntry(data.files)) return;
-
-            const html = buildStandaloneHtml(data.files);
-            if (!html) {
-                toast.error("No index.html found to open");
-                return;
-            }
-
-            // Don't revoke right after opening: a slow tab would load a dead URL (blank page).
-            // Keep it alive (so reloading the tab works) and only free the previous one.
-            if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-            const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-            blobUrlRef.current = blobUrl;
-
-            const newWindow = window.open(blobUrl, "_blank");
-            if (!newWindow) {
-                toast.error("Pop-up blocked. Allow pop-ups for this site to open the full-screen preview.");
-                return;
-            }
-            // The generated site must not be able to control the Genetix tab
-            try { newWindow.opener = null; } catch { /* ignore */ }
-        };
+        // Full-screen preview is a real page opened with a normal link (never blocked as a pop-up)
+        const fullScreenUrl = `/preview/web/${data.id}`;
 
         // Check if this is a static project that can be previewed locally
         const isStaticProject = hasStaticEntry(data.files);
@@ -113,12 +85,10 @@ export function FragmentWeb({ data }: Props){
                             </Button>
                         </Hint>
                         <Hint text="Open in full screen" side="bottom" align="start">
-                            <Button 
-                                size="sm"
-                                variant="outline"
-                                onClick={openStaticInNewTab}
-                            >
-                                <ExternalLinkIcon/>
+                            <Button size="sm" variant="outline" asChild>
+                                <a href={fullScreenUrl} target="_blank" rel="noopener noreferrer" aria-label="Open in full screen">
+                                    <ExternalLinkIcon/>
+                                </a>
                             </Button>
                         </Hint>
                     </div>
@@ -171,7 +141,9 @@ export function FragmentWeb({ data }: Props){
                 <iframe
                     key={fragmentKey}
                     className="h-full w-full"
-                    sandbox="allow-forms allow-scripts allow-same-origin"
+                    sandbox="allow-forms allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-modals allow-downloads"
+                    allow="fullscreen; autoplay; gamepad; clipboard-write"
+                    allowFullScreen
                     loading="lazy"
                     src={data.sandboxUrl}
                 />

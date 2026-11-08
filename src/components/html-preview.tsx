@@ -67,8 +67,12 @@ export function HTMLPreview({ files, className }: HTMLPreviewProps) {
       className={`border-0 ${className ?? ""}`}
       title="HTML Preview"
       // allow-popups: external target="_blank" links open in a new tab.
+      // allow-pointer-lock + fullscreen: first-person / 3D games lock the mouse on "Start";
+      // without these the click silently fails and the game looks broken.
       // (No allow-forms: a plain form submit would load the Genetix app inside the preview.)
-      sandbox="allow-scripts allow-same-origin allow-modals allow-popups"
+      sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-pointer-lock allow-downloads"
+      allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope; clipboard-write"
+      allowFullScreen
       style={{ width: "100%", height: "100%" }}
     />
   );

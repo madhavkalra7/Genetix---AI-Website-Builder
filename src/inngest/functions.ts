@@ -1,9 +1,9 @@
 import { inngest } from "./client";
-import { createAgent, createTool, createNetwork, type Tool, openai, type Message, createState } from "@inngest/agent-kit";
+import { createAgent, createTool, createNetwork, type Tool, openai, type Message, type AgentResult, createState } from "@inngest/agent-kit";
 import { Sandbox } from "@e2b/code-interpreter";
 import { z } from "zod";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
-import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT, MOBILE_APP_PROMPT } from "@/prompt";
+import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT, MOBILE_APP_PROMPT, CODE_REVIEWER_PROMPT } from "@/prompt";
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
@@ -350,11 +350,54 @@ export const codeAgentFunction = inngest.createFunction(
       : `⚠️ No APP_URL / NEXT_PUBLIC_APP_URL / NEXTAUTH_URL set: ${agentModel} running WITHOUT reasoning`
   );
 
-  // 🧪 Automated QA (static HTML/CSS/JS websites and mobile apps): up to 2 fix rounds
-  const MAX_QA_ROUNDS = 2;
+  // 🧪 Automated QA + 🔍 LLM code review (static HTML/CSS/JS websites and mobile apps)
+  const MAX_QA_ROUNDS = 3;
   const runStaticQa = isAppBuild || projectTechStack === "html-css-js";
+  const REVIEWER_NAME = "code-reviewer";
+  const REVIEW_EFFORT = "medium"; // the reviewer needs to really think through the code
   let qaRounds = 0;
-  let pendingQaFeedback: string | null = null;
+  let reviewQaRounds = 0;
+  let reviewDone = false;
+  // QA feedback stays in the conversation (inserted right after the summary it refers to);
+  // otherwise it would be visible for only one model call and later fixes could forget it.
+  type QaFeedback = { afterResults: number; text: string };
+  const codeQaFeedback: QaFeedback[] = [];
+  const reviewQaFeedback: QaFeedback[] = [];
+
+  const formatResult = (r: AgentResult): Message[] => [...r.output, ...r.toolCalls];
+  const injectFeedback = (history: Message[], results: AgentResult[], feedback: QaFeedback[]): Message[] => {
+    const h = [...history];
+    for (const f of [...feedback].sort((a, b) => b.afterResults - a.afterResults)) {
+      const suffixLength = results.slice(f.afterResults).flatMap(formatResult).length;
+      h.splice(Math.max(0, h.length - suffixLength), 0, { type: "text", role: "user", content: f.text });
+    }
+    return h;
+  };
+
+  const runQa = (files: { [path: string]: string }) =>
+    validateStaticProject(files || {}, { singleFileApp: isAppBuild, userRequest: String(event.data.value || "") });
+
+  const makeModel = (effort: string) =>
+    reasoningBridgeUrl
+      ? // Reasoning tokens via the Responses API bridge
+        // (Chat Completions rejects reasoning + function tools on gpt-6 models).
+        openai({
+          model: agentModel,
+          baseUrl: reasoningBridgeUrl,
+          defaultParameters: {
+            // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
+            reasoning_effort: effort,
+          },
+        })
+      : // Fallback (no public app URL): direct Chat Completions without reasoning
+        openai({
+          model: agentModel,
+          defaultParameters: {
+            temperature: useAdvancedReasoning ? 0.5 : 1,
+            // @ts-ignore - reasoning_effort is supported by OpenAI but not yet in @inngest/agent-kit types
+            reasoning_effort: "none", // Disable reasoning to allow function tools in /v1/chat/completions
+          },
+        });
 
   // ✅ OpenAI-powered Agent
   const codeAgent = createAgent<AgentState>({
@@ -365,59 +408,77 @@ export const codeAgentFunction = inngest.createFunction(
       system:
         (webSearchEnabled ? WEB_SEARCH_INSTRUCTIONS + "\n\n" : "") +
         (event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack)),
-      model: reasoningBridgeUrl
-        ? // Reasoning tokens via the Responses API bridge
-          // (Chat Completions rejects reasoning + function tools on gpt-6 models).
-          openai({
-            model: agentModel,
-            baseUrl: reasoningBridgeUrl,
-            defaultParameters: {
-              // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
-              reasoning_effort: reasoningEffort,
-            },
-          })
-        : // Fallback (no public app URL): direct Chat Completions without reasoning
-          openai({
-            model: agentModel,
-            defaultParameters: {
-              temperature: useAdvancedReasoning ? 0.5 : 1,
-              // @ts-ignore - reasoning_effort is supported by OpenAI but not yet in @inngest/agent-kit types
-              reasoning_effort: "none", // Disable reasoning to allow function tools in /v1/chat/completions
-            },
-          }),
+      model: makeModel(reasoningEffort),
       tools: webSearchEnabled
         ? [terminalTool, createOrUpdateFilesTool, readFilesTool, webSearchTool]
         : [terminalTool, createOrUpdateFilesTool, readFilesTool],
       lifecycle: {
-        // Deliver automated QA feedback (from the previous run) as the newest user message
-        onStart: async ({ prompt, history }) => {
-          const baseHistory: Message[] = history ?? [];
-          if (pendingQaFeedback) {
-            const feedback = pendingQaFeedback;
-            pendingQaFeedback = null;
-            const feedbackMessage: Message = { type: "text", role: "user", content: feedback };
-            return { prompt, history: [...baseHistory, feedbackMessage], stop: false };
-          }
-          return { prompt, history: baseHistory, stop: false };
+        onStart: async ({ prompt, history, network: run }) => {
+          const results = run?.state.results ?? [];
+          return { prompt, history: injectFeedback(history ?? [], results, codeQaFeedback), stop: false };
         },
-        onResponse: async ({ result, network }) => {
+        onResponse: async ({ result, network: run }) => {
           const lastAssistantMessageText = lastAssistantTextMessageContent(result);
-          if (lastAssistantMessageText?.includes("<task_summary>")) {
-            if (network?.state?.data) {
-              // Automated QA for static projects: don't accept the build while it has
-              // detectable bugs (syntax errors, dead handlers/links, missing elements).
-              if (runStaticQa && qaRounds < MAX_QA_ROUNDS) {
-                const issues = validateStaticProject(network.state.data.files || {}, { singleFileApp: isAppBuild });
-                if (issues.length > 0) {
-                  qaRounds++;
-                  pendingQaFeedback = formatValidationFeedback(issues);
-                  console.log(`🧪 QA round ${qaRounds}: ${issues.length} issue(s) sent back to the agent`, issues);
-                  return result; // summary NOT set -> router runs the agent again
-                }
-                console.log("🧪 QA passed");
+          if (lastAssistantMessageText?.includes("<task_summary>") && run?.state?.data) {
+            // Automated QA for static projects: don't accept the build while it has
+            // detectable bugs (syntax errors, dead handlers/links, missing elements, no game audio).
+            if (runStaticQa && qaRounds < MAX_QA_ROUNDS) {
+              const issues = runQa(run.state.data.files);
+              if (issues.length > 0) {
+                qaRounds++;
+                codeQaFeedback.push({ afterResults: run.state.results.length + 1, text: formatValidationFeedback(issues) });
+                console.log(`🧪 QA round ${qaRounds}: ${issues.length} issue(s) sent back to the code agent`, issues);
+                return result; // summary NOT set -> router runs the code agent again
               }
-              network.state.data.summary = lastAssistantMessageText;
+              console.log("🧪 QA passed");
             }
+            run.state.data.summary = lastAssistantMessageText;
+          }
+          return result;
+        },
+      },
+    });
+
+  // 🔍 Second agent: reviews the finished project like a senior QA engineer and fixes it
+  const reviewerAgent = createAgent<AgentState>({
+      name: REVIEWER_NAME,
+      description: "Reviews the generated project, fixes bugs and polishes UI/UX",
+      system: CODE_REVIEWER_PROMPT,
+      model: makeModel(REVIEW_EFFORT),
+      tools: [createOrUpdateFilesTool, readFilesTool],
+      lifecycle: {
+        // Focused context: the user's request + the reviewer's own work (not the builder's
+        // whole transcript with every file write, which would waste tokens).
+        onStart: async ({ prompt, network: run }) => {
+          const files = Object.keys(run?.state.data.files || {}).filter((f) => !/\.(png|jpe?g|gif|webp|avif|svg|ico)$/i.test(f));
+          const intro: Message = {
+            type: "text",
+            role: "user",
+            content:
+              `USER'S ORIGINAL REQUEST:\n${String(event.data.value || "")}\n\n` +
+              `THE BUILDER AGENT REPORTS:\n${run?.state.data.summary || "(no summary)"}\n\n` +
+              `PROJECT FILES: ${files.join(", ")}\n\n` +
+              `Review the project now: read every file completely, then fix every bug and weakness you find.`,
+          };
+          const own = (run?.state.results ?? []).filter((r) => r.agentName === REVIEWER_NAME);
+          const history = injectFeedback([intro, ...own.flatMap(formatResult)], own, reviewQaFeedback);
+          return { prompt, history, stop: false };
+        },
+        onResponse: async ({ result, network: run }) => {
+          const text = lastAssistantTextMessageContent(result);
+          if (text?.includes("<review_summary>") && run) {
+            if (reviewQaRounds < MAX_QA_ROUNDS) {
+              const issues = runQa(run.state.data.files);
+              if (issues.length > 0) {
+                reviewQaRounds++;
+                const ownCount = run.state.results.filter((r) => r.agentName === REVIEWER_NAME).length;
+                reviewQaFeedback.push({ afterResults: ownCount + 1, text: formatValidationFeedback(issues) });
+                console.log(`🧪 Review QA round ${reviewQaRounds}: ${issues.length} issue(s) sent back to the reviewer`, issues);
+                return result;
+              }
+            }
+            reviewDone = true;
+            console.log("🔍 Code review finished:", text.slice(0, 500));
           }
           return result;
         },
@@ -426,14 +487,15 @@ export const codeAgentFunction = inngest.createFunction(
 
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
-      agents: [codeAgent],
-      // extra turns for web searches and automated QA fix rounds
-      maxIter: (webSearchEnabled ? 14 : 10) + (runStaticQa ? MAX_QA_ROUNDS * 2 : 0),
+      agents: [codeAgent, reviewerAgent],
+      // turns for building (+web searches), automated QA fix rounds, and the review pass
+      maxIter: (webSearchEnabled ? 14 : 10) + (runStaticQa ? MAX_QA_ROUNDS * 2 + 16 : 0),
       defaultState:state,
-      router: async ({ network }) => {
-        const summary = network.state.data.summary;
-        if (summary) return;
-        return codeAgent;
+      router: async ({ network: run }) => {
+        if (!run.state.data.summary) return codeAgent;
+        const hasFiles = Object.keys(run.state.data.files || {}).length > 0;
+        if (runStaticQa && hasFiles && !reviewDone) return reviewerAgent;
+        return;
       },
     });
 
@@ -754,26 +816,8 @@ export const codeAgentFunction = inngest.createFunction(
       return `https://${host}`;
     });
 
-    // On the first successful build, replace the keyword-based placeholder project name
-    // with the AI-generated title (there is no manual rename feature to overwrite).
-    const isFirstBuild = !previousMessages.some((m) => m.role === "assistant");
-    if (isFirstBuild && !isError) {
-      const aiTitle = generateFragmentTitle();
-      if (aiTitle && aiTitle !== "Fragment") {
-        await step.run("rename-project", async () => {
-          try {
-            if (event.data.isApp === true) {
-              await prisma.appProject.update({ where: { id: event.data.projectId }, data: { name: aiTitle } });
-            } else {
-              await prisma.project.update({ where: { id: event.data.projectId }, data: { name: aiTitle } });
-            }
-            console.log("📝 Project renamed to:", aiTitle);
-          } catch (e) {
-            console.error("⚠️ Could not rename project:", e);
-          }
-        });
-      }
-    }
+    // Project names are AI-generated at creation (src/lib/project-naming.ts) and users can
+    // rename them with the pencil button, so the build never renames the project.
 
      await step.run("save-result", async () => {
       const isApp = event.data.isApp === true;

@@ -35,12 +35,13 @@ STEP 1 — UNDERSTAND (do this silently, do not output it):
 - What would a user who typed this be disappointed NOT to see?
 
 STEP 2 — WRITE THE PROMPT:
-- Start with one sentence that states plainly what to build and its type, e.g. "Build a browser fighting game where…", "Build a loan EMI calculator tool that…", "Build a one-page website for…".
+- Start with one sentence that states plainly what to build and its type, e.g. "Build a browser <genre> game where…", "Build a <purpose> tool that…", "Build a one-page website for…".
 - Build THE THING ITSELF. A game is the playable game screen (with start/game-over/restart), NOT a page about the game. A tool opens straight onto the working tool. An app opens on its main working screen. Only a WEBSITE request gets website sections, and only the sections that make sense for that specific business or person.
 - NEVER add a hero section, "features" grid, testimonials, pricing, newsletter or footer links unless the request is a website that genuinely needs them.
 - Specify the core functionality concretely: for games the mechanics, controls (keyboard AND touch), scoring, win/lose and difficulty; for tools the exact inputs, calculations/logic, outputs and edge cases; for apps the data, actions (add/edit/delete/filter), persistence (localStorage) and screens; for websites the real content for this subject.
 - Give it a distinctive visual direction that fits THIS subject (palette, typography mood, layout idea, motion), not generic "modern, clean, responsive".
-- Do not invent a different product, do not water down unusual or creative ideas, do not change the genre (a fighting game stays a real-time fighting game, not a quiz or debate), and do not add disclaimers. Keep real names/people/places exactly as written. If the request involves real people in a fictional or playful scenario, describe them as stylised cartoon characters; arcade-style action (punches, kicks, K.O.) is fine, just non-graphic (no blood/gore).
+- Do not invent a different product, do not water down unusual or creative ideas, do not change the genre or turn it into a simpler one (a requested kind of game keeps that genre's real mechanics), and do not add disclaimers. Keep real names/people/places exactly as written. If the request involves real people in a fictional or playful scenario, describe them as stylised cartoon characters doing what the user asked, kept non-graphic (no blood/gore).
+- For ANY game, always include background music and sound effects that fit its theme (generated in code with the Web Audio API), with a mute toggle — unless the user explicitly asked for no sound.
 - Write it as instructions to the builder. Output ONLY the prompt — no preamble, no quotes.`;
 
   const system = isLimitless

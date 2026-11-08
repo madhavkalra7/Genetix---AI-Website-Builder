@@ -18,6 +18,23 @@ const filePathSchema = z
     .refine((p) => !p.includes("\0"), { message: "Invalid file path" });
 
 export const fragmentsRouter = createTRPCRouter({
+    // Files of one fragment, for the full-screen preview page (owner only)
+    getFiles: protectedProcedure
+        .input(z.object({ fragmentId: z.string().min(1) }))
+        .query(async ({ input, ctx }) => {
+            const fragment = await prisma.fragment.findFirst({
+                where: {
+                    id: input.fragmentId,
+                    message: { project: { userId: ctx.auth.userId } },
+                },
+                select: { files: true, title: true },
+            });
+            if (!fragment || !fragment.files || typeof fragment.files !== "object") {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Preview not found" });
+            }
+            return { title: fragment.title, files: fragment.files as Record<string, string> };
+        }),
+
     updateFile: protectedProcedure
         .input(
             z.object({

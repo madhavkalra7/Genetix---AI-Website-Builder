@@ -8,47 +8,26 @@ import { consumeCredits } from "@/lib/usage";
 import { refundCredit } from "@/lib/credit-refund";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
-
-// Placeholder 2-word project name from the user prompt (shown while the first build runs).
-// After the first successful build, the Inngest function replaces it with an AI-generated title.
-function generateProjectName(prompt: string): string {
-    // Instruction phrases that describe HOW to build, not WHAT to build
-    const cleanedPrompt = prompt
-        .toLowerCase()
-        .replace(/\b(use|using|with|via|do|perform)\s+(a\s+)?(web|internet|google|online)\s+search(es|ing)?\b/g, ' ')
-        .replace(/\b(search|look up|research)\s+(the\s+)?(web|internet|online)\b/g, ' ');
-
-    // Remove common / filler words
-    const commonWords = [
-        'create', 'build', 'make', 'design', 'develop', 'generate', 'a', 'an',
-        'the', 'my', 'new', 'modern', 'simple', 'basic', 'advanced', 'with',
-        'for', 'and', 'or', 'but', 'website', 'app', 'application', 'page',
-        'use', 'using', 'web', 'search', 'please', 'want', 'need', 'can', 'you',
-        'could', 'would', 'should', 'like', 'some', 'that', 'this', 'just', 'also',
-        'real', 'proper', 'good', 'best', 'nice', 'cool', 'beautiful', 'awesome',
-        'give', 'help', 'write', 'code', 'fully', 'functional', 'responsive', 'are',
-        'its', 'into', 'from', 'all', 'very', 'then', 'which', 'one', 'have', 'has',
-    ];
-
-    // Clean and tokenize
-    const words = cleanedPrompt
-        .replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ') // Remove punctuation (keep non-English letters + vowel signs)
-        .split(/\s+/)
-        .filter(word => word.length > 2 && !commonWords.includes(word));
-    
-    // Take first 2 meaningful words
-    if (words.length === 0) return 'Web Project';
-    if (words.length === 1) return `${capitalize(words[0])} Site`;
-    
-    // Return first 2 words in title case
-    return `${capitalize(words[0])} ${capitalize(words[1])}`;
-}
-
-function capitalize(word: string): string {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-}
+import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
 
 export const projectsRouter = createTRPCRouter({
+    // Rename (pencil edit). Owner only.
+    rename: protectedProcedure
+        .input(z.object({ id: z.string().min(1), name: z.string() }))
+        .mutation(async ({ input, ctx }) => {
+            const name = sanitizeProjectName(input.name);
+            if (!name) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Name must be 1-60 characters" });
+            }
+            const { count } = await prisma.project.updateMany({
+                where: { id: input.id, userId: ctx.auth.userId },
+                data: { name },
+            });
+            if (count !== 1) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+            }
+            return prisma.project.findUniqueOrThrow({ where: { id: input.id } });
+        }),
     getOne: protectedProcedure
     .input(z.object({
         id: z.string().min(1, { message: "Project ID is required" }),
@@ -189,7 +168,7 @@ export const projectsRouter = createTRPCRouter({
                 }
             
             // Generate meaningful project name from user prompt
-            const projectName = generateProjectName(input.value);
+            const projectName = await generateProjectName(input.value, "web");
             console.log("📝 Generated project name:", projectName);
             
             // If anything below fails, the build never starts: give the credit back.
@@ -230,6 +209,23 @@ export const projectsRouter = createTRPCRouter({
 });
 
 export const appProjectsRouter = createTRPCRouter({
+    // Rename (pencil edit). Owner only.
+    rename: protectedProcedure
+        .input(z.object({ id: z.string().min(1), name: z.string() }))
+        .mutation(async ({ input, ctx }) => {
+            const name = sanitizeProjectName(input.name);
+            if (!name) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Name must be 1-60 characters" });
+            }
+            const { count } = await prisma.appProject.updateMany({
+                where: { id: input.id, userId: ctx.auth.userId },
+                data: { name },
+            });
+            if (count !== 1) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "App project not found" });
+            }
+            return prisma.appProject.findUniqueOrThrow({ where: { id: input.id } });
+        }),
     getMany: protectedProcedure
         .query(async ({ ctx }) => {
             if (!ctx.auth.userId) {
@@ -317,7 +313,7 @@ export const appProjectsRouter = createTRPCRouter({
                 }
             }
 
-            const projectName = generateProjectName(input.value);
+            const projectName = await generateProjectName(input.value, "app");
 
             try {
                 const createdProject = await prisma.appProject.create({

@@ -40,10 +40,15 @@ function extractInlineScripts(html: string, fileName: string): ScriptChunk[] {
 function syntaxError(code: string, isModule: boolean): string | null {
   if (isModule || /^\s*(import|export)\s/m.test(code)) return null; // vm.Script can't parse ESM
   try {
-    new vm.Script(code);
+    new vm.Script(code, { filename: "gen.js" });
     return null;
   } catch (e) {
-    return e instanceof Error ? e.message : String(e);
+    const msg = e instanceof Error ? e.message : String(e);
+    const line = e instanceof Error ? e.stack?.match(/gen\.js:(\d+)/)?.[1] : undefined;
+    const hint = /Unexpected end of input/.test(msg)
+      ? " (the file is cut off or has an unclosed { ( [ or string — rewrite the whole file completely)"
+      : "";
+    return `${msg}${line ? ` at line ${line}` : ""}${hint}`;
   }
 }
 
@@ -80,7 +85,7 @@ function definedIds(html: string, allJs: string): Set<string> {
 /**
  * Returns a list of human-readable problems (empty = looks OK). Capped to keep feedback focused.
  */
-export function validateStaticProject(files: StaticFiles, opts: { singleFileApp?: boolean } = {}): string[] {
+export function validateStaticProject(files: StaticFiles, opts: { singleFileApp?: boolean; userRequest?: string } = {}): string[] {
   const issues: string[] = [];
   const textFiles: StaticFiles = {};
   for (const [p, c] of Object.entries(files)) {
@@ -179,6 +184,31 @@ export function validateStaticProject(files: StaticFiles, opts: { singleFileApp?
     }
   }
 
+  // 6) Bare ES module imports ("three", "gsap") only work with an import map (no bundler here)
+  const hasImportMap = htmlNames.some((h) => /<script[^>]+type=["']importmap["']/i.test(textFiles[h]));
+  const bareImports = new Set<string>();
+  const importRe = /\bimport\s+(?:[^'"]*?\sfrom\s+)?["']([^"'./][^"']*)["']|\bimport\(\s*["']([^"'./][^"']*)["']\s*\)/g;
+  let im: RegExpExecArray | null;
+  while ((im = importRe.exec(allJs))) {
+    const spec = im[1] ?? im[2];
+    if (spec && !/^(https?:|data:|blob:)/.test(spec)) bareImports.add(spec);
+  }
+  if (bareImports.size && !hasImportMap) {
+    issues.push(`Bare module imports (${[...bareImports].slice(0, 5).join(", ")}) can't load in the browser without a bundler. Add a <script type="importmap"> mapping them to full CDN URLs (e.g. https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js) or import from the full URL.`);
+  }
+
+  // 7) Games must have music + sound effects by default
+  const allText = Object.values(textFiles).join("\n");
+  const looksLikeGame =
+    /requestAnimationFrame/.test(allJs) &&
+    /(keydown|touchstart|pointerdown)/.test(allJs) &&
+    /\b(score|lives|game ?over|level|player)\b/i.test(allText);
+  const hasAudio = /AudioContext|webkitAudioContext|new Audio\(/.test(allJs);
+  const userDisabledSound = /\b(no|without|muted?|silent)\s+(sound|audio|music|sfx)\b/i.test(opts.userRequest ?? "");
+  if (looksLikeGame && !hasAudio && !userDisabledSound) {
+    issues.push("This is a game but it has no audio. Add background music and sound effects generated with the Web Audio API (started on the first user gesture), plus a mute toggle (button + M key) saved in localStorage.");
+  }
+
   return Array.from(new Set(issues)).slice(0, 15);
 }
 
@@ -187,7 +217,8 @@ export function formatValidationFeedback(issues: string[]): string {
     "AUTOMATED QA CHECK FAILED. Your project has these problems:",
     ...issues.map((i) => `- ${i}`),
     "",
-    "Fix ALL of them now using createOrUpdateFiles (edit the affected parts; keep everything else working).",
-    "Then double-check that every button, link, form and control actually works, and reply with your <task_summary> again.",
+    "Fix ALL of them now: readFiles the affected file, then write the COMPLETE corrected file with createOrUpdateFiles.",
+    "Do NOT use the terminal to edit files (sed/echo/cat) — terminal edits are NOT saved to the project and the bug will remain.",
+    "Keep everything else working, double-check every button, link, form and control, then reply with your summary tag again.",
   ].join("\n");
 }
