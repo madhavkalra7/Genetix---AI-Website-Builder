@@ -10,6 +10,8 @@ import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
 import { getTemplateById } from "@/lib/templates";
 import { searchWeb, isWebSearchEnabled, MAX_WEB_SEARCHES_PER_RUN, WEB_SEARCH_INSTRUCTIONS } from "@/lib/web-search";
 import { getReasoningEffort, getResponsesBridgeBaseUrl } from "@/lib/responses-bridge";
+import { validateStaticProject, formatValidationFeedback } from "@/lib/static-validator";
+import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
 import fs from "fs";
 import path from "path";
 
@@ -19,7 +21,35 @@ interface AgentState {
 }
 
 export const codeAgentFunction = inngest.createFunction(
-  { id: "code-agent" },
+  {
+    id: "code-agent",
+    // Runs after the function has failed permanently (all retries exhausted).
+    // Without this the UI waits forever (no ASSISTANT message) and the credit is lost.
+    onFailure: async ({ event, error, step }) => {
+      const original = event.data.event as { data: { projectId: string; isApp?: boolean; creditCost?: number } };
+      const { projectId } = original.data;
+      const isApp = original.data.isApp === true;
+      const creditCost = original.data.creditCost ?? (isApp ? 5 : 1);
+      console.error("❌ code-agent failed permanently:", error?.message);
+
+      await step.run("record-failure-and-refund", async () => {
+        // Skip if a result/error was already saved for the latest request (avoids double refunds)
+        const last = isApp
+          ? await prisma.appMessage.findFirst({ where: { appProjectId: projectId }, orderBy: { createdAt: "desc" }, select: { role: true } })
+          : await prisma.message.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { role: true } });
+        if (!last || last.role === "ASSISTANT") return;
+
+        const content = "Something went wrong while building this. Your credit has been refunded — please try again.";
+        if (isApp) {
+          await prisma.appMessage.create({ data: { appProjectId: projectId, content, role: "ASSISTANT", type: "ERROR" } });
+        } else {
+          await prisma.message.create({ data: { projectId, content, role: "ASSISTANT", type: "ERROR" } });
+        }
+        const ownerId = await getProjectOwnerId(projectId, isApp);
+        if (ownerId) await refundCredit(ownerId, creditCost);
+      });
+    },
+  },
   { event: "code-agent/run" },
   async ({ event, step }) => {
 
@@ -320,6 +350,12 @@ export const codeAgentFunction = inngest.createFunction(
       : `⚠️ No APP_URL / NEXT_PUBLIC_APP_URL / NEXTAUTH_URL set: ${agentModel} running WITHOUT reasoning`
   );
 
+  // 🧪 Automated QA (static HTML/CSS/JS websites and mobile apps): up to 2 fix rounds
+  const MAX_QA_ROUNDS = 2;
+  const runStaticQa = isAppBuild || projectTechStack === "html-css-js";
+  let qaRounds = 0;
+  let pendingQaFeedback: string | null = null;
+
   // ✅ OpenAI-powered Agent
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
@@ -353,10 +389,33 @@ export const codeAgentFunction = inngest.createFunction(
         ? [terminalTool, createOrUpdateFilesTool, readFilesTool, webSearchTool]
         : [terminalTool, createOrUpdateFilesTool, readFilesTool],
       lifecycle: {
+        // Deliver automated QA feedback (from the previous run) as the newest user message
+        onStart: async ({ prompt, history }) => {
+          const baseHistory: Message[] = history ?? [];
+          if (pendingQaFeedback) {
+            const feedback = pendingQaFeedback;
+            pendingQaFeedback = null;
+            const feedbackMessage: Message = { type: "text", role: "user", content: feedback };
+            return { prompt, history: [...baseHistory, feedbackMessage], stop: false };
+          }
+          return { prompt, history: baseHistory, stop: false };
+        },
         onResponse: async ({ result, network }) => {
           const lastAssistantMessageText = lastAssistantTextMessageContent(result);
           if (lastAssistantMessageText?.includes("<task_summary>")) {
             if (network?.state?.data) {
+              // Automated QA for static projects: don't accept the build while it has
+              // detectable bugs (syntax errors, dead handlers/links, missing elements).
+              if (runStaticQa && qaRounds < MAX_QA_ROUNDS) {
+                const issues = validateStaticProject(network.state.data.files || {}, { singleFileApp: isAppBuild });
+                if (issues.length > 0) {
+                  qaRounds++;
+                  pendingQaFeedback = formatValidationFeedback(issues);
+                  console.log(`🧪 QA round ${qaRounds}: ${issues.length} issue(s) sent back to the agent`, issues);
+                  return result; // summary NOT set -> router runs the agent again
+                }
+                console.log("🧪 QA passed");
+              }
               network.state.data.summary = lastAssistantMessageText;
             }
           }
@@ -368,7 +427,8 @@ export const codeAgentFunction = inngest.createFunction(
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
-      maxIter: webSearchEnabled ? 14 : 10, // extra turns so searches don't eat into coding turns
+      // extra turns for web searches and automated QA fix rounds
+      maxIter: (webSearchEnabled ? 14 : 10) + (runStaticQa ? MAX_QA_ROUNDS * 2 : 0),
       defaultState:state,
       router: async ({ network }) => {
         const summary = network.state.data.summary;
@@ -510,7 +570,7 @@ export const codeAgentFunction = inngest.createFunction(
       enhancedPrompt += `=================================================================\n\n`;
       enhancedPrompt += `⚠️ CRITICAL INSTRUCTIONS FOR MODIFICATIONS:\n`;
       enhancedPrompt += `1. The files shown above ALREADY EXIST in the sandbox\n`;
-      enhancedPrompt += `2. You can use readFiles(['${fileList[0]}']) to see the complete current version\n`;
+      enhancedPrompt += `2. The previews above are TRUNCATED. Before changing ANY file you MUST call readFiles on it to get its full current content — never rewrite a file from the preview, or existing features will be lost\n`;
       enhancedPrompt += `3. ONLY modify what the user asked for - keep everything else intact\n`;
       enhancedPrompt += `4. If user says "add sound" or "add feature X", ADD it to existing code\n`;
       enhancedPrompt += `5. DO NOT rebuild from scratch - use createOrUpdateFiles to modify existing files\n`;
@@ -555,41 +615,22 @@ export const codeAgentFunction = inngest.createFunction(
       }
     }
     
+    // Stock photos are OPTIONAL material. (Previously they were "MANDATORY" with a fixed
+    // hero/features/gallery layout, which turned every request — even games and tools —
+    // into the same generic landing page.)
     if (localImagePaths.length > 0) {
-      enhancedPrompt += `\n\n🎨 CRITICAL REQUIREMENT - YOU MUST USE THESE HIGH-QUALITY IMAGES:\n`;
-      enhancedPrompt += `=================================================================\n`;
-      localImagePaths.forEach((path, index) => {
-        const simplePath = `image-${index + 1}.jpg`;
-        enhancedPrompt += `✓ Image ${index + 1}: "${simplePath}" (already downloaded, ready to use)\n`;
+      enhancedPrompt += `\n\n---\nOPTIONAL STOCK PHOTOS (already downloaded; use them ONLY where they genuinely fit what the user asked for):\n`;
+      localImagePaths.forEach((_p, index) => {
+        enhancedPrompt += `- "image-${index + 1}.jpg"\n`;
       });
-      enhancedPrompt += `\n📋 MANDATORY IMAGE INTEGRATION INSTRUCTIONS:\n`;
-      enhancedPrompt += `1. Hero Section: Use "image-1.jpg" as the main hero/banner image\n`;
-      enhancedPrompt += `2. Content Sections: Use "image-2.jpg" and "image-3.jpg" for feature showcases\n`;
-      enhancedPrompt += `3. Gallery/Background: Use "image-4.jpg" and "image-5.jpg" for additional visuals\n\n`;
-      enhancedPrompt += `⚠️ CRITICAL HTML SYNTAX:\n`;
-      enhancedPrompt += `<img src="image-1.jpg" alt="Hero banner">\n`;
-      enhancedPrompt += `<img src="image-2.jpg" alt="Feature showcase">\n`;
-      enhancedPrompt += `(NO ./ prefix, NO / prefix - just the filename!)\n\n`;
-      enhancedPrompt += `📐 REQUIRED CSS for responsive images:\n`;
-      enhancedPrompt += `img { max-width: 100%; height: auto; display: block; }\n`;
-      enhancedPrompt += `=================================================================\n`;
-      enhancedPrompt += `YOU MUST include ALL ${localImagePaths.length} images in the website design!\n\n`;
-      console.log(`📝 Enhanced prompt with ${localImagePaths.length} local images (MANDATORY USAGE)`);
+      enhancedPrompt += `They were found by a keyword search, so they may be irrelevant. Ignore them for games, tools, utilities, dashboards or anything where photos don't belong — never add a hero banner or gallery just to use them. If used: <img src="image-1.jpg" alt="..."> (plain filename, no ./ or / prefix).\n`;
+      console.log(`📝 Offered ${localImagePaths.length} optional stock images`);
     } else {
       console.log("📝 No images downloaded, proceeding without images");
     }
 
     if (event.data.isApp === true && (!previousFiles || Object.keys(previousFiles).length === 0)) {
-      enhancedPrompt += `\n\n🚨 MANDATORY REQUIREMENT (SINGLE-PASS FULL MULTI-SCREEN GENERATION):\n`;
-      enhancedPrompt += `You MUST build a complete, fully functional multi-screen mobile app in a SINGLE PASS inside index.html.\n`;
-      enhancedPrompt += `You MUST build ALL of the following 5+ complete, distinct screens inside index.html:\n`;
-      enhancedPrompt += `1. #screen-home (Home/Dashboard with summary cards & quick actions)\n`;
-      enhancedPrompt += `2. #screen-explore (Explore/Catalog with search bar & JS filter)\n`;
-      enhancedPrompt += `3. #screen-detail (Item Detail View with specs, image & ← Back button)\n`;
-      enhancedPrompt += `4. #screen-profile (User Profile & editable settings form)\n`;
-      enhancedPrompt += `5. #screen-create (Add Entry form that actually inserts items into state)\n`;
-      enhancedPrompt += `6. #screen-history (Activity/Transactions log screen)\n`;
-      enhancedPrompt += `Include a fixed bottom navigation tab bar (<nav class="bottom-nav">) with working tab switching JavaScript. DO NOT build only 1 screen! Build ALL screens immediately in this first pass so the app works 100% out-of-the-box!`;
+      enhancedPrompt += `\n\n---\nFIRST BUILD: deliver the complete app in this pass inside index.html — every screen this app needs (decided from its purpose, not a fixed template), all fully working. No placeholder screens or "coming soon".`;
     }
 
     let result;
@@ -742,7 +783,7 @@ export const codeAgentFunction = inngest.createFunction(
           return await prisma.appMessage.create({
             data: {
               appProjectId: event.data.projectId,
-              content: "Something Went Wrong. No summary and no files generated.",
+              content: "Something went wrong and nothing was generated. Your credit has been refunded — please try again.",
               role: "ASSISTANT",
               type: "ERROR",
             },
@@ -770,7 +811,7 @@ export const codeAgentFunction = inngest.createFunction(
           return await prisma.message.create({
             data: {
               projectId: event.data.projectId,
-              content: "Something Went Wrong. No summary and no files generated.",
+              content: "Something went wrong and nothing was generated. Your credit has been refunded — please try again.",
               role: "ASSISTANT",
               type: "ERROR",
             },
@@ -794,6 +835,16 @@ export const codeAgentFunction = inngest.createFunction(
         });
       }
     });
+
+    // Nothing was produced: refund the credit (after the ERROR message is saved, so the
+    // onFailure handler won't refund a second time).
+    if (isError) {
+      await step.run("refund-credit", async () => {
+        const isApp = event.data.isApp === true;
+        const ownerId = await getProjectOwnerId(event.data.projectId, isApp);
+        if (ownerId) await refundCredit(ownerId, event.data.creditCost ?? (isApp ? 5 : 1));
+      });
+    }
 
     return {
       url: sandboxUrl,

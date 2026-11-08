@@ -27,7 +27,7 @@ export const Usage = ({ remainingCredits = 0, totalCredits = 3, aiquestMode = fa
     return (
         <div className="rounded-t-xl bg-background border border-b-0 p-2.5">
            <div className="flex items-center gap-x-2">
-                <div>
+                <div className="min-w-0">
                     <p className="text-sm">
                         {aiquestMode ? `${remainingCredits} / ${totalCredits} World 6 iterations remaining` : `${remainingCredits} / ${totalCredits} ${planName} credits remaining`}
                     </p>
@@ -40,7 +40,7 @@ export const Usage = ({ remainingCredits = 0, totalCredits = 3, aiquestMode = fa
                         asChild
                         size="sm"
                         variant="tertiary"
-                        className="ml-auto"
+                        className="ml-auto shrink-0"
                     >
                         <Link href="/pricing"><CrownIcon/>Upgrade</Link>
                     </Button>

@@ -117,6 +117,38 @@ export async function verifyToken(token: string, type: 'EMAIL_VERIFICATION' | 'P
   return verificationToken;
 }
 
+/**
+ * LEGACY RULE: email verification for credentials signup was introduced on 2026-11-08.
+ * Accounts created before that moment never received a verification email and have
+ * emailVerified=false in the DB. Rather than mass-updating rows with a migration, any user
+ * created before this cutoff is treated as verified. Accounts created after it must verify.
+ */
+export const EMAIL_VERIFICATION_CUTOFF = new Date('2026-11-08T00:00:00Z');
+
+export function isEmailVerified(user: { emailVerified: boolean; createdAt: Date }): boolean {
+  return user.emailVerified || user.createdAt < EMAIL_VERIFICATION_CUTOFF;
+}
+
+/** Minimum gap between two verification emails for the same user. */
+export const VERIFICATION_RESEND_INTERVAL_MS = 60 * 1000;
+
+/** Most recent EMAIL_VERIFICATION token for a user, if any (used for rate limiting). */
+export async function getLatestEmailVerificationToken(userId: string) {
+  return prisma.verificationToken.findFirst({
+    where: { userId, type: 'EMAIL_VERIFICATION' },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+/**
+ * Replaces any outstanding EMAIL_VERIFICATION tokens for the user with a fresh one, so only
+ * the most recently sent link works (important when an unverified signup is overwritten).
+ */
+export async function createEmailVerificationToken(userId: string) {
+  await prisma.verificationToken.deleteMany({ where: { userId, type: 'EMAIL_VERIFICATION' } });
+  return createVerificationToken(userId, 'EMAIL_VERIFICATION');
+}
+
 export async function createPasswordReset(userId: string) {
   const token = generateToken();
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour

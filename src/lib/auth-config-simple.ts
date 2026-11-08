@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/db";
+import { isEmailVerified, deleteAllUserSessions } from "@/lib/auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -59,7 +60,25 @@ export const authOptions: NextAuthOptions = {
             console.log("✅ OAuth user created successfully");
           } else {
             console.log("OAuth user already exists:", user.email);
-            
+
+            // SECURITY (account-hijack fix): an unverified credentials account with this email
+            // may have been registered by someone who doesn't own the address. The OAuth provider
+            // has now proven ownership, so mark the email verified, drop the password set at
+            // signup and kill every existing session before letting the real owner in.
+            // Legacy users (created before EMAIL_VERIFICATION_CUTOFF) count as verified and are
+            // left untouched, as before.
+            if (!isEmailVerified(existingUser)) {
+              console.warn("Unverified account claimed via OAuth; clearing password and sessions:", existingUser.id);
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { emailVerified: true, passwordHash: null },
+              });
+              await deleteAllUserSessions(existingUser.id);
+              await prisma.verificationToken.deleteMany({
+                where: { userId: existingUser.id, type: "EMAIL_VERIFICATION" },
+              });
+            }
+
             // Update user image if changed
             if (user.image && existingUser.image !== user.image) {
               await prisma.user.update({

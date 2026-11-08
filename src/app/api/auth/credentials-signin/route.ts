@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { verifyPassword, createSession } from '@/lib/auth';
+import { verifyPassword, createSession, isEmailVerified } from '@/lib/auth';
 import { z } from 'zod';
 
 const signInSchema = z.object({
@@ -48,12 +48,17 @@ export async function POST(request: NextRequest) {
         // Ensure database password matches current .env password
         const { verifyPassword } = await import('@/lib/auth');
         const isCurrentMatch = adminUser.passwordHash ? await verifyPassword(adminPassword, adminUser.passwordHash) : false;
-        if (!isCurrentMatch) {
+        // The admin proved knowledge of ADMIN_PASSWORD from .env, so also mark the admin email as
+        // verified (the admin row may predate email verification or have been created elsewhere).
+        if (!isCurrentMatch || !adminUser.emailVerified) {
           await prisma.user.update({
             where: { email: adminEmail },
-            data: { passwordHash: expectedHash }
+            data: {
+              ...(!isCurrentMatch ? { passwordHash: expectedHash } : {}),
+              emailVerified: true,
+            }
           });
-          console.log("🚀 Admin user password updated to match current .env configuration!");
+          console.log("🚀 Admin user synced with current .env configuration!");
         }
       }
     }
@@ -92,6 +97,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
+      );
+    }
+
+    // Require a verified email (users created before the verification cutoff count as verified,
+    // see isEmailVerified). Checked after the password so this doesn't reveal account state.
+    if (!isEmailVerified(user)) {
+      return NextResponse.json(
+        {
+          error: 'Please verify your email first. Check your inbox for the verification link.',
+          code: 'EMAIL_NOT_VERIFIED',
+          emailNotVerified: true,
+        },
+        { status: 403 }
       );
     }
 

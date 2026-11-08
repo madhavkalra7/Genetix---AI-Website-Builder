@@ -2,9 +2,9 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { inngest } from "@/inngest/client";
-import { Input } from "@/components/ui/input";
 import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
+import { refundCredit } from "@/lib/credit-refund";
 export const messagesRouter = createTRPCRouter({
     getMany: protectedProcedure
         .input(
@@ -67,21 +67,28 @@ export const messagesRouter = createTRPCRouter({
                     });
                 }
             }
-            const createdMessage=await prisma.message.create({
-                data: {
-                    projectId: input.projectId,
-                    content:input.value,
-                    role: "USER",
-                    type: "RESULT",
-                },
-            });
-            await inngest.send({
-                name: "code-agent/run",
-                data: {
-                    value: input.value,
-                    projectId: input.projectId,
-                },
+            // If anything below fails, the build never starts: give the credit back.
+            try {
+                const createdMessage=await prisma.message.create({
+                    data: {
+                        projectId: input.projectId,
+                        content:input.value,
+                        role: "USER",
+                        type: "RESULT",
+                    },
                 });
+                await inngest.send({
+                    name: "code-agent/run",
+                    data: {
+                        value: input.value,
+                        projectId: input.projectId,
+                        creditCost: 1,
+                    },
+                    });
                 return createdMessage;
+            } catch (error) {
+                await refundCredit(ctx.auth.userId).catch(() => {});
+                throw error;
+            }
         }),
 });

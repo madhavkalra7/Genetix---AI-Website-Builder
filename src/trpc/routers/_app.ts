@@ -5,10 +5,12 @@ import { messagesRouter } from '@/modules/messages/server/procedures';
 import { usageRouter } from '@/modules/usage/server/procedures';
 import { subscriptionRouter } from '@/modules/subscription/server/procedures';
 import { adminRouter } from '@/modules/admin/server/procedures';
+import { fragmentsRouter } from '@/modules/fragments/server/procedures';
 
 export const appRouter = createTRPCRouter({
   usage: usageRouter,
   messages: messagesRouter,
+  fragments: fragmentsRouter,
   projects: projectsRouter,
   appProjects: appProjectsRouter, // Exposed separate router for mobile apps
   subscription: subscriptionRouter,

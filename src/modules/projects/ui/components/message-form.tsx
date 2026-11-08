@@ -85,7 +85,7 @@ export const MessageForm=({ projectId }: Props) => {
             )}
             <form onSubmit={form.handleSubmit(onSubmit)}
                 className={cn(
-                    "relative border p-4 pt-1 rounded-xl bg-sidebar dark:bg-sidebar transition-all",
+                    "relative border p-3 md:p-4 pt-1 md:pt-1 rounded-xl bg-sidebar dark:bg-sidebar transition-all",
                     isFocused && "shadow-xs",
                     showUsage && "rounded-t-none"
                 )} >
@@ -113,7 +113,7 @@ export const MessageForm=({ projectId }: Props) => {
     )}
                     />
                     <div className="flex gap-x-2 items-end justify-between pt-2">
-                        <div className="text-[10px] text-muted-foreground font-mono">
+                        <div className="hidden md:block text-[10px] text-muted-foreground font-mono">
                             <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                                 <span>
                                     &#8984;
@@ -124,7 +124,7 @@ export const MessageForm=({ projectId }: Props) => {
                         <Button
                             disabled={isButtonDisabled}
                             className={cn(
-                                "size-8 rounded-full",
+                                "size-8 rounded-full ml-auto shrink-0",
                                 isButtonDisabled && "bg-muted-foreground border"
                             )}
                         >

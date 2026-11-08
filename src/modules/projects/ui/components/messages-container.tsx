@@ -9,12 +9,14 @@ interface Props {
     projectId: string;
     activeFragment:Fragment | null;
     setActiveFragment: (fragment:Fragment | null)=>void;
+    /** Called when the user explicitly picks a version from the chat */
+    onFragmentSelect?: (fragment: Fragment) => void;
 }
 export const MessagesContainer = ({ 
     projectId,
     activeFragment,
-    setActiveFragment
-
+    setActiveFragment,
+    onFragmentSelect,
 }: Props) => {
     const bottomRef=useRef<HTMLDivElement>(null);
     const trpc = useTRPC();
@@ -37,6 +39,16 @@ export const MessagesContainer = ({
         }
     },[messages,setActiveFragment]);
 
+    // Keep the active fragment in sync with persisted data (e.g. after a code edit is saved).
+    // Only move forward in time so a stale refetch can't overwrite a fresher save result.
+    useEffect(() => {
+        if (!activeFragment) return;
+        const fresh = messages.find((message) => message.fragments?.id === activeFragment.id)?.fragments;
+        if (fresh && new Date(fresh.updatedAt).getTime() > new Date(activeFragment.updatedAt).getTime()) {
+            setActiveFragment(fresh);
+        }
+    },[messages, activeFragment, setActiveFragment]);
+
     useEffect(() => {
         bottomRef.current?.scrollIntoView();
     },[messages.length]);
@@ -47,7 +59,7 @@ export const MessagesContainer = ({
     return(
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 min-h-0 overflow-y-auto">
-                <div className="pt-2 pr-1">
+                <div className="pt-2 pr-1 min-w-0">
                     {messages.map((message) => (
                         <MessageCard
                             key={message.id}
@@ -56,7 +68,10 @@ export const MessagesContainer = ({
                             fragment={message.fragments}
                             createdAt={message.createdAt}
                             isActiveFragment={activeFragment?.id===message.fragments?.id}
-                            onFragmentClick={() => setActiveFragment(message.fragments)}
+                            onFragmentClick={(fragment) => {
+                                setActiveFragment(fragment);
+                                onFragmentSelect?.(fragment);
+                            }}
                             type={message.type}
                             
                         />

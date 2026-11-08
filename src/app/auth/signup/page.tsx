@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignUpPage() {
-  const router = useRouter();
-  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  // Set after a successful signup: no session exists until the email is verified.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -52,14 +51,34 @@ export default function SignUpPage() {
         throw new Error(data.error || "Failed to create account");
       }
 
-      await refreshUser();
-      toast.success("Account created successfully!");
-      router.push("/");
-      router.refresh();
+      // Signup no longer logs the user in; they must verify their email first.
+      setPendingEmail(formData.email);
+      toast.success("Account created! Check your email to verify it.");
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!pendingEmail) return;
+    setResending(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: pendingEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend verification email");
+      }
+      toast.success("Verification email sent again.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to resend verification email");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -85,6 +104,36 @@ export default function SignUpPage() {
               </p>
             </div>
 
+            {pendingEmail ? (
+              <div className="text-center space-y-6">
+                <div className="text-5xl">📬</div>
+                <h2 className="text-2xl font-bold font-[Orbitron] text-white">Check your inbox</h2>
+                <p className="text-white/70 text-sm">
+                  We sent a verification link to{" "}
+                  <span className="text-white font-semibold break-all">{pendingEmail}</span>.
+                  Click the link to activate your account, then sign in.
+                </p>
+                <p className="text-white/50 text-xs">
+                  Didn&apos;t get it? Check your spam folder or resend the email.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={resending}
+                  onClick={handleResend}
+                  className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 font-[Orbitron] py-6"
+                >
+                  {resending ? "Sending..." : "Resend verification email"}
+                </Button>
+                <Link
+                  href="/auth/signin"
+                  className="block text-white/80 hover:text-purple-300 underline text-sm font-[Orbitron]"
+                >
+                  Go to Sign In
+                </Link>
+              </div>
+            ) : (
+            <>
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -254,6 +303,8 @@ export default function SignUpPage() {
                 </Link>
               </p>
             </div>
+            </>
+            )}
           </div>
         </div>
       </div>

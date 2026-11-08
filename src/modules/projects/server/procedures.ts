@@ -5,6 +5,7 @@ import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
+import { refundCredit } from "@/lib/credit-refund";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 
@@ -191,33 +192,40 @@ export const projectsRouter = createTRPCRouter({
             const projectName = generateProjectName(input.value);
             console.log("📝 Generated project name:", projectName);
             
-            const createdProject= await prisma.project.create({
-                data: {
-                    userId: ctx.auth.userId,
-                    name: projectName, // Use meaningful name instead of random slug
-                    techStack,
-                    advancedReasoning,
-                    messages: {
-                        create: {
-                            content: input.value, // Save original prompt for display
-                            role: "USER",
-                            type: "RESULT",
+            // If anything below fails, the build never starts: give the credit back.
+            try {
+                const createdProject= await prisma.project.create({
+                    data: {
+                        userId: ctx.auth.userId,
+                        name: projectName, // Use meaningful name instead of random slug
+                        techStack,
+                        advancedReasoning,
+                        messages: {
+                            create: {
+                                content: input.value, // Save original prompt for display
+                                role: "USER",
+                                type: "RESULT",
+                            }
                         }
                     }
-                }
-            });
-
-            const template = aiquestMode && input.templateId ? getTemplateById(input.templateId) : null;
-            const aiquestPrompt = `${template ? `${template.designPrompt}\n\n` : ''}${input.value}\n\nBuild with HTML, CSS, and JavaScript.`;
-            await inngest.send({
-                name: "code-agent/run",
-                data: {
-                    value: aiquestMode ? aiquestPrompt : input.enhancedValue || input.value,
-                    projectId: createdProject.id,
-                    templateId: input.templateId, // Pass template ID to inngest
-                },
                 });
+
+                const template = aiquestMode && input.templateId ? getTemplateById(input.templateId) : null;
+                const aiquestPrompt = `${template ? `${template.designPrompt}\n\n` : ''}${input.value}\n\nBuild with HTML, CSS, and JavaScript.`;
+                await inngest.send({
+                    name: "code-agent/run",
+                    data: {
+                        value: aiquestMode ? aiquestPrompt : input.enhancedValue || input.value,
+                        projectId: createdProject.id,
+                        templateId: input.templateId, // Pass template ID to inngest
+                        creditCost: 1,
+                    },
+                    });
                 return createdProject;
+            } catch (error) {
+                await refundCredit(ctx.auth.userId, 1).catch(() => {});
+                throw error;
+            }
         }),
 });
 
@@ -311,30 +319,36 @@ export const appProjectsRouter = createTRPCRouter({
 
             const projectName = generateProjectName(input.value);
 
-            const createdProject = await prisma.appProject.create({
-                data: {
-                    userId: ctx.auth.userId,
-                    name: projectName,
-                    messages: {
-                        create: {
-                            content: input.value,
-                            role: "USER",
-                            type: "RESULT",
+            try {
+                const createdProject = await prisma.appProject.create({
+                    data: {
+                        userId: ctx.auth.userId,
+                        name: projectName,
+                        messages: {
+                            create: {
+                                content: input.value,
+                                role: "USER",
+                                type: "RESULT",
+                            },
                         },
                     },
-                },
-            });
+                });
 
-            await inngest.send({
-                name: "code-agent/run",
-                data: {
-                    value: input.enhancedValue || input.value,
-                    projectId: createdProject.id,
-                    isApp: true,
-                },
-            });
+                await inngest.send({
+                    name: "code-agent/run",
+                    data: {
+                        value: input.enhancedValue || input.value,
+                        projectId: createdProject.id,
+                        isApp: true,
+                        creditCost: 5,
+                    },
+                });
 
-            return createdProject;
+                return createdProject;
+            } catch (error) {
+                await refundCredit(ctx.auth.userId, 5).catch(() => {});
+                throw error;
+            }
         }),
     createMessage: protectedProcedure
         .input(
@@ -383,31 +397,37 @@ export const appProjectsRouter = createTRPCRouter({
                 }
             }
 
-            const createdMessage = await prisma.appMessage.create({
-                data: {
-                    appProjectId: input.projectId,
-                    content: input.value,
-                    role: "USER",
-                    type: "RESULT",
-                },
-            });
+            try {
+                const createdMessage = await prisma.appMessage.create({
+                    data: {
+                        appProjectId: input.projectId,
+                        content: input.value,
+                        role: "USER",
+                        type: "RESULT",
+                    },
+                });
 
-            // Touch project updatedAt
-            await prisma.appProject.update({
-                where: { id: input.projectId },
-                data: { updatedAt: new Date() },
-            });
+                // Touch project updatedAt
+                await prisma.appProject.update({
+                    where: { id: input.projectId },
+                    data: { updatedAt: new Date() },
+                });
 
-            await inngest.send({
-                name: "code-agent/run",
-                data: {
-                    value: input.enhancedValue || input.value,
-                    projectId: input.projectId,
-                    isApp: true,
-                },
-            });
+                await inngest.send({
+                    name: "code-agent/run",
+                    data: {
+                        value: input.enhancedValue || input.value,
+                        projectId: input.projectId,
+                        isApp: true,
+                        creditCost: 5,
+                    },
+                });
 
-            return createdMessage;
+                return createdMessage;
+            } catch (error) {
+                await refundCredit(ctx.auth.userId, 5).catch(() => {});
+                throw error;
+            }
         }),
     getPublicPreview: baseProcedure
         .input(z.object({ projectId: z.string() }))

@@ -18,10 +18,35 @@ export default function SignInPage() {
     email: "",
     password: "",
   });
+  // Email of an account that exists but hasn't verified its email yet (enables "Resend").
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend verification email");
+      }
+      toast.success("Verification email sent. Check your inbox.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to resend verification email");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setUnverifiedEmail(null);
 
     try {
       const response = await fetch("/api/auth/credentials-signin", {
@@ -33,6 +58,9 @@ export default function SignInPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.code === "EMAIL_NOT_VERIFIED" || data.emailNotVerified) {
+          setUnverifiedEmail(formData.email);
+        }
         throw new Error(data.error || "Failed to sign in");
       }
 
@@ -68,6 +96,24 @@ export default function SignInPage() {
                 Continue your AI journey 🌟
               </p>
             </div>
+
+            {unverifiedEmail && (
+              <div className="mb-6 rounded-2xl border border-yellow-400/40 bg-yellow-500/10 p-4 text-sm text-yellow-100 space-y-3">
+                <p>
+                  Please verify your email first. We sent a verification link to{" "}
+                  <span className="font-semibold break-all">{unverifiedEmail}</span>.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={resending}
+                  onClick={handleResend}
+                  className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 font-[Orbitron]"
+                >
+                  {resending ? "Sending..." : "Resend verification email"}
+                </Button>
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">

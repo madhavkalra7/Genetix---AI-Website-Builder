@@ -24,16 +24,16 @@ export const ProjectHeader=({ projectId }: Props)=>{
     const { setTheme, theme }=useTheme();
 
     return (
-    <header className="p-2 flex justify-between items-center border-b">
+    <header className="p-2 flex justify-between items-center border-b min-w-0">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="focus-visible:ring-0 hover:bg-transparent hover:opacity-75 transition-opacity pl-2"
+                    className="focus-visible:ring-0 hover:bg-transparent hover:opacity-75 transition-opacity pl-2 min-w-0 max-w-full"
                 >
                     <Image src="/logo.png" alt="Genetix" width={18} height={18}/>
-                    <span className="text-sm font-medium">{project.name}</span>
+                    <span className="text-sm font-medium truncate">{project.name}</span>
                     <ChevronDownIcon/>
                 </Button>
             </DropdownMenuTrigger>

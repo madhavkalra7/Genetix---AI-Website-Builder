@@ -22,30 +22,36 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json({ error: "Server is not configured with OPENAI_API_KEY" }, { status: 500 });
     }
-  const chosenModel = process.env.PROMPT_MODEL || "gpt-4o-mini";
+  // gpt-6-luna with light reasoning: it has to actually understand the request, not pattern-match it
+  const chosenModel = process.env.PROMPT_MODEL || "gpt-6-luna";
 
   const isLimitless = mode === "limitless";
 
-  let system = "";
-  if (isLimitless) {
-    system = `You are a professional, domain-aware prompt refiner for an AI code builder.
-Your task is to take the user's raw idea and refine it into a highly detailed, premium, and actionable builder-ready prompt.
-Refine and expand the prompt to be comprehensive and premium, with no restrictions on length, sentence count, formatting, or style. You can use headings, lists, markdown, step-by-step guides, and advanced technical details as needed to build the best possible version of the user's request. There are no rules, limits, or constraints.`;
-  } else {
-    system = `You are a professional, domain-aware prompt refiner for an AI code builder.
-Your task is to take the user's raw idea and refine it into a highly actionable, detailed prompt that describes the exact application or website they want, without generic placeholders or marketing templates.
+  const core = `You turn a user's rough request into a precise build prompt for an AI coding agent that writes HTML/CSS/JS (single-page sites, games, tools and mobile web apps).
 
-Follow these rules strictly:
-1. **No Landing Page Wrapping**: If the user asks for a specific application (like a game, a tool, a calculator, a chat interface, or a dashboard), describe that application DIRECTLY. Do NOT wrap it in a landing page, marketing site, hero section, or showcase page. For example, if they want a game, describe the interactive game screen, controls, state, and mechanics directly; do not describe a landing page about the game.
-2. **Be Domain-True**:
-   - **Games**: Detail the game loop, canvas/grid layout, scoring system, key controls (e.g., WASD/arrows), game states (start, running, game over, restart), and visual effects.
-   - **Tools/Utilities**: Detail the precise input fields, selection drop-downs, stateful calculations, visual results, graphs/charts, and export options.
-   - **Websites (SaaS, E-commerce, Blog, Portfolio)**: Detail the page structure, custom components, branding, search/filter systems, layouts, and style.
-3. **Refine, Don't Genericize**: Use your intelligence to add details that are logical and helpful for the user's specific request. Do not output repetitive/boilerplate sentences (like "modern and clean aesthetic with responsive navigation"). Instead, specify colors, layouts, and UX patterns unique to their idea (e.g., neon cyberpunk theme for a retro arcade game, sleek dark steel theme for a financial dashboard).
-4. **Formatting Constraints**: Output exactly 3 to 5 complete, descriptive sentences in a single paragraph. Do not use lists, bullet points, numbers, bolding, or headings. Every sentence must end with a period.`;
-  }
+STEP 1 — UNDERSTAND (do this silently, do not output it):
+- What exactly is the user asking for? Classify it: GAME, TOOL/UTILITY (calculator, converter, generator, editor…), APP/DASHBOARD (tracker, manager, chat, planner…), WEBSITE (business, portfolio, product/landing page, blog, event…), or OTHER.
+- What concrete details did they give (names, people, places, themes, mechanics, features, style, language, audience)? EVERY one of them must survive into your prompt, unchanged in meaning.
+- What would a user who typed this be disappointed NOT to see?
 
-  const user = `Website idea: ${idea}`;
+STEP 2 — WRITE THE PROMPT:
+- Start with one sentence that states plainly what to build and its type, e.g. "Build a browser fighting game where…", "Build a loan EMI calculator tool that…", "Build a one-page website for…".
+- Build THE THING ITSELF. A game is the playable game screen (with start/game-over/restart), NOT a page about the game. A tool opens straight onto the working tool. An app opens on its main working screen. Only a WEBSITE request gets website sections, and only the sections that make sense for that specific business or person.
+- NEVER add a hero section, "features" grid, testimonials, pricing, newsletter or footer links unless the request is a website that genuinely needs them.
+- Specify the core functionality concretely: for games the mechanics, controls (keyboard AND touch), scoring, win/lose and difficulty; for tools the exact inputs, calculations/logic, outputs and edge cases; for apps the data, actions (add/edit/delete/filter), persistence (localStorage) and screens; for websites the real content for this subject.
+- Give it a distinctive visual direction that fits THIS subject (palette, typography mood, layout idea, motion), not generic "modern, clean, responsive".
+- Do not invent a different product, do not water down unusual or creative ideas, do not change the genre (a fighting game stays a real-time fighting game, not a quiz or debate), and do not add disclaimers. Keep real names/people/places exactly as written. If the request involves real people in a fictional or playful scenario, describe them as stylised cartoon characters; arcade-style action (punches, kicks, K.O.) is fine, just non-graphic (no blood/gore).
+- Write it as instructions to the builder. Output ONLY the prompt — no preamble, no quotes.`;
+
+  const system = isLimitless
+    ? `${core}
+
+FORMAT (detailed mode): a thorough spec. Use short markdown headings and bullet lists: Overview, Core functionality, Screens/sections (only those that make sense), Interactions & states, Visual design, Content. Be specific and complete, but every line must be about THIS request — no filler.`
+    : `${core}
+
+FORMAT (concise mode): one focused paragraph of 4 to 7 sentences, no lists or headings. Pack in the specifics (type, core functionality, interactions, visual direction).`;
+
+  const user = `User's request:\n${idea}`;
 
     // Call OpenAI Chat Completions for stability
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -60,8 +66,12 @@ Follow these rules strictly:
           { role: "system", content: system },
           { role: "user", content: user },
         ],
-        temperature: isLimitless ? 0.7 : 0.3,
-        max_tokens: isLimitless ? 2000 : 800,
+        // gpt-6 / reasoning models: use reasoning_effort + max_completion_tokens (temperature unsupported);
+        // older chat models (if PROMPT_MODEL is overridden) use temperature.
+        ...(/^(gpt-6|gpt-5|o\d)/.test(chosenModel)
+          ? { reasoning_effort: "low" }
+          : { temperature: isLimitless ? 0.7 : 0.4 }),
+        max_completion_tokens: isLimitless ? 4000 : 1500,
       }),
     });
 
