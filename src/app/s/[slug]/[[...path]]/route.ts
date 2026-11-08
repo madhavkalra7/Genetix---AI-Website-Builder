@@ -99,19 +99,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
     const { slug, path = [] } = await params;
     const url = request.nextUrl;
 
-    // Sites live only on the dedicated publishing origin when one is configured.
-    const dedicated = getDedicatedPublishOrigin();
-    if (dedicated) {
-        const requestHost = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host)
-            .split(",")[0]
-            .trim()
-            .toLowerCase();
-        if (requestHost !== dedicated.host.toLowerCase()) {
-            const basePath = dedicated.pathname.replace(/\/+$/, "");
-            const target = `${dedicated.origin}${basePath}${url.pathname}${url.search}`;
-            return NextResponse.redirect(target, 308);
-        }
-    }
+    // Is this request arriving on the dedicated publishing origin (PUBLISH_BASE_URL)?
+    // We never redirect to it: if that domain isn't attached to the deployment, a redirect
+    // would break every link. Requests on any other host (e.g. the main app domain) are
+    // served here too, but sandboxed (see SANDBOX_CSP below) so they can't touch app cookies.
+    const dedicatedOrigin = getDedicatedPublishOrigin();
+    const requestHost = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host)
+        .split(",")[0]
+        .trim()
+        .toLowerCase();
+    const dedicated = dedicatedOrigin && requestHost === dedicatedOrigin.host.toLowerCase() ? dedicatedOrigin : null;
 
     if (!/^[a-z0-9-]{1,40}$/.test(slug)) return notFound("This site does not exist.");
 
