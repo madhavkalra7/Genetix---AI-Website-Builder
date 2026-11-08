@@ -2,9 +2,9 @@ import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Fragment, MessageRole, MessageType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
-import { Assistant } from "next/font/google";
 import Image from "next/image";
 import { ChevronRightIcon,Code2Icon } from "lucide-react";
+import { VersionActions } from "./version-actions";
 
 interface UserMessageProps {
   content: string;
@@ -20,33 +20,53 @@ const UserMessage = ({ content }: UserMessageProps) => {
   );
 };
 
+/** Version context passed down from the messages container (enables the version menu) */
+export interface VersionContext {
+  projectId: string;
+  latestFragmentId: string | null;
+  isBuilding: boolean;
+}
+
 interface FragmentCardProps {
   fragment: Fragment;
   isActiveFragment: boolean;
   onFragmentClick: (fragment: Fragment) => void;
+  version?: VersionContext;
 };
 const FragmentCard=({
   fragment,
   isActiveFragment,
-  onFragmentClick
+  onFragmentClick,
+  version,
 }: FragmentCardProps) => {
   return (
-    <button className={cn(
-      "flex items-start text-start gap-2 border rounded-lg bg-muted w-fit max-w-full min-w-0 p-3 hover:bg-secondary transition-colors",
-      isActiveFragment && "bg-primary text-primary-foreground border-primary hover:bg-primary",
-    )} onClick={()=> onFragmentClick(fragment)}>
-      
-      <Code2Icon className="size-4 mt-0.5"/>
-      <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-sm font-medium line-clamp-1 break-all">
-          {fragment.title}
-        </span>
-        <span className="text-sm">Preview</span>
-      </div>
-      <div className="flex items-center justify-center mt-0.5">
-        <ChevronRightIcon className="size-4"/>
-      </div>
-    </button>
+    <div className="flex items-start gap-1 max-w-full min-w-0">
+      <button type="button" className={cn(
+        "flex items-start text-start gap-2 border rounded-lg bg-muted w-fit max-w-full min-w-0 p-3 hover:bg-secondary transition-colors",
+        isActiveFragment && "bg-primary text-primary-foreground border-primary hover:bg-primary",
+      )} onClick={()=> onFragmentClick(fragment)}>
+        
+        <Code2Icon className="size-4 mt-0.5"/>
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="text-sm font-medium line-clamp-1 break-all">
+            {fragment.title}
+          </span>
+          <span className="text-sm">Preview</span>
+        </div>
+        <div className="flex items-center justify-center mt-0.5">
+          <ChevronRightIcon className="size-4"/>
+        </div>
+      </button>
+      {version && (
+        <VersionActions
+          projectId={version.projectId}
+          fragmentId={fragment.id}
+          latestFragmentId={version.latestFragmentId}
+          isBuilding={version.isBuilding}
+          className="mt-2"
+        />
+      )}
+    </div>
   )
 }
 
@@ -57,6 +77,7 @@ interface AssistantMessageProps {
     isActiveFragment: boolean;
     onFragmentClick: (fragment: Fragment) => void;
     type: MessageType;
+    version?: VersionContext;
 }
 
 const AssistantMessage = ({content,
@@ -64,7 +85,8 @@ const AssistantMessage = ({content,
     createdAt,
     isActiveFragment,
     onFragmentClick,
-    type}: AssistantMessageProps) => {
+    type,
+    version}: AssistantMessageProps) => {
     return (
         <div className={cn("flex flex-col group px-2 pb-4",
             type==="ERROR" && "text-red-700 dark:text-red-500"
@@ -90,6 +112,7 @@ const AssistantMessage = ({content,
                     fragment={fragment}
                     isActiveFragment={isActiveFragment}
                     onFragmentClick={onFragmentClick}
+                    version={version}
                   />
                 )}
             </div>
@@ -105,6 +128,7 @@ interface MessageCardProps {
   isActiveFragment: boolean;
   onFragmentClick: (fragment: Fragment) => void;
   type: MessageType;
+  version?: VersionContext;
 }
 
 export const MessageCard = ({
@@ -115,10 +139,11 @@ export const MessageCard = ({
   isActiveFragment,
   onFragmentClick,
   type,
+  version,
 }: MessageCardProps) => {
   if (role === "ASSISTANT") {
     return (
-        <AssistantMessage content={content} fragment={fragment} createdAt={createdAt} isActiveFragment={isActiveFragment} onFragmentClick={onFragmentClick} type={type} />
+        <AssistantMessage content={content} fragment={fragment} createdAt={createdAt} isActiveFragment={isActiveFragment} onFragmentClick={onFragmentClick} type={type} version={version} />
     );
   }
   return <UserMessage content={content} />;

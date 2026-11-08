@@ -836,3 +836,30 @@ When the project fully works, reply with:
 Bugs found and fixed, and enhancements made (short bullet list). If nothing needed fixing, say so.
 </review_summary>
 `;
+
+
+// Shared by the builder and reviewer: how to change files efficiently and safely.
+export const EDIT_TOOL_RULES = `
+=== EDITING FILES (tools) ===
+- New files, or a file you are rewriting almost entirely → createOrUpdateFiles with the COMPLETE file content.
+- Changing part of an EXISTING file → editFile with exact search-and-replace edits. readFiles first, copy each "find" exactly from the current content (including indentation), and include enough surrounding lines that it matches exactly once. Several edits can go in one call.
+- If editFile reports "not found" or "occurs N times", readFiles again and retry with a corrected/larger "find" — never fall back to rewriting a large file from memory.
+- Never edit files through the terminal (cat/echo/sed): those changes are not saved to the project.
+- Frameworks (React/Next.js, Vue, Angular, Svelte): follow that framework's conventions and the project's existing file structure; do not add npm packages unless the stack's prompt allows it.
+`;
+
+/** Extra instructions when the user connected a Supabase backend to the project. */
+export function supabaseBackendRules(url: string, anonKey: string): string {
+  return `
+=== BACKEND: SUPABASE IS CONNECTED ===
+The user connected their own Supabase project. Use it for real persistence and auth whenever the request needs accounts, saved data, sharing between users or real-time updates (instead of localStorage).
+- Load supabase-js v2 from the CDN: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> then const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  (ES module alternative: import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").
+- SUPABASE_URL = "${url}"
+- SUPABASE_ANON_KEY = "${anonKey}"  (public anon key — safe in front-end code; NEVER ask for or use a service_role key)
+- Auth: email/password sign up + sign in + sign out with sb.auth, keep the session (onAuthStateChange), show the logged-in state, and handle errors (wrong password, unconfirmed email) with clear messages.
+- Data: design the tables this app needs and write them to a file "schema.sql" (CREATE TABLE … with sensible types, created_at defaults, foreign keys to auth.users(id) where rows belong to a user, ENABLE ROW LEVEL SECURITY and policies so users can only read/write their own rows, or public read where appropriate). The user will run schema.sql in the Supabase SQL editor.
+- Every query must handle loading, empty and error states (e.g. "Run schema.sql in Supabase first" when a table is missing — error code 42P01 / "relation does not exist").
+- Mention in your summary that schema.sql must be run once in the Supabase SQL editor.
+`;
+}

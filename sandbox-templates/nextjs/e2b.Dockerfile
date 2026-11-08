@@ -7,6 +7,16 @@ RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/li
 COPY compile_page.sh /compile_page.sh
 RUN chmod +x /compile_page.sh
 
+# Real-browser QA for generated projects (src/lib/browser-qa.ts): Playwright + Chromium.
+# Without this the pipeline skips the browser test (or installs it per build if
+# BROWSER_QA_RUNTIME_INSTALL=true, which is slow).
+RUN mkdir -p /opt/genetix-qa && cd /opt/genetix-qa \
+    && npm init -y >/dev/null \
+    && npm i playwright-core@1.49.1 --silent \
+    && PLAYWRIGHT_BROWSERS_PATH=/opt/genetix-qa/browsers npx --yes playwright-core@1.49.1 install --with-deps chromium \
+    && chmod -R a+rwX /opt/genetix-qa \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies and customize sandbox
 WORKDIR /home/user/nextjs-app
 

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Starfield, AuroraBackground } from "@/components/animations/aurora-background";
 import { HTMLPreview } from "@/components/html-preview";
+import { BuildProgress } from "@/components/build-progress";
 import { EditableProjectName } from "@/components/editable-project-name";
 import { 
   SparklesIcon, 
@@ -240,6 +241,17 @@ function CreateAppContent() {
     };
   }, [isGenerating, selectedProjectId, refetchMessages]);
 
+  const simulatedLogs = logs.map((log, idx) => (
+    <motion.div
+      key={idx}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      {log}
+    </motion.div>
+  ));
+
   const handleGenerate = () => {
     if (!prompt.trim()) return;
 
@@ -402,7 +414,8 @@ function CreateAppContent() {
                   <Button
                     onClick={handleGenerate}
                     disabled={!prompt.trim() || createAppProject.isPending}
-                    className="w-full h-12 bg-white text-black hover:bg-white/90 font-[Orbitron] font-bold tracking-wider rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300"
+                    variant="venom"
+                    className="w-full h-12 font-[Orbitron] tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <SparklesIcon className="w-4 h-4 text-purple-600 fill-purple-600/30" />
                     {createAppProject.isPending ? "Starting Engine..." : "Generate Mobile App"}
@@ -428,16 +441,24 @@ function CreateAppContent() {
                     <span className="text-[10px] text-white/40 uppercase font-bold">Genetix App Builder Terminal</span>
                   </div>
                   <div className="flex-1 overflow-y-auto space-y-2 pr-1 select-none scrollbar-thin">
-                    {logs.map((log, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {log}
-                      </motion.div>
-                    ))}
+                    {selectedProjectId ? (
+                      // Real pipeline events once the build has started; the simulated log until then
+                      <BuildProgress
+                        projectId={selectedProjectId}
+                        isApp
+                        since={
+                          latestMessage?.role === "USER"
+                            ? latestMessage.createdAt
+                            : generationStartedAtRef.current
+                        }
+                        className="border-white/10 bg-white/5 text-white/90 font-sans"
+                        fallback={
+                          <div className="space-y-2">
+                            {simulatedLogs}
+                          </div>
+                        }
+                      />
+                    ) : simulatedLogs}
                     <div className="flex items-center gap-1.5 mt-2 text-white/50">
                       <CpuIcon className="w-3.5 h-3.5 animate-spin" />
                       <span>Generating code assets... Please wait</span>
@@ -575,7 +596,8 @@ function CreateAppContent() {
                     <Button
                       onClick={handleGenerate}
                       disabled={!prompt.trim() || createAppMessage.isPending}
-                      className="bg-white text-black hover:bg-white/90 font-[Orbitron] font-bold text-xs rounded-2xl px-4 cursor-pointer"
+                      variant="venom"
+                      className="font-[Orbitron] text-xs px-4 cursor-pointer"
                     >
                       Send
                     </Button>

@@ -211,7 +211,7 @@ export default function Page() {
             <CardFooter>
               <Button
                 className="w-full"
-                variant={isCurrentPlan ? "secondary" : plan.popular ? "default" : "outline"}
+                variant={isCurrentPlan ? "secondary" : "venom"}
                 onClick={() => handleSubscribe(plan)}
                 disabled={loading === plan.name || isCurrentPlan}
               >
@@ -264,7 +264,8 @@ export default function Page() {
               <Button
                 type="submit"
                 disabled={requestMutation.isPending}
-                className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-10 font-bold font-[Orbitron] text-xs cursor-pointer flex-1 flex items-center justify-center gap-1.5"
+                variant="venom"
+                className="h-10 font-[Orbitron] text-xs cursor-pointer flex-1 flex items-center justify-center gap-1.5"
               >
                 {requestMutation.isPending ? (
                   <span className="animate-spin mr-1">🔄</span>

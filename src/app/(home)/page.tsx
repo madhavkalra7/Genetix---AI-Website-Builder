@@ -266,7 +266,8 @@ const Page = () => {
               <Magnetic>
                 <Button
                   onClick={() => router.push('/templates')}
-                  className="btn-shine bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-purple-500/50"
+                  variant="venom"
+                  className="h-auto px-8 py-3 font-[Orbitron]"
                 >
                   {t('home.browseTemplates')}
                 </Button>
@@ -455,6 +456,7 @@ const Page = () => {
             <div className="flex flex-col sm:flex-row items-start gap-3">
               <div className="relative flex-1 flex">
                 <textarea
+                  aria-label="Describe what you want to build"
                   className="bg-black/40 border border-white/30 placeholder:text-gray-400 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white font-[Orbitron] [&::selection]:bg-white [&::selection]:text-black resize-none w-full"
                   placeholder={t('home.placeholder')}
                   value={value}
@@ -507,7 +509,8 @@ const Page = () => {
                 <Button
                   disabled={createProject.isPending || createProject.isSuccess || !value || (isAiquest && aiquestUsage?.remainingCredits === 0)}
                   onClick={handleCreateProject}
-                  className="btn-shine bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-bold font-[Orbitron] transition shadow-lg hover:shadow-fuchsia-500/40"
+                  variant="venom"
+                  className="h-auto px-6 py-3 font-[Orbitron]"
                 >
                   {t('home.launch')}
                 </Button>

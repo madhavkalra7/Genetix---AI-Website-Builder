@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getRequestUserId } from "@/lib/request-auth";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -103,6 +104,12 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ files: fragment.files });
     }
+    // Everything below calls OpenAI: 10 requests / 10 min per user (fetching files above is free).
+    const rl = await checkRateLimit(`explain:${userId}`, 10, 10 * 60 * 1000);
+    if (!rl.ok) {
+      return rateLimitResponse(rl.retryAfterSec, `Too many explanation requests. Please try again in ${rl.retryAfterSec} seconds.`);
+    }
+
     // If only query is sent, treat as GPT chatbot
     if (body.query && !body.files) {
       const prompt = body.query;

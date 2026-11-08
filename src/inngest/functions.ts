@@ -3,7 +3,7 @@ import { createAgent, createTool, createNetwork, type Tool, openai, type Message
 import { Sandbox } from "@e2b/code-interpreter";
 import { z } from "zod";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
-import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT, MOBILE_APP_PROMPT, CODE_REVIEWER_PROMPT } from "@/prompt";
+import { FRAGMENT_TITLE_PROMPT, getTechSpecificPrompt, RESPONSE_PROMPT, MOBILE_APP_PROMPT, CODE_REVIEWER_PROMPT, EDIT_TOOL_RULES, supabaseBackendRules } from "@/prompt";
 import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
@@ -12,6 +12,8 @@ import { searchWeb, isWebSearchEnabled, MAX_WEB_SEARCHES_PER_RUN, WEB_SEARCH_INS
 import { getReasoningEffort, getResponsesBridgeBaseUrl } from "@/lib/responses-bridge";
 import { validateStaticProject, formatValidationFeedback } from "@/lib/static-validator";
 import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
+import { createBuild, createBuildTracker } from "@/lib/build-tracker";
+import { runBrowserQa, formatBrowserFindings, type BrowserQaResult } from "@/lib/browser-qa";
 import fs from "fs";
 import path from "path";
 
@@ -48,6 +50,17 @@ export const codeAgentFunction = inngest.createFunction(
         const ownerId = await getProjectOwnerId(projectId, isApp);
         if (ownerId) await refundCredit(ownerId, creditCost);
       });
+
+      await step.run("mark-build-failed", async () => {
+        const running = await prisma.build.findFirst({
+          where: { projectId, isApp, status: "running" },
+          orderBy: { startedAt: "desc" },
+          select: { id: true },
+        });
+        if (running) {
+          await createBuildTracker(running.id).finish("failed", { error: error?.message ?? "Build failed" });
+        }
+      });
     },
   },
   { event: "code-agent/run" },
@@ -70,7 +83,7 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     });
 
-    const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning } = await step.run("get-project-data", async () => {
+    const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning, ownerId, supabase } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
       const isApp = event.data.isApp === true;
 
@@ -78,7 +91,7 @@ export const codeAgentFunction = inngest.createFunction(
         // AppProject logic
         const project = await prisma.appProject.findUnique({
           where: { id: event.data.projectId },
-          select: { name: true }
+          select: { name: true, userId: true }
         });
 
         const messages = await prisma.appMessage.findMany({
@@ -105,13 +118,15 @@ export const codeAgentFunction = inngest.createFunction(
           previousMessages: formattedMessages,
           projectTechStack: "html-css-js", // Always static html-css-js for mobile previews
           previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
-          useAdvancedReasoning: false
+          useAdvancedReasoning: false,
+          ownerId: project?.userId ?? null,
+          supabase: null as { url: string; anonKey: string } | null,
         };
       } else {
         // Standard Project logic
         const project = await prisma.project.findUnique({
           where: { id: event.data.projectId },
-          select: { techStack: true, advancedReasoning: true }
+          select: { techStack: true, advancedReasoning: true, userId: true, supabaseUrl: true, supabaseAnonKey: true }
         });
 
         const messages = await prisma.message.findMany({
@@ -138,10 +153,32 @@ export const codeAgentFunction = inngest.createFunction(
           previousMessages: formattedMessages,
           projectTechStack: project?.techStack || "react-nextjs",
           previousFiles: (latestFragment?.files as { [path: string]: string }) || {},
-          useAdvancedReasoning: project?.advancedReasoning || false
+          useAdvancedReasoning: project?.advancedReasoning || false,
+          ownerId: project?.userId ?? null,
+          supabase: project?.supabaseUrl && project?.supabaseAnonKey
+            ? { url: project.supabaseUrl, anonKey: project.supabaseAnonKey }
+            : null,
         };
       }
     });
+
+    // 📊 One Build row per run: live progress for the UI, token usage/cost, admin logs
+    const buildId = await step.run("create-build", async () => {
+      try {
+        const isAppRun = event.data.isApp === true;
+        return await createBuild({
+          projectId: event.data.projectId,
+          isApp: isAppRun,
+          userId: ownerId,
+          model: useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna",
+          reasoningEffort: getReasoningEffort({ isApp: isAppRun, advancedReasoning: useAdvancedReasoning }),
+        });
+      } catch (e) {
+        console.warn("⚠️ Could not create Build row:", e);
+        return null;
+      }
+    });
+    const tracker = createBuildTracker(buildId);
 
     const state=createState<AgentState>(
       {
@@ -191,11 +228,22 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
+    // Find the state key for a path ("index.html" vs "/home/user/index.html")
+    const resolveFileKey = (files: { [path: string]: string }, p: string): string | null => {
+      const clean = p.replace(/^\.?\/+/, "").replace(/^home\/user\//, "");
+      for (const key of [p, clean, `/home/user/${clean}`, `/${clean}`]) {
+        if (typeof files[key] === "string") return key;
+      }
+      return null;
+    };
+
     const createOrUpdateFilesTool = createTool({
       name: "createOrUpdateFiles",
-      description: "Create or Update files in the sandbox",
+      description: "Create new files or completely rewrite files (full contents). For small changes to an existing file prefer editFile.",
       parameters: createOrUpdateFilesSchema,
       handler: async ({ files }, { step, network }) => {
+        const paths = files.map((f) => f.path).join(", ");
+        void tracker.event(network.state.data.summary ? "fixing" : "writing", paths);
         const newFiles = await step?.run("createOrUpdateFiles", async () => {
           try {
             const updatedFiles = network.state.data.files || {};
@@ -211,7 +259,56 @@ export const codeAgentFunction = inngest.createFunction(
         });
         if (typeof newFiles === "object") {
           network.state.data.files = newFiles;
+          return `Wrote ${files.length} file(s): ${paths}`;
         }
+        return `Failed to write files: ${newFiles}`;
+      },
+    });
+
+    // ✂️ Targeted search-and-replace edits (faster, cheaper and safer than rewriting whole files)
+    const editFileTool = createTool({
+      name: "editFile",
+      description:
+        "Edit an EXISTING file with exact search-and-replace. Each `find` must be copied exactly from the current file (readFiles first) and match exactly once — include a few surrounding lines to make it unique. All edits are applied together or none are. Use this for changes to existing files instead of rewriting them.",
+      parameters: z.object({
+        path: z.string().describe("File path, e.g. index.html"),
+        edits: z.array(z.object({
+          find: z.string().describe("Exact existing text to replace (must occur exactly once)"),
+          replace: z.string().describe("Replacement text"),
+        })).min(1),
+      }),
+      handler: async ({ path: filePath, edits }, { step, network }) => {
+        void tracker.event(network.state.data.summary ? "fixing" : "editing", filePath);
+        const outcome = await step?.run("editFile", async () => {
+          try {
+            const files = network.state.data.files || {};
+            const key = resolveFileKey(files, filePath);
+            const sandbox = await getSandbox(sandboxId);
+            let content = key ? files[key] : await sandbox.files.read(filePath).catch(() => null);
+            if (typeof content !== "string") {
+              return { ok: false as const, message: `File not found: ${filePath}. Use createOrUpdateFiles to create it.` };
+            }
+            const problems: string[] = [];
+            edits.forEach((e, i) => {
+              if (!e.find) { problems.push(`edit #${i + 1}: empty find`); return; }
+              const count = content!.split(e.find).length - 1;
+              if (count === 0) problems.push(`edit #${i + 1}: text not found (copy it exactly from the current file)`);
+              else if (count > 1) problems.push(`edit #${i + 1}: text occurs ${count} times (add surrounding lines to make it unique)`);
+              else content = content!.replace(e.find, () => e.replace);
+            });
+            if (problems.length) {
+              return { ok: false as const, message: `No changes applied to ${filePath}:\n- ${problems.join("\n- ")}` };
+            }
+            await sandbox.files.write(key ?? filePath, content);
+            return { ok: true as const, key: key ?? filePath, content };
+          } catch (e) {
+            return { ok: false as const, message: "Error: " + e };
+          }
+        });
+        if (!outcome) return "Edit failed";
+        if (!outcome.ok) return outcome.message;
+        network.state.data.files = { ...(network.state.data.files || {}), [outcome.key]: outcome.content };
+        return `Applied ${edits.length} edit(s) to ${filePath}`;
       },
     });
 
@@ -253,6 +350,7 @@ export const codeAgentFunction = inngest.createFunction(
         if (webSearchCount > MAX_WEB_SEARCHES_PER_RUN) {
           return `Web search limit (${MAX_WEB_SEARCHES_PER_RUN}) reached for this task. Proceed with the information you already have.`;
         }
+        void tracker.event("searching", query);
         return await step?.run("webSearch", async () => {
           console.log(`🔎 Web search #${webSearchCount}: ${query}`);
           return await searchWeb(query, 5);
@@ -343,21 +441,28 @@ export const codeAgentFunction = inngest.createFunction(
   const isAppBuild = event.data.isApp === true;
   const agentModel = useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna";
   const reasoningEffort = getReasoningEffort({ isApp: isAppBuild, advancedReasoning: useAdvancedReasoning });
-  const reasoningBridgeUrl = getResponsesBridgeBaseUrl();
+  const reasoningBridgeUrl = getResponsesBridgeBaseUrl(buildId);
   console.log(
     reasoningBridgeUrl
       ? `🧠 ${agentModel} reasoning=${reasoningEffort} (${isAppBuild ? "app" : useAdvancedReasoning ? "advanced" : "simple & fast"}) via ${reasoningBridgeUrl}`
       : `⚠️ No APP_URL / NEXT_PUBLIC_APP_URL / NEXTAUTH_URL set: ${agentModel} running WITHOUT reasoning`
   );
 
-  // 🧪 Automated QA + 🔍 LLM code review (static HTML/CSS/JS websites and mobile apps)
+  // 🧪 Automated QA + 🔍 LLM code review + 🌐 real-browser test + 🎨 design review (all stacks)
   const MAX_QA_ROUNDS = 3;
-  const runStaticQa = isAppBuild || projectTechStack === "html-css-js";
+  const STATIC_STACKS = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"];
+  const isStaticProject = isAppBuild || STATIC_STACKS.includes(projectTechStack);
+  const runStaticQa = isStaticProject;                 // static validator (syntax, handlers, links, ids, audio…)
+  const runTypecheckQa = !isStaticProject;             // Next.js: TypeScript check in the sandbox
   const REVIEWER_NAME = "code-reviewer";
   const REVIEW_EFFORT = "medium"; // the reviewer needs to really think through the code
+  const MAX_BROWSER_FIX_ROUNDS = 1;
   let qaRounds = 0;
   let reviewQaRounds = 0;
   let reviewDone = false;
+  let reviewSummaryText: string | null = null;
+  let initialBrowserReport: BrowserQaResult | null = null;
+  let browserFixRounds = 0;
   // QA feedback stays in the conversation (inserted right after the summary it refers to);
   // otherwise it would be visible for only one model call and later fixes could forget it.
   type QaFeedback = { afterResults: number; text: string };
@@ -374,8 +479,55 @@ export const codeAgentFunction = inngest.createFunction(
     return h;
   };
 
-  const runQa = (files: { [path: string]: string }) =>
-    validateStaticProject(files || {}, { singleFileApp: isAppBuild, userRequest: String(event.data.value || "") });
+  const userRequestText = String(event.data.value || "");
+  const looksLikeGameRequest = /\b(game|play|player|level|score|arcade|shooter|puzzle|racing|platformer|rpg|quiz game)\b/i.test(userRequestText);
+
+  // Static validator (static stacks) or TypeScript check (Next.js), returns human-readable issues
+  let qaCheckSeq = 0;
+  const runQa = async (files: { [path: string]: string }): Promise<string[]> => {
+    if (runStaticQa) {
+      return validateStaticProject(files || {}, { singleFileApp: isAppBuild, userRequest: userRequestText });
+    }
+    if (!runTypecheckQa) return [];
+    const written = Object.keys(files || {}).filter((f) => /\.(tsx?|jsx?)$/.test(f)).map((f) => f.replace(/^\/home\/user\//, ""));
+    if (written.length === 0) return [];
+    const seq = ++qaCheckSeq;
+    const output = await step.run(`typecheck-${seq}`, async () => {
+      try {
+        const sandbox = await getSandbox(sandboxId);
+        const r = await sandbox.commands.run("cd /home/user && timeout 120 npx tsc --noEmit --pretty false -p . 2>&1 | head -120", { timeoutMs: 130_000 });
+        return r.stdout || "";
+      } catch (e) {
+        return (e as { stdout?: string })?.stdout || "";
+      }
+    });
+    const lines = output.split("\n").filter((l) => /error TS\d+/.test(l) && written.some((w) => l.startsWith(w) || l.includes(`/${w}(`)));
+    return lines.length ? [`TypeScript errors in files you wrote (fix them all):\n  ${lines.slice(0, 25).join("\n  ")}`] : [];
+  };
+
+  // Real-browser test (+ optional design critique) inside the sandbox, memoized as a step
+  let browserSeq = 0;
+  const runBrowserCheck = async (withDesignReview: boolean): Promise<BrowserQaResult> => {
+    const seq = ++browserSeq;
+    void tracker.event("browser-testing", withDesignReview ? "Loading the project in Chromium, playing it and taking screenshots" : "Re-testing in the browser");
+    const result = await step.run(`browser-qa-${seq}`, async () => {
+      const sandbox = await getSandbox(sandboxId);
+      return runBrowserQa(sandbox, {
+        mode: isStaticProject ? "static" : "next",
+        primary: isAppBuild ? "mobile" : "desktop",
+        userRequest: userRequestText,
+        isGame: looksLikeGameRequest,
+        buildId,
+        withDesignReview,
+      });
+    });
+    if (result.skipped) console.log(`🌐 Browser QA skipped: ${result.skipped}`);
+    else {
+      console.log(`🌐 Browser QA #${seq}: ${result.runtimeIssues.length} runtime issue(s)`, result.runtimeIssues);
+      if (withDesignReview && result.designNotes) void tracker.event("design-review", result.designNotes.split("\n")[0]);
+    }
+    return result;
+  };
 
   const makeModel = (effort: string) =>
     reasoningBridgeUrl
@@ -407,11 +559,12 @@ export const codeAgentFunction = inngest.createFunction(
       // "single pass" prompt made the model skip searching entirely.
       system:
         (webSearchEnabled ? WEB_SEARCH_INSTRUCTIONS + "\n\n" : "") +
-        (event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack)),
+        (event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack)) +
+        "\n\n" + EDIT_TOOL_RULES,
       model: makeModel(reasoningEffort),
       tools: webSearchEnabled
-        ? [terminalTool, createOrUpdateFilesTool, readFilesTool, webSearchTool]
-        : [terminalTool, createOrUpdateFilesTool, readFilesTool],
+        ? [terminalTool, createOrUpdateFilesTool, editFileTool, readFilesTool, webSearchTool]
+        : [terminalTool, createOrUpdateFilesTool, editFileTool, readFilesTool],
       lifecycle: {
         onStart: async ({ prompt, history, network: run }) => {
           const results = run?.state.results ?? [];
@@ -420,12 +573,14 @@ export const codeAgentFunction = inngest.createFunction(
         onResponse: async ({ result, network: run }) => {
           const lastAssistantMessageText = lastAssistantTextMessageContent(result);
           if (lastAssistantMessageText?.includes("<task_summary>") && run?.state?.data) {
-            // Automated QA for static projects: don't accept the build while it has
-            // detectable bugs (syntax errors, dead handlers/links, missing elements, no game audio).
-            if (runStaticQa && qaRounds < MAX_QA_ROUNDS) {
-              const issues = runQa(run.state.data.files);
+            // Automated QA: don't accept the build while it has detectable bugs.
+            if ((runStaticQa || runTypecheckQa) && qaRounds < MAX_QA_ROUNDS) {
+              void tracker.event("checking", "Automated QA");
+              const issues = await runQa(run.state.data.files);
               if (issues.length > 0) {
                 qaRounds++;
+                void tracker.addQaIssues(issues.length);
+                void tracker.event("fixing", `Automated QA found ${issues.length} issue(s)`);
                 codeQaFeedback.push({ afterResults: run.state.results.length + 1, text: formatValidationFeedback(issues) });
                 console.log(`🧪 QA round ${qaRounds}: ${issues.length} issue(s) sent back to the code agent`, issues);
                 return result; // summary NOT set -> router runs the code agent again
@@ -439,26 +594,34 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
-  // 🔍 Second agent: reviews the finished project like a senior QA engineer and fixes it
+  // 🔍 Second agent: reviews the finished project like a senior QA engineer and fixes it,
+  // guided by a real-browser test (runtime errors) and a design review of screenshots.
   const reviewerAgent = createAgent<AgentState>({
       name: REVIEWER_NAME,
       description: "Reviews the generated project, fixes bugs and polishes UI/UX",
-      system: CODE_REVIEWER_PROMPT,
+      system: CODE_REVIEWER_PROMPT + "\n\n" + EDIT_TOOL_RULES,
       model: makeModel(REVIEW_EFFORT),
-      tools: [createOrUpdateFilesTool, readFilesTool],
+      tools: [createOrUpdateFilesTool, editFileTool, readFilesTool],
       lifecycle: {
-        // Focused context: the user's request + the reviewer's own work (not the builder's
-        // whole transcript with every file write, which would waste tokens).
+        // Focused context: the user's request + test findings + the reviewer's own work
+        // (not the builder's whole transcript with every file write, which would waste tokens).
         onStart: async ({ prompt, network: run }) => {
+          if (!initialBrowserReport) {
+            initialBrowserReport = await runBrowserCheck(true);
+            void tracker.event("reviewing", "Reviewer is checking the code");
+          }
           const files = Object.keys(run?.state.data.files || {}).filter((f) => !/\.(png|jpe?g|gif|webp|avif|svg|ico)$/i.test(f));
+          const stackLabel = isAppBuild ? "mobile web app (single index.html)" : projectTechStack;
           const intro: Message = {
             type: "text",
             role: "user",
             content:
-              `USER'S ORIGINAL REQUEST:\n${String(event.data.value || "")}\n\n` +
+              `USER'S ORIGINAL REQUEST:\n${userRequestText}\n\n` +
+              `TECH STACK: ${stackLabel}\n\n` +
               `THE BUILDER AGENT REPORTS:\n${run?.state.data.summary || "(no summary)"}\n\n` +
               `PROJECT FILES: ${files.join(", ")}\n\n` +
-              `Review the project now: read every file completely, then fix every bug and weakness you find.`,
+              (initialBrowserReport && !initialBrowserReport.skipped ? formatBrowserFindings(initialBrowserReport) + "\n\n" : "") +
+              `Review the project now: read every file completely, fix every bug (start with any browser errors above), then address the design review.`,
           };
           const own = (run?.state.results ?? []).filter((r) => r.agentName === REVIEWER_NAME);
           const history = injectFeedback([intro, ...own.flatMap(formatResult)], own, reviewQaFeedback);
@@ -467,17 +630,32 @@ export const codeAgentFunction = inngest.createFunction(
         onResponse: async ({ result, network: run }) => {
           const text = lastAssistantTextMessageContent(result);
           if (text?.includes("<review_summary>") && run) {
+            const ownCount = () => run.state.results.filter((r) => r.agentName === REVIEWER_NAME).length;
             if (reviewQaRounds < MAX_QA_ROUNDS) {
-              const issues = runQa(run.state.data.files);
+              void tracker.event("checking", "Automated QA after review");
+              const issues = await runQa(run.state.data.files);
               if (issues.length > 0) {
                 reviewQaRounds++;
-                const ownCount = run.state.results.filter((r) => r.agentName === REVIEWER_NAME).length;
-                reviewQaFeedback.push({ afterResults: ownCount + 1, text: formatValidationFeedback(issues) });
+                void tracker.addQaIssues(issues.length);
+                void tracker.event("fixing", `Automated QA found ${issues.length} issue(s)`);
+                reviewQaFeedback.push({ afterResults: ownCount() + 1, text: formatValidationFeedback(issues) });
                 console.log(`🧪 Review QA round ${reviewQaRounds}: ${issues.length} issue(s) sent back to the reviewer`, issues);
                 return result;
               }
             }
+            // Final real-browser check of the reviewed project: runtime errors go back once
+            if (initialBrowserReport && !initialBrowserReport.skipped && browserFixRounds < MAX_BROWSER_FIX_ROUNDS) {
+              const final = await runBrowserCheck(false);
+              if (!final.skipped && final.runtimeIssues.length > 0) {
+                browserFixRounds++;
+                void tracker.addQaIssues(final.runtimeIssues.length);
+                void tracker.event("fixing", `Browser test found ${final.runtimeIssues.length} problem(s)`);
+                reviewQaFeedback.push({ afterResults: ownCount() + 1, text: formatBrowserFindings(final) + "\n\nFix these now (readFiles, then editFile/createOrUpdateFiles), then reply with your <review_summary> again." });
+                return result;
+              }
+            }
             reviewDone = true;
+            reviewSummaryText = text;
             console.log("🔍 Code review finished:", text.slice(0, 500));
           }
           return result;
@@ -489,12 +667,12 @@ export const codeAgentFunction = inngest.createFunction(
       name: "coding-agent-network",
       agents: [codeAgent, reviewerAgent],
       // turns for building (+web searches), automated QA fix rounds, and the review pass
-      maxIter: (webSearchEnabled ? 14 : 10) + (runStaticQa ? MAX_QA_ROUNDS * 2 + 16 : 0),
+      maxIter: (webSearchEnabled ? 14 : 10) + MAX_QA_ROUNDS * 2 + 18,
       defaultState:state,
       router: async ({ network: run }) => {
         if (!run.state.data.summary) return codeAgent;
         const hasFiles = Object.keys(run.state.data.files || {}).length > 0;
-        if (runStaticQa && hasFiles && !reviewDone) return reviewerAgent;
+        if (hasFiles && !reviewDone) return reviewerAgent;
         return;
       },
     });
@@ -695,6 +873,12 @@ export const codeAgentFunction = inngest.createFunction(
       enhancedPrompt += `\n\n---\nFIRST BUILD: deliver the complete app in this pass inside index.html — every screen this app needs (decided from its purpose, not a fixed template), all fully working. No placeholder screens or "coming soon".`;
     }
 
+    // Supabase backend (if the user connected one): real auth + database instead of localStorage
+    if (supabase && isStaticProject) {
+      enhancedPrompt += "\n\n" + supabaseBackendRules(supabase.url, supabase.anonKey);
+    }
+
+    void tracker.event("planning", previousFiles && Object.keys(previousFiles).length > 0 ? "Updating your project" : "Planning your project");
     let result;
     try {
       result = await network.run(enhancedPrompt,{ state });
@@ -819,6 +1003,8 @@ export const codeAgentFunction = inngest.createFunction(
     // Project names are AI-generated at creation (src/lib/project-naming.ts) and users can
     // rename them with the pencil button, so the build never renames the project.
 
+    void tracker.event("saving", "Saving the new version");
+
      await step.run("save-result", async () => {
       const isApp = event.data.isApp === true;
 
@@ -887,6 +1073,24 @@ export const codeAgentFunction = inngest.createFunction(
         const isApp = event.data.isApp === true;
         const ownerId = await getProjectOwnerId(event.data.projectId, isApp);
         if (ownerId) await refundCredit(ownerId, event.data.creditCost ?? (isApp ? 5 : 1));
+      });
+    }
+
+    await tracker.event(isError ? "failed" : "done", isError ? "Nothing was generated" : "Your project is ready");
+    await tracker.finish(isError ? "failed" : "succeeded", {
+      reviewSummary: reviewSummaryText,
+      error: isError ? "No summary and no files generated" : null,
+    });
+
+    // 💸 Static projects are previewed/published from the saved files, so the sandbox isn't
+    // needed after the build — shut it down now instead of letting it idle for 30 minutes.
+    if (isStaticProject) {
+      await step.run("shutdown-sandbox", async () => {
+        try {
+          await Sandbox.kill(sandboxId);
+        } catch (e) {
+          console.warn("⚠️ Could not shut down sandbox:", e);
+        }
       });
     }
 

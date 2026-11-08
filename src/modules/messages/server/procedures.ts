@@ -5,6 +5,7 @@ import { inngest } from "@/inngest/client";
 import { TRPCError } from "@trpc/server";
 import { consumeCredits } from "@/lib/usage";
 import { refundCredit } from "@/lib/credit-refund";
+import { enforceBuildRateLimit } from "@/lib/rate-limit";
 export const messagesRouter = createTRPCRouter({
     getMany: protectedProcedure
         .input(
@@ -53,6 +54,8 @@ export const messagesRouter = createTRPCRouter({
                     message: "Project not found",
                 });
             }
+
+            await enforceBuildRateLimit(ctx.auth.userId);
 
             try{
                 await consumeCredits();

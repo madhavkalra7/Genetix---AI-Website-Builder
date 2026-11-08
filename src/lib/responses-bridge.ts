@@ -16,10 +16,12 @@ export function getReasoningEffort(opts: { isApp: boolean; advancedReasoning: bo
 }
 
 /** Public base URL of this app, used so Inngest can reach the bridge route. */
-export function getResponsesBridgeBaseUrl(): string | null {
+export function getResponsesBridgeBaseUrl(buildId?: string | null): string | null {
   const base = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
   if (!base) return null;
-  return `${base.replace(/\/+$/, "")}/api/ai/responses-bridge/`;
+  const root = `${base.replace(/\/+$/, "")}/api/ai/responses-bridge/`;
+  // Per-build URL: token usage is recorded on that Build row and its budget enforced
+  return buildId ? `${root}b/${buildId}/` : root;
 }
 
 /** Chat Completions request body -> Responses API request body */

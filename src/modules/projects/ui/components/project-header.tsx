@@ -11,6 +11,8 @@ import{
 import { useTRPC }  from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { EditableProjectName } from "@/components/editable-project-name";
+import { PublishDialog } from "@/components/publish-dialog";
+import { SupabaseDialog } from "@/components/supabase-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRadioGroup,DropdownMenuRadioItem,DropdownMenuSeparator,DropdownMenuSub,DropdownMenuSubContent,DropdownMenuSubTrigger,DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
 
 interface Props {
@@ -34,7 +36,8 @@ export const ProjectHeader=({ projectId }: Props)=>{
     }));
 
     return (
-    <header className="p-2 flex justify-between items-center border-b min-w-0">
+    <header className="p-2 flex justify-between items-center gap-2 border-b min-w-0">
+        <div className="flex min-w-0 flex-1 items-center">
         <EditableProjectName
             name={project.name}
             onSave={async (name)=>{
@@ -96,6 +99,15 @@ export const ProjectHeader=({ projectId }: Props)=>{
                 </>
             )}
         />
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+            <SupabaseDialog projectId={projectId}/>
+            <PublishDialog
+                projectId={projectId}
+                projectName={project.name}
+                techStack={project.techStack}
+            />
+        </div>
     </header>
     )
 };

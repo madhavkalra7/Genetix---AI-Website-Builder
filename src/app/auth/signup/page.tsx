@@ -226,7 +226,8 @@ export default function SignUpPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white text-black hover:bg-gray-200 font-[Orbitron] font-bold py-6 text-lg mt-6"
+                variant="venom"
+                className="w-full font-[Orbitron] py-6 text-lg mt-6"
               >
                 {loading ? "Creating Account..." : "Create Account 🚀"}
               </Button>

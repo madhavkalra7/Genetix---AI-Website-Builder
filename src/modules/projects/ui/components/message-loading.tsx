@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useState,useEffect } from "react";
+import { BuildProgress } from "@/components/build-progress";
 
 const ShimmerMessages=()=>{
     const messages=[
@@ -31,7 +32,13 @@ const ShimmerMessages=()=>{
     );
 };
 
-export const MessageLoading = () => {
+interface MessageLoadingProps {
+    projectId?: string;
+    /** createdAt of the USER message waiting for a reply */
+    since?: Date;
+}
+
+export const MessageLoading = ({ projectId, since }: MessageLoadingProps = {}) => {
     return (
         <div className="flex flex-col group px-2 pb-4">
             <div className="flex items-center gap-2 pl-2 mb-2">
@@ -44,8 +51,12 @@ export const MessageLoading = () => {
                     />
                     <span className="text-sm font-medium">Genetix</span>
             </div>
-            <div className="pl-8.5 flex flex-col gap-y-4">
-                <ShimmerMessages/>
+            <div className="pl-8.5 flex flex-col gap-y-4 min-w-0">
+                {projectId ? (
+                    <BuildProgress projectId={projectId} since={since} className="max-w-md" />
+                ) : (
+                    <ShimmerMessages/>
+                )}
             </div>
         </div>
     )

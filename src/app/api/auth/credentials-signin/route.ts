@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyPassword, createSession, isEmailVerified } from '@/lib/auth';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const signInSchema = z.object({
@@ -12,6 +13,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = signInSchema.parse(body);
+
+    // Brute-force protection: 10 attempts / 15 min per IP + email.
+    const rl = await checkRateLimit(
+      `signin:${getClientIp(request)}:${validatedData.email.trim().toLowerCase()}`,
+      10,
+      15 * 60 * 1000
+    );
+    if (!rl.ok) {
+      return rateLimitResponse(rl.retryAfterSec, `Too many sign-in attempts. Please try again in ${rl.retryAfterSec} seconds.`);
+    }
 
     // Find user
     const adminEmail = process.env.ADMIN_EMAIL;

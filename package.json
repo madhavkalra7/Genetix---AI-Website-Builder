@@ -6,8 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "lint": "eslint .",
+    "test": "vitest run",
+    "postinstall": "prisma generate",
+    "eval": "tsx scripts/eval/run-eval.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -112,7 +114,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "resolutions": {
     "zod": "3.24.1"

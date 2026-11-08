@@ -208,6 +208,9 @@ model Project {
   userId             String
   techStack          String   @default("react-nextjs")
   advancedReasoning  Boolean  @default(false) // GPT-5.1 model flag (24h limit)
+  // Optional Supabase backend for generated apps (anon key is public by design)
+  supabaseUrl        String?
+  supabaseAnonKey    String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -335,3 +338,54 @@ model CreditRequest {
   updatedAt DateTime @updatedAt
 }
 
+
+// ==================== BUILD PIPELINE ====================
+
+// One row per code-agent run: live progress for the UI, token usage/cost and logs for admins.
+model Build {
+  id              String    @id @default(cuid())
+  projectId       String
+  isApp           Boolean   @default(false)
+  userId          String?
+  status          String    @default("running") // running | succeeded | failed
+  stage           String    @default("starting")
+  events          Json      @default("[]")       // [{ at, stage, detail }]
+  model           String?
+  reasoningEffort String?
+  llmCalls        Int       @default(0)
+  inputTokens     Int       @default(0)
+  cachedTokens    Int       @default(0)
+  outputTokens    Int       @default(0)
+  reasoningTokens Int       @default(0)
+  qaIssues        Int       @default(0)
+  reviewSummary   String?
+  error           String?
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+
+  @@index([projectId, startedAt])
+  @@index([userId, startedAt])
+  @@index([startedAt])
+}
+
+// Public, published version of a static project (served at /s/<slug>/...)
+model PublishedSite {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  projectId  String   @unique
+  fragmentId String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Sliding-window rate limiting (key = "<action>:<userId|ip>")
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}

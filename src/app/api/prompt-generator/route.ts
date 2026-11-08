@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionByToken } from '@/lib/auth';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,10 @@ export async function POST(req: NextRequest) {
   const sessionToken = req.cookies.get('session_token')?.value;
   const session = sessionToken ? await getSessionByToken(sessionToken) : null;
   if (session?.user.aiquestUserId) return NextResponse.json({ error: 'Prompt Generator is unavailable in World 6.' }, { status: 403 });
+  // Public endpoint that spends OpenAI tokens: 20 requests / 10 min per user (or per IP when anonymous).
+  const rlKey = `prompt-gen:${session?.user.id ?? `ip:${getClientIp(req)}`}`;
+  const rl = await checkRateLimit(rlKey, 20, 10 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.retryAfterSec, `Too many prompt generations. Please try again in ${rl.retryAfterSec} seconds.`);
   const { idea, mode } = await req.json();
 
     if (!idea || typeof idea !== "string") {

@@ -94,3 +94,47 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   });
   return 'sent';
 }
+
+export function buildPasswordResetUrl(token: string): string {
+  return `${getAppUrl()}/auth/reset-password?token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Sends the password-reset link. Same delivery semantics as sendVerificationEmail:
+ * "sent" via SMTP, "logged" to the console in development without SMTP, "unavailable" in
+ * production without SMTP. Throws on SMTP failure.
+ */
+export async function sendPasswordResetEmail(to: string, token: string): Promise<VerificationEmailResult> {
+  const url = buildPasswordResetUrl(token);
+
+  if (!isSmtpConfigured()) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[email] SMTP not configured. Password reset link for ${to}: ${url}`);
+      return 'logged';
+    }
+    return 'unavailable';
+  }
+
+  await sendEmail({
+    to,
+    subject: 'Reset your Genetix password',
+    text:
+      `Someone (hopefully you) asked to reset the password for your Genetix account.\n\n` +
+      `Open this link to choose a new password:\n${url}\n\n` +
+      `The link expires in 1 hour and can be used once. If you did not request this, you can ignore this email; your password will not change.`,
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #a855f7;">Reset your password</h2>
+        <p>Someone (hopefully you) asked to reset the password for your Genetix account.</p>
+        <a href="${url}"
+           style="display: inline-block; padding: 10px 20px; background-color: #a855f7; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+          Choose a new password
+        </a>
+        <p style="font-size: 12px; color: #666; margin-top: 20px;">
+          The link expires in 1 hour and can be used once. If you did not request this, you can ignore this email; your password will not change.
+        </p>
+      </div>
+    `,
+  });
+  return 'sent';
+}

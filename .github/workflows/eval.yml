@@ -1,0 +1,54 @@
+name: Prompt quality eval
+
+# Builds every prompt in scripts/eval/prompts.json with the real pipeline (prompts, QA,
+# reviewer, browser test) and uploads a scored report. Runs nightly and on demand.
+# Required repository secrets: OPENAI_API_KEY, E2B_API_KEY (optional: E2B_TEMPLATE_ID, YOU_API_KEY).
+
+on:
+  schedule:
+    - cron: "30 21 * * *" # 03:00 IST
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated case ids (empty = all)"
+        required: false
+        default: ""
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        env:
+          DATABASE_URL: "postgresql://unused:unused@localhost:5432/unused"
+      - name: Run eval
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          E2B_API_KEY: ${{ secrets.E2B_API_KEY }}
+          E2B_TEMPLATE_ID: ${{ secrets.E2B_TEMPLATE_ID }}
+          YOU_API_KEY: ${{ secrets.YOU_API_KEY }}
+          BROWSER_QA_RUNTIME_INSTALL: "true"
+          DATABASE_URL: "postgresql://unused:unused@localhost:5432/unused"
+        run: |
+          if [ -n "${{ github.event.inputs.only }}" ]; then
+            npm run eval -- --only "${{ github.event.inputs.only }}" --concurrency 3
+          else
+            npm run eval -- --concurrency 3
+          fi
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval-results/
+      - name: Job summary
+        if: always()
+        run: |
+          R=$(ls -td eval-results/*/ 2>/dev/null | head -1)
+          if [ -n "$R" ]; then head -60 "$R/report.md" >> "$GITHUB_STEP_SUMMARY"; fi

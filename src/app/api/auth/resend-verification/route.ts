@@ -7,6 +7,7 @@ import {
   VERIFICATION_RESEND_INTERVAL_MS,
 } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -20,6 +21,12 @@ const GENERIC_MESSAGE = 'If an unverified account exists for this email, a new v
 
 export async function POST(request: NextRequest) {
   try {
+    // 5 resend requests / hour per IP.
+    const rl = await checkRateLimit(`resend-verification:${getClientIp(request)}`, 5, 60 * 60 * 1000);
+    if (!rl.ok) {
+      return rateLimitResponse(rl.retryAfterSec, `Too many requests. Please try again in ${rl.retryAfterSec} seconds.`);
+    }
+
     const body = await request.json();
     const { email } = resendSchema.parse(body);
 

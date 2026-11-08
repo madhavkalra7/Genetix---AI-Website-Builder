@@ -97,7 +97,7 @@ function PromptGeneratorContent({ initialIdea }: { initialIdea?: string }) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button onClick={handleGenerate} disabled={!canGenerate} className="w-full h-10 bg-white text-black hover:bg-gray-200 font-[Orbitron] font-semibold">Generate</Button>
+            <Button variant="venom" onClick={handleGenerate} disabled={!canGenerate} className="w-full h-10 font-[Orbitron]">Generate</Button>
             <Button
               onClick={() => setMode(mode === "standard" ? "limitless" : "standard")}
               className={`w-full h-10 font-[Orbitron] font-semibold transition-all duration-300 ${
@@ -123,7 +123,7 @@ function PromptGeneratorContent({ initialIdea }: { initialIdea?: string }) {
             <Textarea value={result} readOnly rows={8} className="bg-black/40 border-white/25" placeholder={mode === "limitless" ? "Your limitless premium prompt will appear here..." : "Your concise prompt will appear here..."} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button onClick={handleUse} disabled={!result} className="w-full h-10 bg-white text-black hover:bg-gray-200 font-[Orbitron] font-semibold">Use in Builder</Button>
+            <Button variant="venom" onClick={handleUse} disabled={!result} className="w-full h-10 font-[Orbitron]">Use in Builder</Button>
             <Button
               variant="outline"
               onClick={handleCopy}

@@ -9,6 +9,7 @@ import {
   VERIFICATION_RESEND_INTERVAL_MS,
 } from '@/lib/auth';
 import { isSmtpConfigured, sendVerificationEmail } from '@/lib/email';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
@@ -23,6 +24,12 @@ const ALREADY_EXISTS = 'User with this email or username already exists';
 
 export async function POST(request: NextRequest) {
   try {
+    // 5 signups / hour per IP (each one can send an email).
+    const rl = await checkRateLimit(`signup:${getClientIp(request)}`, 5, 60 * 60 * 1000);
+    if (!rl.ok) {
+      return rateLimitResponse(rl.retryAfterSec, `Too many sign-up attempts. Please try again in ${rl.retryAfterSec} seconds.`);
+    }
+
     const body = await request.json();
     const validatedData = signUpSchema.parse(body);
 

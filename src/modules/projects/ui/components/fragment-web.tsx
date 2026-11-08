@@ -1,19 +1,46 @@
 import { Fragment } from "@/generated/prisma";
-import { useState } from "react";
-import { ExternalLinkIcon , RefreshCcwIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ExternalLinkIcon , MousePointerClickIcon, RefreshCcwIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { HTMLPreview } from "@/components/html-preview";
+import { HTMLPreview, type SelectedElementInfo } from "@/components/html-preview";
 import { hasStaticEntry } from "@/lib/static-html";
+import { ElementEditPanel } from "./element-edit-panel";
 
 interface Props {
     data: Fragment;
+    /** Enables click-to-edit for static projects */
+    projectId?: string;
+    /** Called after a click-to-edit request was sent as a chat message */
+    onEditSent?: () => void;
 };
 
-export function FragmentWeb({ data }: Props){
+export function FragmentWeb({ data, projectId, onEditSent }: Props){
         const [copied, setCopied] = useState(false);
         const [fragmentKey, setFragmentKey] = useState(0);
+        const [selectMode, setSelectMode] = useState(false);
+        const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
+
+        const exitSelectMode = useCallback(() => {
+            setSelectMode(false);
+            setSelectedElement(null);
+        }, []);
+
+        // A different version is shown: drop any selection made on the old one
+        useEffect(() => {
+            exitSelectMode();
+        }, [data.id, exitSelectMode]);
+
+        // Esc while focus is outside the preview iframe (inside it, the iframe reports it)
+        useEffect(() => {
+            if (!selectMode) return;
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (e.key === "Escape") exitSelectMode();
+            };
+            window.addEventListener("keydown", onKeyDown);
+            return () => window.removeEventListener("keydown", onKeyDown);
+        }, [selectMode, exitSelectMode]);
 
         const onRefresh = () => {
             setFragmentKey((prev) => prev + 1);
@@ -68,10 +95,23 @@ export function FragmentWeb({ data }: Props){
                 <div className="flex flex-col w-full h-full">
                     <div className="p-2 border-b bg-sidebar flex items-center gap-x-2">
                         <Hint text="Refresh" side="bottom" align="start">
-                            <Button size="sm" variant="outline" onClick={onRefresh}>
+                            <Button size="sm" variant="outline" onClick={onRefresh} aria-label="Refresh preview">
                                 <RefreshCcwIcon/>
                             </Button>
                         </Hint>
+                        {projectId && (
+                            <Hint text="Select an element to edit" side="bottom" align="start">
+                                <Button
+                                    size="sm"
+                                    variant={selectMode ? "default" : "outline"}
+                                    aria-label="Select an element to edit"
+                                    aria-pressed={selectMode}
+                                    onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+                                >
+                                    <MousePointerClickIcon/>
+                                </Button>
+                            </Hint>
+                        )}
                         <Hint text={`${getProjectType()} Preview`} side="bottom">
                             <Button 
                                 size="sm" 
@@ -92,12 +132,26 @@ export function FragmentWeb({ data }: Props){
                             </Button>
                         </Hint>
                     </div>
-                    <div className="flex-1">
+                    <div className="relative flex-1">
                         <HTMLPreview 
                             key={fragmentKey}
                             files={data.files as {[path: string]: string}} 
                             className="w-full h-full"
+                            selectMode={selectMode}
+                            onElementSelected={projectId ? setSelectedElement : undefined}
+                            onSelectModeExit={exitSelectMode}
                         />
+                        {projectId && selectMode && (
+                            <ElementEditPanel
+                                projectId={projectId}
+                                element={selectedElement}
+                                onCancel={exitSelectMode}
+                                onSent={() => {
+                                    exitSelectMode();
+                                    onEditSent?.();
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             );

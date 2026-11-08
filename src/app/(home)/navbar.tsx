@@ -121,7 +121,7 @@ export const Navbar =()=>{
                     
                     {!user ? (
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="venom" size="sm" asChild className="px-4">
                                 <Link href="/auth/signup">{t('nav.signUp')}</Link>
                             </Button>
                             <Button size="sm" asChild>
@@ -216,7 +216,7 @@ export const Navbar =()=>{
                     </Link>}
                     {!user ? (
                         <div className="flex flex-col gap-2">
-                            <Button variant="outline" size="sm" asChild className="w-full">
+                            <Button variant="venom" size="sm" asChild className="w-full">
                                 <Link href="/auth/signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
                             </Button>
                             <Button size="sm" asChild className="w-full">

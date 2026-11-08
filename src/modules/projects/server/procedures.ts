@@ -9,6 +9,7 @@ import { refundCredit } from "@/lib/credit-refund";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
+import { enforceBuildRateLimit } from '@/lib/rate-limit';
 
 export const projectsRouter = createTRPCRouter({
     // Rename (pencil edit). Owner only.
@@ -105,6 +106,9 @@ export const projectsRouter = createTRPCRouter({
                     message: "Not authenticated",
                 });
             }
+
+            // Per-user build rate limit, checked before any credit or advanced-reasoning claim.
+            await enforceBuildRateLimit(ctx.auth.userId);
 
             // Advanced reasoning 24-hour limit: checked BEFORE spending a credit, and claimed
             // atomically so parallel requests can't both pass.
@@ -297,6 +301,8 @@ export const appProjectsRouter = createTRPCRouter({
                 });
             }
 
+            await enforceBuildRateLimit(ctx.auth.userId);
+
             try {
                 await consumeCredits(5);
             } catch (error) {
@@ -376,6 +382,8 @@ export const appProjectsRouter = createTRPCRouter({
                     message: "App project not found",
                 });
             }
+
+            await enforceBuildRateLimit(ctx.auth.userId);
 
             try {
                 await consumeCredits(5);

@@ -149,6 +149,12 @@ export async function createEmailVerificationToken(userId: string) {
   return createVerificationToken(userId, 'EMAIL_VERIFICATION');
 }
 
+/** Replaces any outstanding (unused) password-reset tokens with a fresh one, so only the newest link works. */
+export async function createFreshPasswordReset(userId: string) {
+  await prisma.passwordReset.deleteMany({ where: { userId, used: false } });
+  return createPasswordReset(userId);
+}
+
 export async function createPasswordReset(userId: string) {
   const token = generateToken();
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour

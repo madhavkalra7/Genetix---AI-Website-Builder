@@ -13,7 +13,7 @@ import { Fragment } from "@/generated/prisma";
 import { ProjectHeader } from "../components/project-header";
 import { FragmentWeb } from "../components/fragment-web";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EyeIcon, CodeIcon, CrownIcon, MessageSquareIcon } from "lucide-react";
+import { EyeIcon, CodeIcon, CrownIcon, MessageSquareIcon, CopyIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileExplorer } from "@/components/file-explorer";
@@ -22,6 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "react-error-boundary";
 import { ProjectLoading } from "@/components/project-loading";
 import { cn } from "@/lib/utils";
+import { Hint } from "@/components/ui/hint";
+import { useDuplicateProject } from "../components/version-actions";
 
 interface Props {
   projectId: string;
@@ -64,6 +66,13 @@ export const ProjectView = ({ projectId }: Props) => {
     setMobilePanel("workspace");
     setTabState("preview");
   }, []);
+
+  // After a click-to-edit request on a phone, show the chat so the build progress is visible
+  const handleEditSent = useCallback(() => {
+    setMobilePanel("chat");
+  }, []);
+
+  const duplicateProject = useDuplicateProject(projectId);
 
   // Swap in the persisted fragment returned by the save mutation (never mutate cached objects)
   const handleFileSaved = useCallback((fragment: Fragment) => {
@@ -156,13 +165,27 @@ export const ProjectView = ({ projectId }: Props) => {
                   </TabsTrigger>
                 </TabsList>
                 <div className="ml-auto flex items-center gap-x-2">
+                  {!!activeFragment && (
+                    <Hint text="Duplicate project (latest version)" side="bottom">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        aria-label="Duplicate project"
+                        disabled={duplicateProject.isPending}
+                        onClick={() => duplicateProject.mutate({ projectId })}
+                      >
+                        {duplicateProject.isPending ? <Loader2Icon className="animate-spin" /> : <CopyIcon />}
+                        <span className="max-lg:hidden">Duplicate</span>
+                      </Button>
+                    </Hint>
+                  )}
                   {upgradeButton}
                   <UserControl />
                 </div>
               </div>
               <TabsContent value="preview">
                 {!!activeFragment ? (
-                  <FragmentWeb data={activeFragment} />
+                  <FragmentWeb data={activeFragment} projectId={projectId} onEditSent={handleEditSent} />
                 ) : (
                   <ProjectLoading className="w-full h-full" />
                 )}

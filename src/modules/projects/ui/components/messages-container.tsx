@@ -55,6 +55,10 @@ export const MessagesContainer = ({
 
     const lastMessage=messages[messages.length-1];
     const isLastMessageUser=lastMessage?.role==="USER";
+    const latestFragmentId=messages.findLast(
+        (message) => message.role==="ASSISTANT" && message.type==="RESULT" && !!message.fragments
+    )?.fragments?.id ?? null;
+    const version={ projectId, latestFragmentId, isBuilding: isLastMessageUser };
 
     return(
         <div className="flex flex-col flex-1 min-h-0">
@@ -73,10 +77,10 @@ export const MessagesContainer = ({
                                 onFragmentSelect?.(fragment);
                             }}
                             type={message.type}
-                            
+                            version={version}
                         />
                     ))}
-                    {isLastMessageUser && <MessageLoading/>}
+                    {isLastMessageUser && <MessageLoading projectId={projectId} since={lastMessage.createdAt}/>}
                     <div ref={bottomRef}/>
                 </div>
             </div>

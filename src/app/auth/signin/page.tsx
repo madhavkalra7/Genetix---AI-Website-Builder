@@ -137,6 +137,12 @@ export default function SignInPage() {
                   <Label htmlFor="password" className="text-white/80 font-[Orbitron]">
                     Password
                   </Label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-xs text-white/60 hover:text-purple-300 underline font-[Orbitron]"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
                 <Input
                   id="password"
@@ -152,7 +158,8 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white text-black hover:bg-gray-200 font-[Orbitron] font-bold py-6 text-lg mt-6"
+                variant="venom"
+                className="w-full font-[Orbitron] py-6 text-lg mt-6"
               >
                 {loading ? "Signing In..." : "Sign In 🚀"}
               </Button>
