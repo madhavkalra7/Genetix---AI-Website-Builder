@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { SANDBOX_TIMEOUT } from "./types";
 import { extractKeywords, fetchRelevantImages } from "@/lib/image-fetcher";
 import { getTemplateById } from "@/lib/templates";
+import { searchWeb, isWebSearchEnabled, MAX_WEB_SEARCHES_PER_RUN, WEB_SEARCH_INSTRUCTIONS } from "@/lib/web-search";
 import fs from "fs";
 import path from "path";
 
@@ -204,6 +205,30 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
+    // 🔎 Live web search via You.com (enabled only when YOU_API_KEY is set)
+    const webSearchEnabled = isWebSearchEnabled();
+    let webSearchCount = 0;
+
+    const webSearchTool = createTool({
+      name: "webSearch",
+      description:
+        "Search the live web (You.com) for real-world facts, current library/framework docs, real business details, and up-to-date content. Returns titles, URLs and snippets.",
+      parameters: z.object({
+        // NOTE: OpenAI strict tool schemas require every property to be required — don't add optional fields.
+        query: z.string().describe("A focused search query"),
+      }),
+      handler: async ({ query }, { step }) => {
+        webSearchCount += 1;
+        if (webSearchCount > MAX_WEB_SEARCHES_PER_RUN) {
+          return `Web search limit (${MAX_WEB_SEARCHES_PER_RUN}) reached for this task. Proceed with the information you already have.`;
+        }
+        return await step?.run("webSearch", async () => {
+          console.log(`🔎 Web search #${webSearchCount}: ${query}`);
+          return await searchWeb(query, 5);
+        });
+      },
+    });
+
     // Bootstrap essential UI files so the agent doesn't fail on missing components
     await step.run("bootstrap-ui", async () => {
       try {
@@ -286,7 +311,11 @@ export const codeAgentFunction = inngest.createFunction(
   const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
-      system: event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack),
+      // Web search instructions go FIRST: when appended at the end, the long mobile-app
+      // "single pass" prompt made the model skip searching entirely.
+      system:
+        (webSearchEnabled ? WEB_SEARCH_INSTRUCTIONS + "\n\n" : "") +
+        (event.data.isApp === true ? MOBILE_APP_PROMPT : getTechSpecificPrompt(projectTechStack)),
       model: openai({
     // Dynamically choose model based on advancedReasoning flag
     // GPT-6-sol for advanced reasoning (24h limit), GPT-6-luna for standard (fast & efficient)
@@ -297,7 +326,9 @@ export const codeAgentFunction = inngest.createFunction(
       reasoning_effort: "none", // Disable reasoning to allow function tools in /v1/chat/completions
     },
       }),   
-      tools: [terminalTool, createOrUpdateFilesTool, readFilesTool],
+      tools: webSearchEnabled
+        ? [terminalTool, createOrUpdateFilesTool, readFilesTool, webSearchTool]
+        : [terminalTool, createOrUpdateFilesTool, readFilesTool],
       lifecycle: {
         onResponse: async ({ result, network }) => {
           const lastAssistantMessageText = lastAssistantTextMessageContent(result);
@@ -314,7 +345,7 @@ export const codeAgentFunction = inngest.createFunction(
     const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
-      maxIter: 10,
+      maxIter: webSearchEnabled ? 14 : 10, // extra turns so searches don't eat into coding turns
       defaultState:state,
       router: async ({ network }) => {
         const summary = network.state.data.summary;
