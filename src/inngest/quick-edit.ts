@@ -10,7 +10,7 @@ import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
 import { validateStaticProject } from "@/lib/static-validator";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
 
-const QUICK_MODEL = process.env.QUICK_EDIT_MODEL || "gpt-6-luna";
+const QUICK_MODEL = process.env.QUICK_EDIT_MODEL || "gpt-6.1-terra";
 const MAX_CONTEXT_CHARS = 150_000;
 
 type Edit = { path: string; find: string; replace: string };

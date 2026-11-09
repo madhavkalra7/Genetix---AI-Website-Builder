@@ -50,7 +50,7 @@ async function callModel(summary: string): Promise<unknown> {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       signal: controller.signal,
       body: JSON.stringify({
-        model: process.env.STYLE_DNA_MODEL || "gpt-6-luna",
+        model: process.env.STYLE_DNA_MODEL || "gpt-6.1-terra",
         instructions: INSTRUCTIONS,
         reasoning: { effort: "low" },
         max_output_tokens: 1500,

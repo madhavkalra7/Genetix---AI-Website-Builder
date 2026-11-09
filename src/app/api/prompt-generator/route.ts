@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json({ error: "Server is not configured with OPENAI_API_KEY" }, { status: 500 });
     }
-  // gpt-6-luna with light reasoning: it has to actually understand the request, not pattern-match it
-  const chosenModel = process.env.PROMPT_MODEL || "gpt-6-luna";
+  // gpt-6.1-terra with light reasoning: it has to actually understand the request, not pattern-match it
+  const chosenModel = process.env.PROMPT_MODEL || "gpt-6.1-terra";
 
   const isLimitless = mode === "limitless";
 

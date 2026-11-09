@@ -61,7 +61,7 @@ export async function generateProjectName(prompt: string, kind: "web" | "app" = 
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: process.env.NAMING_MODEL || "gpt-6-luna",
+        model: process.env.NAMING_MODEL || "gpt-6.1-terra",
         reasoning_effort: "none",
         max_completion_tokens: 30,
         messages: [

@@ -51,7 +51,7 @@ export async function generatePlanReply(opts: {
     console.error("[plan] OPENAI_API_KEY is not configured");
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Planning is unavailable right now. Please try again later." });
   }
-  const model = process.env.PLAN_MODEL || "gpt-6-luna";
+  const model = process.env.PLAN_MODEL || "gpt-6.1-terra";
 
   const baseSystem = opts.techStack
     ? `${PLAN_SYSTEM_PROMPT}\n\nThe project will be built with the "${opts.techStack}" tech stack; don't ask about technology.`

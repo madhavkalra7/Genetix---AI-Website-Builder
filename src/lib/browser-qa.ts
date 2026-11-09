@@ -169,7 +169,7 @@ async function critiqueDesign(
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: process.env.DESIGN_REVIEW_MODEL || "gpt-6-luna",
+        model: process.env.DESIGN_REVIEW_MODEL || "gpt-6.1-terra",
         reasoning: { effort: "low" },
         max_output_tokens: 1500,
         store: false,

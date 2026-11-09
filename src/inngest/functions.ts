@@ -173,7 +173,7 @@ export const codeAgentFunction = inngest.createFunction(
           projectId: event.data.projectId,
           isApp: isAppRun,
           userId: ownerId,
-          model: useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna",
+          model: useAdvancedReasoning ? "gpt-6.1-sol" : "gpt-6.1-terra",
           reasoningEffort: getReasoningEffort({ isApp: isAppRun, advancedReasoning: useAdvancedReasoning }),
         });
       } catch (e) {
@@ -446,9 +446,9 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
   // 🧠 Fixed reasoning effort (not user-configurable):
-  //   Advanced Reasoning → gpt-6-sol, medium | Simple & Fast (all stacks) + App builder → gpt-6-luna, low
+  //   Advanced Reasoning → gpt-6.1-sol, medium | Simple & Fast (all stacks) + App builder → gpt-6.1-terra, low
   const isAppBuild = event.data.isApp === true;
-  const agentModel = useAdvancedReasoning ? "gpt-6-sol" : "gpt-6-luna";
+  const agentModel = useAdvancedReasoning ? "gpt-6.1-sol" : "gpt-6.1-terra";
   const reasoningEffort = getReasoningEffort({ isApp: isAppBuild, advancedReasoning: useAdvancedReasoning });
   const reasoningBridgeUrl = getResponsesBridgeBaseUrl(buildId);
   console.log(
@@ -916,8 +916,13 @@ export const codeAgentFunction = inngest.createFunction(
       name: "fragment-title-generator",
       description: "A fragment title generator",
       system: FRAGMENT_TITLE_PROMPT,
+      // Short title / reply after each build: Terra with reasoning off (fast, on the free allowance)
       model: openai({
-    model: "gpt-5-mini-2025-08-07",
+        model: "gpt-6.1-terra",
+        defaultParameters: {
+          // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
+          reasoning_effort: "none",
+        },
       }),
     });
 
@@ -925,8 +930,13 @@ export const codeAgentFunction = inngest.createFunction(
       name: "response-generator",
       description: "A response generator",
       system: RESPONSE_PROMPT,
+      // Short title / reply after each build: Terra with reasoning off (fast, on the free allowance)
       model: openai({
-    model: "gpt-5-mini-2025-08-07",
+        model: "gpt-6.1-terra",
+        defaultParameters: {
+          // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
+          reasoning_effort: "none",
+        },
       }),
     });
 

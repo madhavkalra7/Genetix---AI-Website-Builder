@@ -57,7 +57,7 @@ export async function generateImageBrief(images: string[], userText: string): Pr
   if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
   if (images.length === 0) throw new Error("No images provided");
 
-  const model = process.env.VISION_MODEL || "gpt-6-luna";
+  const model = process.env.VISION_MODEL || "gpt-6.1-terra";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), BRIEF_TIMEOUT_MS);
 

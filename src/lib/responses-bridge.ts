@@ -7,8 +7,8 @@ export type ReasoningEffort = "low" | "medium";
 
 /**
  * Fixed reasoning effort per build mode (not user-configurable):
- * - Advanced Reasoning (gpt-6-sol): medium
- * - Simple & Fast (any tech stack) and App builder (gpt-6-luna): low
+ * - Advanced Reasoning (gpt-6.1-sol): medium
+ * - Simple & Fast (any tech stack) and App builder (gpt-6.1-terra): low
  */
 export function getReasoningEffort(opts: { isApp: boolean; advancedReasoning: boolean }): ReasoningEffort {
   if (!opts.isApp && opts.advancedReasoning) return "medium";

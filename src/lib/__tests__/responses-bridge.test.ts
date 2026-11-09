@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { chatToResponsesRequest, getReasoningEffort, responsesToChatResponse } from "@/lib/responses-bridge";
 
 const chatBody = {
-  model: "gpt-6-luna",
+  model: "gpt-6.1-terra",
   reasoning_effort: "low",
   temperature: 0.2,
   max_completion_tokens: 4000,
@@ -49,7 +49,7 @@ describe("chatToResponsesRequest", () => {
     expect(req).not.toHaveProperty("temperature");
     expect(req.max_output_tokens).toBe(4000);
     expect(req.store).toBe(false);
-    expect(req.model).toBe("gpt-6-luna");
+    expect(req.model).toBe("gpt-6.1-terra");
   });
 
   it("keeps temperature without reasoning or with effort none", () => {
@@ -87,7 +87,7 @@ describe("responsesToChatResponse", () => {
     const chat = responsesToChatResponse({
       id: "resp_1",
       created_at: 123,
-      model: "gpt-6-luna",
+      model: "gpt-6.1-terra",
       status: "completed",
       output: [
         { type: "reasoning", summary: [] },
@@ -100,7 +100,7 @@ describe("responsesToChatResponse", () => {
       id: "resp_1",
       object: "chat.completion",
       created: 123,
-      model: "gpt-6-luna",
+      model: "gpt-6.1-terra",
       choices: [
         {
           index: 0,
@@ -136,7 +136,7 @@ describe("responsesToChatResponse", () => {
       output: [{ type: "function_call", call_id: "call_x", name: "readFiles", arguments: '{"files":["a"]}' }],
     });
     const next = chatToResponsesRequest({
-      model: "gpt-6-sol",
+      model: "gpt-6.1-sol",
       reasoning_effort: "medium",
       temperature: 1,
       messages: [chat.choices[0].message, { role: "tool", tool_call_id: "call_x", content: "file a" }],

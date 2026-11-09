@@ -34,7 +34,7 @@ const argVal = (name: string) => { const i = args.indexOf(`--${name}`); return i
 const ONLY = argVal("only")?.split(",").map((s) => s.trim()).filter(Boolean);
 const LIMIT = Number(argVal("limit")) || Infinity;
 const CONCURRENCY = Math.max(1, Number(argVal("concurrency")) || 3);
-const MODEL = argVal("model") || "gpt-6-luna";
+const MODEL = argVal("model") || "gpt-6.1-terra";
 const OUT_DIR = path.join(process.cwd(), "eval-results", new Date().toISOString().replace(/[:.]/g, "-"));
 
 // ---------- tiny local Chat Completions -> Responses bridge (same translation as production) ----------
