@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
+import { logOpenAIError } from "@/lib/openai-errors";
 
 /**
  * Image / screenshot / sketch → app.
@@ -92,6 +93,9 @@ export async function generateImageBrief(images: string[], userText: string): Pr
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
+      let parsed: unknown = null;
+      try { parsed = JSON.parse(detail); } catch { /* not JSON */ }
+      logOpenAIError("image-brief", res.status, (parsed as Parameters<typeof logOpenAIError>[2]) ?? { error: { message: detail.slice(0, 300) } });
       throw new Error(`Vision request failed (${res.status}): ${detail.slice(0, 300)}`);
     }
 

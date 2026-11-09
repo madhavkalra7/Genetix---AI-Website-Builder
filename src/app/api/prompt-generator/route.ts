@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionByToken } from '@/lib/auth';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { meteredOpenAIFetch, TOKEN_ESTIMATES, isDailyLimitResponse } from "@/lib/token-budget";
+import { aiProblemUserMessage, logOpenAIError } from "@/lib/openai-errors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,9 +88,12 @@ FORMAT (concise mode): one focused paragraph of 4 to 7 sentences, no lists or he
       if (isDailyLimitResponse(res.status, err)) {
         return NextResponse.json({ error: err.error.message }, { status: 429 });
       }
-      // Log upstream details server-side only; don't leak them to the client
-      console.error("Prompt generator upstream error:", res.status, err?.error?.message || err?.message);
-      return NextResponse.json({ error: "Couldn't generate a prompt right now. Please try again." }, { status: 502 });
+      // Log the real reason + fix server-side; show the user a friendly message (no upstream details)
+      const kind = logOpenAIError("prompt-generator", res.status, err);
+      return NextResponse.json(
+        { error: kind === "other" ? "Couldn't generate a prompt right now. Please try again." : aiProblemUserMessage(kind) },
+        { status: kind === "quota" || kind === "auth" || kind === "model" ? 503 : 502 }
+      );
     }
 
   const data = await res.json();

@@ -19,6 +19,7 @@ import { formatKnowledgeBlock } from "@/lib/knowledge";
 import { runBrowserQa, formatBrowserFindings, type BrowserQaResult } from "@/lib/browser-qa";
 import fs from "fs";
 import path from "path";
+import { userMessageForFailure } from "@/lib/openai-errors";
 
 interface AgentState {
   summary: string;
@@ -97,7 +98,7 @@ export const codeAgentFunction = inngest.createFunction(
               projectId,
               at,
               type: "ERROR",
-              content: "Something went wrong while building this. No credits were used — please try again.",
+              content: userMessageForFailure(error?.message, "Something went wrong while building this. No credits were used — please try again."),
             }),
         });
         if (running && outcome.status !== "cancelled") {

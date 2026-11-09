@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
 import { meteredOpenAIFetch, TOKEN_ESTIMATES, isDailyLimitResponse } from "@/lib/token-budget";
+import { aiProblemUserMessage, logOpenAIError } from "@/lib/openai-errors";
 
 /**
  * "Plan / Chat" mode: one cheap chat completion (no agents, no sandbox, no credits) that helps
@@ -92,7 +93,10 @@ export async function generatePlanReply(opts: {
       if (isDailyLimitResponse(res.status, err)) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: err.error.message });
       }
-      console.error("[plan] upstream error:", res.status, err?.error?.message || err?.message);
+      const kind = logOpenAIError("plan-chat", res.status, err);
+      if (kind !== "other" && kind !== "server") {
+        throw new TRPCError({ code: kind === "rate" ? "TOO_MANY_REQUESTS" : "SERVICE_UNAVAILABLE", message: aiProblemUserMessage(kind) });
+      }
     } else {
       const data = await res.json();
       reply = String(data?.choices?.[0]?.message?.content || "").trim();

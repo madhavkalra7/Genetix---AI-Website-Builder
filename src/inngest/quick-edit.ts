@@ -11,6 +11,7 @@ import { projectBuildCancelOn, projectBuildConcurrency } from "@/lib/build-queue
 import { validateStaticProject } from "@/lib/static-validator";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
 import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
+import { aiProblemUserMessage, classifyErrorText, logOpenAIError, userMessageForFailure } from "@/lib/openai-errors";
 
 const QUICK_MODEL = process.env.QUICK_EDIT_MODEL || "gpt-6.1-terra";
 const MAX_CONTEXT_CHARS = 150_000;
@@ -90,7 +91,10 @@ export async function callEditor(request: string, files: Record<string, string>,
       }),
     }, TOKEN_ESTIMATES.quickEdit);
     const data = await res.json().catch(() => null);
-    if (!res.ok || !data) return { error: `Model request failed (HTTP ${res.status})` };
+    if (!res.ok || !data) {
+      const kind = logOpenAIError("quick-edit", res.status, data);
+      return { error: `Model request failed (HTTP ${res.status}, ${kind}): ${String(data?.error?.code ?? data?.error?.message ?? "").slice(0, 200)}` };
+    }
     if (buildId && data.usage) {
       await recordBuildUsage(buildId, {
         input: data.usage.input_tokens ?? 0,
@@ -165,7 +169,14 @@ export const quickEditFunction = inngest.createFunction(
           outcome: "failed",
           write: (tx, at) =>
             tx.message.create({
-              data: { projectId, content: "Something went wrong while making that edit. No credits were used — please try again.", role: "ASSISTANT", type: "ERROR", createdAt: at, updatedAt: at },
+              data: {
+                projectId,
+                content: userMessageForFailure(error?.message, "Something went wrong while making that edit. No credits were used — please try again."),
+                role: "ASSISTANT",
+                type: "ERROR",
+                createdAt: at,
+                updatedAt: at,
+              },
             }),
         });
         if (running && outcome.status !== "cancelled") await createBuildTracker(running.id).finish("failed", { error: error?.message ?? "Quick edit failed" });
@@ -218,7 +229,9 @@ ${userRequest}` : userRequest;
     else if (outcome && (outcome.problems.length || outcome.applied.length === 0)) feedback = outcome.problems.join("\n") || "No edits were returned.";
     else if (outcome && syntaxIssues(outcome.files).length > beforeSyntax) feedback = `Your edits introduced errors:\n${syntaxIssues(outcome.files).join("\n")}`;
 
-    if (feedback) {
+    // OpenAI refused (spend limit, bad key, daily meter…): retrying won't help
+    const providerProblem = "error" in result ? classifyErrorText(result.error) : null;
+    if (feedback && !providerProblem) {
       void tracker.event("fixing", "Retrying the edit");
       result = await step.run("quick-edit-2", () => callEditor(request, context, feedback, buildId));
       outcome = "error" in result ? null : applyEdits(latest.files, result.edits);
@@ -252,7 +265,10 @@ ${userRequest}` : userRequest;
                 type: "ERROR",
                 createdAt: at,
                 updatedAt: at,
-                content: "I couldn't apply that change precisely, so nothing was modified. No credits were used — try describing it a bit differently, or send it as a normal chat message for a full rebuild.",
+                content:
+                  providerProblem && providerProblem !== "server"
+                    ? `${aiProblemUserMessage(providerProblem)} Nothing was modified and no credits were used.`
+                    : "I couldn't apply that change precisely, so nothing was modified. No credits were used — try describing it a bit differently, or send it as a normal chat message for a full rebuild.",
               },
             });
             return;

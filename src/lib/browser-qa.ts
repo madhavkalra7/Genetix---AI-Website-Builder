@@ -10,6 +10,7 @@
 import type { Sandbox } from "@e2b/code-interpreter";
 import { recordBuildUsage } from "@/lib/build-tracker";
 import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
+import { logOpenAIError } from "@/lib/openai-errors";
 
 const QA_DIR = "/opt/genetix-qa";
 const RESULT_MARKER = "__GX_QA__";
@@ -178,7 +179,10 @@ async function critiqueDesign(
       }),
     }, TOKEN_ESTIMATES.vision).finally(() => clearTimeout(t));
     const data = await res.json().catch(() => null);
-    if (!res.ok || !data) return null;
+    if (!res.ok || !data) {
+      logOpenAIError("design-review", res.status, data);
+      return null;
+    }
     if (buildId && data.usage) {
       await recordBuildUsage(buildId, {
         input: data.usage.input_tokens ?? 0,

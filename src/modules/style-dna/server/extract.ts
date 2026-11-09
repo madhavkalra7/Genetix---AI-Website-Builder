@@ -9,6 +9,7 @@ import {
 } from "@/lib/style-dna";
 import { StyleDnaFetchError, safeFetchText } from "./safe-fetch";
 import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
+import { logOpenAIError } from "@/lib/openai-errors";
 
 export const MAX_HTML_BYTES = 1_500_000;
 export const MAX_CSS_BYTES = 400_000;
@@ -61,6 +62,9 @@ async function callModel(summary: string): Promise<unknown> {
     }, TOKEN_ESTIMATES.chat);
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
+      let parsed: unknown = null;
+      try { parsed = JSON.parse(detail); } catch { /* not JSON */ }
+      logOpenAIError("style-dna", res.status, (parsed as Parameters<typeof logOpenAIError>[2]) ?? { error: { message: detail.slice(0, 300) } });
       throw new Error(`Style DNA model request failed (${res.status}): ${detail.slice(0, 300)}`);
     }
     const data = (await res.json()) as ResponsesApiResult;

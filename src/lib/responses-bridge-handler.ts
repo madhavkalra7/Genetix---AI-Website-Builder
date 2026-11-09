@@ -6,6 +6,7 @@ import { createHash, timingSafeEqual } from "crypto";
 import { chatToResponsesRequest, responsesToChatResponse } from "@/lib/responses-bridge";
 import { BUILD_TOKEN_BUDGET, getBuildTokenTotal, recordBuildUsage } from "@/lib/build-tracker";
 import { recordDailyTokens, remainingDailyTokens } from "@/lib/token-budget";
+import { logOpenAIError } from "@/lib/openai-errors";
 
 function isAuthorized(req: NextRequest): boolean {
   const expected = process.env.OPENAI_API_KEY;
@@ -66,7 +67,7 @@ export async function handleBridgeRequest(req: NextRequest, buildId?: string) {
   const data = await upstream.json().catch(() => null);
 
   if (!upstream.ok || !data || data.error) {
-    console.error("❌ Responses bridge upstream error:", upstream.status, JSON.stringify(data?.error ?? data).slice(0, 500));
+    logOpenAIError(`builder bridge${buildId ? ` (build ${buildId})` : ""}`, upstream.status, data?.error ? data : { error: { message: JSON.stringify(data).slice(0, 300) } });
     return NextResponse.json(
       { error: data?.error ?? { message: `OpenAI Responses API failed (HTTP ${upstream.status})` } },
       { status: upstream.ok ? 502 : upstream.status }
