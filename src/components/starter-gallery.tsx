@@ -1,6 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+    ArrowUpRightIcon,
+    CakeIcon,
+    CalendarCheckIcon,
+    CameraIcon,
+    ChartLineIcon,
+    ChefHatIcon,
+    CroissantIcon,
+    CrosshairIcon,
+    Gamepad2Icon,
+    KeyboardIcon,
+    LayoutTemplateIcon,
+    MailOpenIcon,
+    PanelsTopLeftIcon,
+    TimerIcon,
+    type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STARTER_CATEGORIES, STARTER_PROMPTS, type StarterCategory, type StarterPrompt } from "@/lib/starter-prompts";
 
@@ -14,6 +31,22 @@ interface StarterGalleryProps {
 type Filter = "All" | StarterCategory;
 const FILTERS: Filter[] = ["All", ...STARTER_CATEGORIES];
 
+// One consistent line-icon style for every card (no per-card colours/emojis)
+const ICONS: Record<string, LucideIcon> = {
+    "neon-snake": Gamepad2Icon,
+    "space-shooter": CrosshairIcon,
+    "typing-test": KeyboardIcon,
+    pomodoro: TimerIcon,
+    "recipe-finder": ChefHatIcon,
+    "habit-tracker": CalendarCheckIcon,
+    "crypto-dashboard": ChartLineIcon,
+    bakery: CroissantIcon,
+    "photographer-portfolio": CameraIcon,
+    "saas-landing": PanelsTopLeftIcon,
+    "wedding-invite": MailOpenIcon,
+    "birthday-surprise": CakeIcon,
+};
+
 export function StarterGallery({ onSelect, className, activeId }: StarterGalleryProps) {
     const [filter, setFilter] = useState<Filter>("All");
 
@@ -24,19 +57,19 @@ export function StarterGallery({ onSelect, className, activeId }: StarterGallery
 
     return (
         <section className={cn("w-full text-left", className)} aria-labelledby="starter-gallery-heading">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4">
+            <div className="mb-4 flex flex-col gap-3">
                 <div>
                     <h2
                         id="starter-gallery-heading"
-                        className="font-[Orbitron] text-white text-base sm:text-lg font-bold tracking-wider"
+                        className="font-[Orbitron] text-base font-bold tracking-wider text-white sm:text-lg"
                     >
                         Start from an idea
                     </h2>
-                    <p className="text-xs sm:text-sm text-white/55 mt-1">
+                    <p className="mt-1 text-xs text-white/50 sm:text-sm">
                         Pick a starter — we&apos;ll fill in a detailed prompt you can tweak.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter starters by category">
+                <div className="-mx-1 flex flex-nowrap gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filter starters by category">
                     {FILTERS.map((f) => (
                         <button
                             key={f}
@@ -44,10 +77,10 @@ export function StarterGallery({ onSelect, className, activeId }: StarterGallery
                             aria-pressed={filter === f}
                             onClick={() => setFilter(f)}
                             className={cn(
-                                "rounded-full border px-3 py-1 text-xs font-[Orbitron] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+                                "shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70",
                                 filter === f
-                                    ? "bg-white text-gray-900 border-white"
-                                    : "bg-white/5 text-white/75 border-white/20 hover:bg-white/15 hover:text-white"
+                                    ? "border-purple-400/50 bg-purple-500/15 text-white"
+                                    : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
                             )}
                         >
                             {f}
@@ -56,9 +89,9 @@ export function StarterGallery({ onSelect, className, activeId }: StarterGallery
                 </div>
             </div>
 
-            <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {starters.map((starter) => {
-                    const [from, to] = starter.gradient;
+                    const Icon = ICONS[starter.id] ?? LayoutTemplateIcon;
                     const active = activeId === starter.id;
                     return (
                         <li key={starter.id} className="min-w-0">
@@ -68,47 +101,35 @@ export function StarterGallery({ onSelect, className, activeId }: StarterGallery
                                 aria-label={`Use starter: ${starter.title}. ${starter.description}`}
                                 aria-pressed={active}
                                 className={cn(
-                                    "group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border bg-black/40 text-left transition-all duration-300",
-                                    "hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-900/30 outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                                    active ? "border-white/80 ring-1 ring-white/60" : "border-white/15 hover:border-white/40"
+                                    "group relative flex h-full w-full items-center gap-3 overflow-hidden rounded-xl border p-3 text-left backdrop-blur-sm transition-all duration-300",
+                                    "outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70",
+                                    active
+                                        ? "border-purple-400/60 bg-purple-500/[0.08] shadow-[0_0_24px_-8px_rgba(168,85,247,0.6)]"
+                                        : "border-white/10 bg-white/[0.03] hover:border-purple-400/40 hover:bg-white/[0.05] hover:shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)]"
                                 )}
                             >
-                                {/* Gradient art with the emoji */}
-                                <div
-                                    className="relative flex h-20 sm:h-28 items-center justify-center overflow-hidden"
-                                    style={{ backgroundImage: `linear-gradient(135deg, ${from}, ${to})` }}
+                                {/* Icon tile: same style for every card */}
+                                <span
+                                    className={cn(
+                                        "flex size-10 shrink-0 items-center justify-center rounded-lg border transition-colors duration-300",
+                                        active
+                                            ? "border-purple-400/50 bg-purple-500/20 text-purple-200"
+                                            : "border-white/10 bg-white/[0.04] text-white/70 group-hover:border-purple-400/40 group-hover:bg-purple-500/10 group-hover:text-purple-200"
+                                    )}
+                                    aria-hidden
                                 >
-                                    <div
-                                        className="absolute inset-0 opacity-30 mix-blend-overlay"
-                                        style={{
-                                            backgroundImage:
-                                                "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.9), transparent 40%), radial-gradient(circle at 80% 90%, rgba(0,0,0,0.6), transparent 45%)",
-                                        }}
-                                        aria-hidden
-                                    />
-                                    <span
-                                        className="relative text-4xl sm:text-5xl drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6 motion-reduce:transform-none"
-                                        aria-hidden
-                                    >
-                                        {starter.emoji}
-                                    </span>
-                                    {/* Shine sweep on hover / focus */}
-                                    <span
-                                        className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/45 to-transparent -translate-x-full transition-transform duration-700 ease-out group-hover:translate-x-[400%] group-focus-visible:translate-x-[400%] motion-reduce:hidden"
-                                        aria-hidden
-                                    />
-                                    <span className="absolute left-2 top-2 rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
-                                        {starter.category}
-                                    </span>
-                                </div>
-                                <div className="flex flex-1 flex-col gap-1 p-3">
-                                    <h3 className="font-[Orbitron] text-xs sm:text-sm font-bold text-white leading-snug line-clamp-2">
-                                        {starter.title}
-                                    </h3>
-                                    <p className="text-[11px] sm:text-xs text-white/60 leading-snug line-clamp-2">
-                                        {starter.description}
-                                    </p>
-                                </div>
+                                    <Icon className="size-[18px]" strokeWidth={1.75} />
+                                </span>
+
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-semibold text-white">{starter.title}</span>
+                                    <span className="mt-0.5 line-clamp-2 text-xs leading-snug text-white/50">{starter.description}</span>
+                                </span>
+
+                                <ArrowUpRightIcon
+                                    className="size-4 shrink-0 text-white/25 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-purple-300 motion-reduce:transform-none"
+                                    aria-hidden
+                                />
                             </button>
                         </li>
                     );

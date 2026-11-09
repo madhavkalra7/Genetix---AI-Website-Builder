@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { CheckIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { THEME_PRESETS } from "@/lib/theme-presets";
 
@@ -74,7 +74,7 @@ export function ThemePicker({ value, onChange, disabled, className, label = "Des
                   : "border-white/20 bg-black/30 text-white/75 hover:bg-white/10 hover:text-white",
               )}
             >
-              {opt.dots ? (
+              {opt.dots && (
                 <span className="flex -space-x-1" aria-hidden="true">
                   {opt.dots.map((color, j) => (
                     <span
@@ -84,8 +84,6 @@ export function ThemePicker({ value, onChange, disabled, className, label = "Des
                     />
                   ))}
                 </span>
-              ) : (
-                <SparklesIcon className="size-3.5 text-purple-300" aria-hidden="true" />
               )}
               <span>{opt.name}</span>
               {selected && <CheckIcon className="size-3.5 text-purple-300" aria-hidden="true" />}
