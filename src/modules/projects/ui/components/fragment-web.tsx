@@ -2,7 +2,7 @@ import { Fragment } from "@/generated/prisma";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLinkIcon, GaugeIcon, MousePointerClickIcon, RefreshCcwIcon, ShieldCheckIcon } from "lucide-react";
+import { ExternalLinkIcon, GaugeIcon, LanguagesIcon, MousePointerClickIcon, RefreshCcwIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { HTMLPreview, type ElementStylePreview, type SelectedElementInfo } from "@/components/html-preview";
 import { SiteAuditPanel } from "@/components/site-audit-panel";
 import { SecurityScanPanel } from "@/components/security-scan-panel";
+import { MultiplayerDialog } from "@/components/multiplayer-dialog";
+import { TranslateDialog } from "@/components/translate-dialog";
 import { hasStaticEntry } from "@/lib/static-html";
 import { ElementEditPanel } from "./element-edit-panel";
 
@@ -31,6 +33,8 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
         const [stylePreview, setStylePreview] = useState<ElementStylePreview | null>(null);
         const [auditOpen, setAuditOpen] = useState(false);
         const [securityOpen, setSecurityOpen] = useState(false);
+        const [multiplayerOpen, setMultiplayerOpen] = useState(false);
+        const [translateOpen, setTranslateOpen] = useState(false);
 
         const trpc = useTRPC();
         const queryClient = useQueryClient();
@@ -185,6 +189,30 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
                                 <ShieldCheckIcon/>
                             </Button>
                         </Hint>
+                        {projectId && (
+                            <>
+                                <Hint text="Translate into Indian & world languages" side="bottom" align="start">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        aria-label="Translate into Indian & world languages"
+                                        onClick={() => setTranslateOpen(true)}
+                                    >
+                                        <LanguagesIcon/>
+                                    </Button>
+                                </Hint>
+                                <Hint text="Make it multiplayer" side="bottom" align="start">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        aria-label="Make it multiplayer"
+                                        onClick={() => setMultiplayerOpen(true)}
+                                    >
+                                        <UsersIcon/>
+                                    </Button>
+                                </Hint>
+                            </>
+                        )}
                         <Hint text={`${getProjectType()} Preview`} side="bottom">
                             <Button 
                                 size="sm" 
@@ -255,6 +283,22 @@ export function FragmentWeb({ data, projectId, onEditSent }: Props){
                             )}
                         </DialogContent>
                     </Dialog>
+                    {projectId && (
+                        <>
+                            <MultiplayerDialog
+                                open={multiplayerOpen}
+                                onOpenChange={setMultiplayerOpen}
+                                projectId={projectId}
+                                onSent={onEditSent}
+                            />
+                            <TranslateDialog
+                                open={translateOpen}
+                                onOpenChange={setTranslateOpen}
+                                projectId={projectId}
+                                onSent={onEditSent}
+                            />
+                        </>
+                    )}
                 </div>
             );
         }

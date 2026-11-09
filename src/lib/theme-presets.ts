@@ -143,6 +143,38 @@ export function getThemePreset(id: string | null | undefined): ThemePreset | und
   return THEME_PRESETS.find((t) => t.id === id);
 }
 
+/**
+ * A custom (non-preset) theme, e.g. one extracted by Style DNA. Every field MUST already be
+ * validated (hex colours, safe font names, short single-line text) before it reaches this helper.
+ */
+export type CustomThemeDefinition = {
+  name: string;
+  description: string;
+  palette: ThemePalette;
+  fonts: { display: string; body: string };
+  /** Human-readable radius guidance, e.g. "12–16px (rounded)". */
+  radius: string;
+  vibe: string;
+  /** Optional short layout/style traits. */
+  tips?: string[];
+  /** Hostname the style was taken from (adds a "do not copy content" guard). */
+  sourceHost?: string;
+};
+
+/** Renders a validated custom theme in the same prompt-block format as the presets. */
+export function buildCustomThemePromptBlock(theme: CustomThemeDefinition): string {
+  const lines = buildPromptBlock({ id: "custom", ...theme }).split("\n");
+  if (theme.tips && theme.tips.length > 0) {
+    lines.push(`Style traits: ${theme.tips.join("; ")}.`);
+  }
+  if (theme.sourceHost) {
+    lines.push(
+      `This theme is inspired by the visual style of ${theme.sourceHost}; do NOT copy its text, images, logos or layout verbatim — create original content that only shares the look and feel.`,
+    );
+  }
+  return lines.join("\n");
+}
+
 /** Appends the selected theme's prompt block; unknown/empty ids leave the prompt unchanged. */
 export function appendThemeBlock(prompt: string, themeId: string | null | undefined): string {
   const theme = getThemePreset(themeId);

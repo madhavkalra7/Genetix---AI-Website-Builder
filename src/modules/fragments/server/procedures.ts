@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/db";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { unifiedDiff } from "@/lib/text-diff";
+import { replaceTextInFiles } from "@/lib/text-replace";
 
 // ~2MB of text per file is plenty for hand edits and keeps the JSON column sane
 const MAX_FILE_CONTENT_LENGTH = 2 * 1024 * 1024;
@@ -334,11 +335,17 @@ export const fragmentsRouter = createTRPCRouter({
     // Visual edit: style one element with a CSS override, as a new version (no credits; no AI run)
     applyVisualEdit: protectedProcedure
         .input(
-            z.object({
-                fragmentId: z.string().min(1),
-                selector: visualSelectorSchema,
-                styles: visualStylesSchema,
-            }),
+            z
+                .object({
+                    fragmentId: z.string().min(1),
+                    selector: visualSelectorSchema,
+                    styles: visualStylesSchema.optional(),
+                    // Direct text change: replaced in the source when it can be found exactly once
+                    text: z
+                        .object({ from: z.string().trim().min(1).max(2000), to: z.string().trim().min(1).max(2000) })
+                        .optional(),
+                })
+                .refine((v) => !!v.styles || !!v.text, { message: "Nothing to save" }),
         )
         .mutation(async ({ input, ctx }) => {
             const source = await prisma.fragment.findFirst({
@@ -370,9 +377,30 @@ export const fragmentsRouter = createTRPCRouter({
                 throw new TRPCError({ code: "BAD_REQUEST", message: "This project has no version to edit yet" });
             }
 
-            const files = applyVisualRuleToFiles(asFileMap(latest.files), input.selector, input.styles);
-            if (!files) {
-                throw new TRPCError({ code: "BAD_REQUEST", message: "Visual edits need a stylesheet or index.html" });
+            let files: Record<string, string> = asFileMap(latest.files);
+            if (input.styles) {
+                const styled = applyVisualRuleToFiles(files, input.selector, input.styles);
+                if (!styled) {
+                    throw new TRPCError({ code: "BAD_REQUEST", message: "Visual edits need a stylesheet or index.html" });
+                }
+                files = styled;
+            }
+            // Text: deterministic replacement (free, instant). If it can't be located exactly once,
+            // report it so the client can fall back to a quick AI edit.
+            let textApplied = false;
+            let textFailure: "empty" | "not-found" | "ambiguous" | null = null;
+            if (input.text) {
+                const replaced = replaceTextInFiles(files, input.text.from, input.text.to);
+                if (replaced.ok) {
+                    files = replaced.files;
+                    textApplied = true;
+                } else {
+                    textFailure = replaced.reason;
+                }
+            }
+            if (!input.styles && !textApplied) {
+                // Nothing could be saved deterministically; no new version
+                return { fragment: null, textApplied: false, textFailure };
             }
 
             const selectorLabel = truncate(input.selector, 200);
@@ -382,10 +410,12 @@ export const fragmentsRouter = createTRPCRouter({
                         projectId,
                         role: "ASSISTANT",
                         type: "RESULT",
-                        content: `Applied visual edits to ${selectorLabel}`,
+                        content: textApplied && input.text
+                            ? `Changed text to "${truncate(input.text.to, 80)}"${input.styles ? ` and applied visual edits to ${selectorLabel}` : ""}`
+                            : `Applied visual edits to ${selectorLabel}`,
                         fragments: {
                             create: {
-                                title: "Visual edit",
+                                title: textApplied && !input.styles ? "Text edit" : "Visual edit",
                                 sandboxUrl: latest.sandboxUrl,
                                 files: files as Prisma.InputJsonValue,
                             },
@@ -397,7 +427,7 @@ export const fragmentsRouter = createTRPCRouter({
                 if (!message.fragments) {
                     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Could not save visual edits" });
                 }
-                return message.fragments;
+                return { fragment: message.fragments, textApplied, textFailure };
             });
         }),
 

@@ -15,6 +15,8 @@ import { galleryRouter } from '@/modules/gallery/server/procedures';
 import { analyticsRouter } from '@/modules/analytics/server/procedures';
 import { shareRouter } from '@/modules/share/server/procedures';
 import { referralsRouter } from '@/modules/referrals/server/procedures';
+import { challengesRouter } from '@/modules/challenges/server/procedures';
+import { styleDnaRouter } from '@/modules/style-dna/server/procedures';
 
 export const appRouter = createTRPCRouter({
   usage: usageRouter,
@@ -33,6 +35,8 @@ export const appRouter = createTRPCRouter({
   analytics: analyticsRouter,
   share: shareRouter,
   referrals: referralsRouter,
+  challenges: challengesRouter,
+  styleDna: styleDnaRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

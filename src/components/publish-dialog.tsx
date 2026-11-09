@@ -30,6 +30,7 @@ import {
 } from "@/modules/publish/shared";
 import { GALLERY_TITLE_MAX_LENGTH } from "@/modules/gallery/shared";
 import { SiteAnalytics } from "@/components/site-analytics";
+import { ChallengeSubmitCard } from "@/modules/challenges/ui/challenge-submit-card";
 
 interface PublishDialogProps {
     projectId: string;
@@ -302,6 +303,9 @@ export function PublishDialog({
                                 className="mt-0.5"
                             />
                         </div>
+
+                        {/* Weekly build challenge: submit / withdraw this published site */}
+                        {site && <ChallengeSubmitCard projectId={projectId} />}
 
                         {site && <SiteAnalytics projectId={projectId} />}
 

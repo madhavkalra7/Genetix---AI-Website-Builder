@@ -12,7 +12,7 @@ import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
 import { enforceBuildRateLimit } from '@/lib/rate-limit';
 import { enforcePlanRateLimit, generatePlanReply } from '@/modules/plan/server/plan-chat';
 import { appendImageBrief, imagesInputSchema, resolveImageBrief, withImageMarker } from '@/lib/image-brief';
-import { appendThemeBlock } from '@/lib/theme-presets';
+import { appendDesignTheme, styleDnaSchema } from '@/lib/style-dna';
 
 export const projectsRouter = createTRPCRouter({
     // Rename (pencil edit). Owner only.
@@ -95,6 +95,7 @@ export const projectsRouter = createTRPCRouter({
                 planOnly: z.boolean().optional(), // Plan with Genetix first: chat only, no build/credits
                 images: imagesInputSchema, // Reference screenshots/sketches → written brief (never stored)
                 themeId: z.string().max(64).optional(), // Preset id from src/lib/theme-presets (unknown ids ignored)
+                styleDna: styleDnaSchema.optional(), // Validated Style DNA theme (wins over themeId)
             }),
         )
         .mutation(async ({ input,ctx })=> {
@@ -134,7 +135,7 @@ export const projectsRouter = createTRPCRouter({
                     resolveImageBrief(input.images, input.value).then((brief) =>
                         generatePlanReply({
                             history: [],
-                            message: appendImageBrief(appendThemeBlock(input.value, input.themeId), brief, planImageCount),
+                            message: appendImageBrief(appendDesignTheme(input.value, input.themeId, input.styleDna), brief, planImageCount),
                             techStack,
                         }),
                     ),
@@ -247,7 +248,7 @@ export const projectsRouter = createTRPCRouter({
                 const aiquestPrompt = `${template ? `${template.designPrompt}\n\n` : ''}${input.value}\n\nBuild with HTML, CSS, and JavaScript.`;
                 const imageBrief = await imageBriefPromise;
                 const buildPrompt = appendImageBrief(
-                    appendThemeBlock(aiquestMode ? aiquestPrompt : input.enhancedValue || input.value, input.themeId),
+                    appendDesignTheme(aiquestMode ? aiquestPrompt : input.enhancedValue || input.value, input.themeId, input.styleDna),
                     imageBrief,
                     imageCount,
                 );
@@ -348,6 +349,7 @@ export const appProjectsRouter = createTRPCRouter({
                 enhancedValue: z.string().optional(),
                 images: imagesInputSchema,
                 themeId: z.string().max(64).optional(),
+                styleDna: styleDnaSchema.optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -401,7 +403,7 @@ export const appProjectsRouter = createTRPCRouter({
                 await inngest.send({
                     name: "code-agent/run",
                     data: {
-                        value: appendImageBrief(appendThemeBlock(input.enhancedValue || input.value, input.themeId), imageBrief, imageCount),
+                        value: appendImageBrief(appendDesignTheme(input.enhancedValue || input.value, input.themeId, input.styleDna), imageBrief, imageCount),
                         projectId: createdProject.id,
                         isApp: true,
                         creditCost: 5,
@@ -422,6 +424,7 @@ export const appProjectsRouter = createTRPCRouter({
                 enhancedValue: z.string().optional(),
                 images: imagesInputSchema,
                 themeId: z.string().max(64).optional(),
+                styleDna: styleDnaSchema.optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -486,7 +489,7 @@ export const appProjectsRouter = createTRPCRouter({
                 await inngest.send({
                     name: "code-agent/run",
                     data: {
-                        value: appendImageBrief(appendThemeBlock(input.enhancedValue || input.value, input.themeId), imageBrief, imageCount),
+                        value: appendImageBrief(appendDesignTheme(input.enhancedValue || input.value, input.themeId, input.styleDna), imageBrief, imageCount),
                         projectId: input.projectId,
                         isApp: true,
                         creditCost: 5,

@@ -20,11 +20,13 @@ import { Magnetic } from "@/components/animations/magnetic-button";
 import { AuroraBackground, Starfield } from "@/components/animations/aurora-background";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
 import { ThemePicker } from "@/components/theme-picker";
+import type { StyleDna } from "@/lib/style-dna";
 import { StarterGallery } from "@/components/starter-gallery";
 import { STARTER_PROMPTS } from "@/lib/starter-prompts";
 const Page = () => {
   const [value, setValue] = useState("");
   const [themeId, setThemeId] = useState<string | null>(null); // Design theme preset (null = let AI decide)
+  const [styleDna, setStyleDna] = useState<StyleDna | null>(null); // Theme extracted from a website (wins over themeId)
   const [selectedTech, setSelectedTech] = useState("html-css-js");
   const autoTechRef = useRef("html-css-js"); // Last stack set automatically (default or by a starter card)
   const [advancedReasoning, setAdvancedReasoning] = useState(false);
@@ -126,6 +128,7 @@ const Page = () => {
       planOnly: !isAiquest && planFirst ? true : undefined,
       images: attachments.dataUrls.length > 0 ? attachments.dataUrls : undefined,
       themeId: themeId ?? undefined,
+      styleDna: styleDna ?? undefined,
     });
     if (attachments.dataUrls.length > 0) {
       toast.info("Reading your images — this can take a few extra seconds…");
@@ -463,6 +466,8 @@ const Page = () => {
             <ThemePicker
               value={themeId}
               onChange={setThemeId}
+              styleDna={styleDna}
+              onStyleDnaChange={setStyleDna}
               disabled={createProject.isPending}
             />
 

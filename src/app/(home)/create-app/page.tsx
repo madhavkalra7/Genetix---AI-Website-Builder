@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
 import { ThemePicker } from "@/components/theme-picker";
+import type { StyleDna } from "@/lib/style-dna";
 
 // Simulated build logs for visual excellence
 const SIMULATED_BUILD_LOGS = [
@@ -48,6 +49,7 @@ function CreateAppContent() {
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
   const [themeId, setThemeId] = useState<string | null>(null); // Design theme preset for new apps
+  const [styleDna, setStyleDna] = useState<StyleDna | null>(null); // Theme extracted from a website (wins over themeId)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [logIndex, setLogIndex] = useState(0);
@@ -291,7 +293,7 @@ function CreateAppContent() {
         images,
       }, clearImages);
     } else {
-      createAppProject.mutate({ ...payload, images, themeId: themeId ?? undefined }, clearImages);
+      createAppProject.mutate({ ...payload, images, themeId: themeId ?? undefined, styleDna: styleDna ?? undefined }, clearImages);
     }
   };
 
@@ -438,7 +440,13 @@ function CreateAppContent() {
                     />
                   </div>
                   <p className="text-[11px] text-white/50 px-1">{IMAGE_ATTACH_HINT} (paste, drop or use the image button · up to 3)</p>
-                  <ThemePicker value={themeId} onChange={setThemeId} disabled={createAppProject.isPending} />
+                  <ThemePicker
+                    value={themeId}
+                    onChange={setThemeId}
+                    styleDna={styleDna}
+                    onStyleDnaChange={setStyleDna}
+                    disabled={createAppProject.isPending}
+                  />
                   <div className="text-[10px] text-white/50 font-[Orbitron] flex items-center justify-between px-1">
                     <span>⚡ Generation Cost: <span className="text-purple-400 font-bold">5 Credits</span></span>
                     {usageStatus && (

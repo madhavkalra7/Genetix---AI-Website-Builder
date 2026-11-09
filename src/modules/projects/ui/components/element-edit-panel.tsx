@@ -322,7 +322,10 @@ function VisualEditor({
     const set = <K extends keyof VisualValues>(key: K, value: VisualValues[K]) =>
         setValues((prev) => ({ ...prev, [key]: value }));
 
-    const canEditText = element.isLeaf === true && element.tag !== "img" && element.tag !== "input";
+    // Any element with visible text can be edited (not only childless ones)
+    const canEditText =
+        !["img", "input", "select", "textarea", "svg", "video", "audio", "canvas", "iframe"].includes(element.tag) &&
+        element.text.trim().length > 0;
     const styles = useMemo(() => styleDiff(initial, values), [initial, values]);
     const textChanged = canEditText && values.text.trim() !== initial.text.trim() && values.text.trim().length > 0;
     const hasStyleChanges = Object.keys(styles).length > 0;
@@ -354,9 +357,17 @@ function VisualEditor({
 
     const save = async () => {
         if (!dirty || pending) return;
+        let textSavedDirectly = false;
         try {
-            if (hasStyleChanges) {
-                await applyVisualEdit.mutateAsync({ fragmentId, selector: element.selector, styles });
+            // One save: style rule + direct text replacement (free, instant) in the same new version
+            const result = await applyVisualEdit.mutateAsync({
+                fragmentId,
+                selector: element.selector,
+                styles: hasStyleChanges ? styles : undefined,
+                text: textChanged ? { from: initial.text, to: values.text } : undefined,
+            });
+            textSavedDirectly = result.textApplied;
+            if (result.fragment) {
                 await queryClient.invalidateQueries(trpc.messages.getMany.queryOptions({ projectId }));
                 toast.success("Saved instantly — no credits used");
             }
@@ -364,10 +375,13 @@ function VisualEditor({
             toast.error(error instanceof Error ? error.message : "Couldn't save visual edits");
             return;
         }
-        if (!textChanged) {
+        if (!textChanged || textSavedDirectly) {
             onSaved();
             return;
         }
+        // Text couldn't be pinpointed in the code (e.g. it's built by JavaScript or appears twice):
+        // fall back to a fast AI edit.
+        toast.message("Couldn't pinpoint that text in the code — using a quick AI edit (1 credit)");
         try {
             await createMessage.mutateAsync({
                 projectId,
@@ -411,7 +425,7 @@ function VisualEditor({
                 {canEditText && (
                     <div className="flex flex-col gap-1">
                         <label htmlFor="visual-text" className="text-[11px] font-medium text-muted-foreground">
-                            Text <span className="font-normal">(saving a text change uses 1 credit)</span>
+                            Text <span className="font-normal">(saved instantly, free)</span>
                         </label>
                         <Input
                             id="visual-text"

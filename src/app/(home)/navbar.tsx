@@ -83,6 +83,15 @@ export const Navbar =()=>{
                     >
                         Gallery
                     </Link>
+                    <Link
+                        href="/challenges"
+                        className={cn(
+                            "text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]",
+                            pathname === "/challenges" && "border-purple-400/60 bg-white/20"
+                        )}
+                    >
+                        Challenges
+                    </Link>
                 </div>}
                 
                 {/* Desktop Auth Buttons + Language Selector */}
@@ -229,6 +238,13 @@ export const Navbar =()=>{
                         onClick={() => setMobileMenuOpen(false)}
                     >
                         Gallery
+                    </Link>
+                    <Link
+                        href="/challenges"
+                        className="block text-sm font-[Orbitron] font-semibold text-white px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 transition-colors text-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Challenges
                     </Link>
                     {!user ? (
                         <div className="flex flex-col gap-2">

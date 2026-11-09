@@ -13,7 +13,8 @@ import { Form , FormField } from "@/components/ui/form";
 import { Usage } from "./usage";
 import { useRouter } from "next/navigation";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
-import { SpeechInputButton } from "@/components/speech-input-button";
+import { SpeechInputButton, VoiceLanguageSelect } from "@/components/speech-input-button";
+import { VOICE_LANGUAGES, VOICE_LANG_STORAGE_KEY } from "@/lib/feature-prompts";
 
 
 
@@ -41,6 +42,18 @@ export const MessageForm=({ projectId }: Props) => {
     const{ data:usage }=useQuery(trpc.usage.status.queryOptions());
     // Text typed before dictation started (speech is appended after it)
     const speechBaseRef = useRef("");
+    // Voice input language (regional languages), remembered across sessions
+    const [voiceLang,setVoiceLang]=useState("en-IN");
+    useEffect(()=>{
+        try {
+            const saved=window.localStorage.getItem(VOICE_LANG_STORAGE_KEY);
+            if(saved && VOICE_LANGUAGES.some((l)=>l.code===saved)) setVoiceLang(saved);
+        } catch {}
+    },[]);
+    const changeVoiceLang=(next:string)=>{
+        setVoiceLang(next);
+        try { window.localStorage.setItem(VOICE_LANG_STORAGE_KEY, next); } catch {}
+    };
     const form=useForm<z.infer<typeof formSchema>>({
         resolver:zodResolver(formSchema),
         defaultValues:{
@@ -202,7 +215,15 @@ export const MessageForm=({ projectId }: Props) => {
                             &nbsp;to submit
                         </div>
                         {/* 🎤 Speech to text: dictation is appended after whatever was already typed */}
+                        <div className="flex items-center">
+                        <VoiceLanguageSelect
+                            value={voiceLang}
+                            onChange={changeVoiceLang}
+                            options={VOICE_LANGUAGES}
+                            disabled={isPending}
+                        />
                         <SpeechInputButton
+                            lang={voiceLang}
                             disabled={isPending}
                             onStart={() => { speechBaseRef.current = form.getValues("value").trim(); }}
                             onTranscript={(text) => {
@@ -210,6 +231,7 @@ export const MessageForm=({ projectId }: Props) => {
                                 form.setValue("value", base ? `${base} ${text}` : text, { shouldValidate: true, shouldDirty: true });
                             }}
                         />
+                        </div>
                         {!isPlanMode && (
                             <ImageAttachButton
                                 onFiles={(files)=>void attachments.addFiles(files)}

@@ -104,3 +104,41 @@ export function SpeechInputButton({ onTranscript, onStart, disabled, className, 
     </button>
   );
 }
+
+interface VoiceLanguageSelectProps {
+  value: string;
+  onChange: (lang: string) => void;
+  options: readonly { code: string; label: string; short: string }[];
+  disabled?: boolean;
+  className?: string;
+}
+
+/** Compact voice-language picker: shows a short label (e.g. "EN" / "हि") over a native select. */
+export function VoiceLanguageSelect({ value, onChange, options, disabled, className }: VoiceLanguageSelectProps) {
+  const current = options.find((o) => o.code === value) ?? options[0];
+  return (
+    <span
+      title={`Voice input language: ${current?.label ?? value}`}
+      className={cn(
+        "relative inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-within:ring-2 focus-within:ring-ring/50",
+        disabled && "pointer-events-none opacity-50",
+        className
+      )}
+    >
+      <span aria-hidden>{current?.short ?? value}</span>
+      <select
+        aria-label="Voice input language"
+        value={current?.code ?? value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {options.map((o) => (
+          <option key={o.code} value={o.code}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </span>
+  );
+}

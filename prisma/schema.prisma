@@ -418,3 +418,39 @@ model SiteVisit {
 
   @@index([siteId, createdAt])
 }
+
+// ==================== WEEKLY BUILD CHALLENGES ====================
+
+// A themed weekly challenge ("Build a Diwali game"); entries are published sites.
+model Challenge {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  description  String
+  prompt       String?   // optional starter prompt
+  startsAt     DateTime
+  endsAt       DateTime
+  prizeCredits Int       @default(100) // credits for 1st place (2nd/3rd get less)
+  awardedAt    DateTime? // when prizes were paid out
+  createdAt    DateTime  @default(now())
+
+  entries ChallengeEntry[]
+
+  @@index([startsAt, endsAt])
+}
+
+model ChallengeEntry {
+  id          String   @id @default(cuid())
+  challengeId String
+  projectId   String
+  siteId      String   // PublishedSite.id at submission time
+  userId      String
+  rank        Int?     // final placing once awarded
+  createdAt   DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, projectId])
+  @@index([challengeId])
+  @@index([userId])
+}
