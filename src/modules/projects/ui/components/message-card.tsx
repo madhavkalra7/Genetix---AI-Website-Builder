@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Fragment, MessageRole, MessageType } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { ChevronRightIcon,Code2Icon,HammerIcon,Loader2Icon } from "lucide-react";
+import { ChevronRightIcon,ClockIcon,Code2Icon,HammerIcon,Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
@@ -44,14 +44,28 @@ const BuildThisButton = ({ projectId }: { projectId: string }) => {
 
 interface UserMessageProps {
   content: string;
+  /** Waiting behind the build that is currently running */
+  queued?: boolean;
 }
 
-const UserMessage = ({ content }: UserMessageProps) => {
+const UserMessage = ({ content, queued }: UserMessageProps) => {
   return (
-    <div className="flex justify-end pb-4 pr-2 pl-6 md:pl-10">
-      <Card className="rounded-lg bg-muted p-3 shadow-none border-none max-w-[85%] md:max-w-[80%] break-words [overflow-wrap:anywhere]">
+    <div className="flex flex-col items-end gap-1 pb-4 pr-2 pl-6 md:pl-10">
+      <Card className={cn(
+        "rounded-lg bg-muted p-3 shadow-none border-none max-w-[85%] md:max-w-[80%] break-words [overflow-wrap:anywhere]",
+        queued && "opacity-80",
+      )}>
         {content}
       </Card>
+      {queued && (
+        <span
+          className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[11px] text-muted-foreground"
+          role="status"
+        >
+          <ClockIcon className="size-3" aria-hidden />
+          Queued — starts after the current build
+        </span>
+      )}
     </div>
   );
 };
@@ -180,6 +194,8 @@ interface MessageCardProps {
   projectId?: string;
   /** True only for the most recent plan reply when it is also the latest message */
   showBuildThis?: boolean;
+  /** USER request waiting in the build queue (another build is running first) */
+  queued?: boolean;
 }
 
 export const MessageCard = ({
@@ -193,11 +209,12 @@ export const MessageCard = ({
   version,
   projectId,
   showBuildThis,
+  queued,
 }: MessageCardProps) => {
   if (role === "ASSISTANT") {
     return (
         <AssistantMessage content={content} fragment={fragment} createdAt={createdAt} isActiveFragment={isActiveFragment} onFragmentClick={onFragmentClick} type={type} version={version} projectId={projectId} showBuildThis={showBuildThis} />
     );
   }
-  return <UserMessage content={content} />;
+  return <UserMessage content={content} queued={queued} />;
 };

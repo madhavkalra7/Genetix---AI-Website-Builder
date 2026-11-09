@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EyeIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const loadingMessages = [
   "Building Your Project",
@@ -17,9 +19,49 @@ const loadingMessages = [
 
 interface ProjectLoadingProps {
   className?: string;
+  /**
+   * "building" (default): full animated loader while a build runs.
+   * "idle": calm placeholder for a project with no version yet and nothing building
+   * (same background visual, no blur/spinner/progress).
+   */
+  variant?: "building" | "idle";
 }
 
-export function ProjectLoading({ className }: ProjectLoadingProps) {
+export function ProjectLoading({ className, variant = "building" }: ProjectLoadingProps) {
+  if (variant === "idle") return <ProjectIdlePreview className={className} />;
+  return <ProjectBuildingLoader className={className} />;
+}
+
+function ProjectIdlePreview({ className }: { className?: string }) {
+  return (
+    <div className={cn("relative flex flex-col items-center justify-center h-full overflow-hidden", className)}>
+      {/* Same background visual as the loader, but sharp and still-ish (no blur) */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover opacity-25"
+      >
+        <source src="/loading.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/80" />
+
+      <div className="relative z-10 flex max-w-md flex-col items-center px-6 text-center">
+        <div className="mb-6 flex size-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_30px_rgba(168,85,247,0.25)] backdrop-blur-md">
+          <EyeIcon className="size-6 text-purple-300" aria-hidden />
+        </div>
+        <h2 className="text-xl font-semibold text-white">Your preview will appear here</h2>
+        <p className="mt-2 text-sm text-gray-300">
+          Chat in Plan mode to shape your idea, then press Build.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ProjectBuildingLoader({ className }: { className?: string }) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
   useEffect(() => {
@@ -31,7 +73,7 @@ export function ProjectLoading({ className }: ProjectLoadingProps) {
   }, []);
 
   return (
-    <div className={`relative flex flex-col items-center justify-center h-full overflow-hidden ${className}`}>
+    <div className={cn("relative flex flex-col items-center justify-center h-full overflow-hidden", className)}>
       {/* Background Video with Blur */}
       <video
         autoPlay

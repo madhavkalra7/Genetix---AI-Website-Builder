@@ -5,6 +5,7 @@ import type React from "react";
 import { ImagePlusIcon, Loader2Icon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ImageLightbox } from "@/components/image-lightbox";
 
 export const IMAGE_ATTACH_HINT = "Attach a screenshot, sketch or design — Genetix will build from it";
 export const MAX_IMAGES = 3;
@@ -240,32 +241,64 @@ interface ImageAttachThumbnailsProps {
   className?: string;
 }
 
-/** Removable thumbnails of the attached images (renders nothing when empty). */
+/** Removable thumbnails of the attached images (renders nothing when empty). Click one to preview it. */
 export function ImageAttachThumbnails({ images, onRemove, isProcessing, disabled, className }: ImageAttachThumbnailsProps) {
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  // Close the preview if its images were removed (e.g. the form was submitted and cleared)
+  useEffect(() => {
+    if (previewIndex !== null && previewIndex >= images.length) {
+      setPreviewIndex(images.length > 0 ? images.length - 1 : null);
+    }
+  }, [images.length, previewIndex]);
+
   if (images.length === 0 && !isProcessing) return null;
   return (
-    <ul className={cn("flex flex-wrap gap-2", className)} aria-label="Attached images">
-      {images.map((img, i) => (
-        <li key={img.id} className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-white/25 bg-black/30">
-          {/* eslint-disable-next-line @next/next/no-img-element -- local data URL preview */}
-          <img src={img.dataUrl} alt={`Attached image ${i + 1}: ${img.name}`} className="size-full object-cover" />
-          <button
-            type="button"
-            aria-label={`Remove attached image ${i + 1}`}
-            disabled={disabled}
-            onClick={() => onRemove(img.id)}
-            className="absolute right-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/75 text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
-          >
-            <XIcon className="size-3" aria-hidden="true" />
-          </button>
-        </li>
-      ))}
-      {isProcessing && (
-        <li className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/25" aria-live="polite">
-          <Loader2Icon className="size-4 animate-spin opacity-70" aria-label="Processing image" />
-        </li>
+    <>
+      <ul className={cn("flex flex-wrap gap-2", className)} aria-label="Attached images">
+        {images.map((img, i) => (
+          <li key={img.id} className="group/thumb relative size-16 shrink-0 overflow-hidden rounded-lg border border-white/25 bg-black/30 transition-colors hover:border-purple-400/60">
+            <button
+              type="button"
+              aria-label={`Preview attached image ${i + 1}: ${img.name}`}
+              title="Click to preview"
+              onClick={() => setPreviewIndex(i)}
+              className="block size-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- local data URL preview */}
+              <img
+                src={img.dataUrl}
+                alt={`Attached image ${i + 1}: ${img.name}`}
+                className="size-full object-cover transition-transform duration-200 group-hover/thumb:scale-105"
+              />
+            </button>
+            <button
+              type="button"
+              aria-label={`Remove attached image ${i + 1}`}
+              disabled={disabled}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(img.id);
+              }}
+              className="absolute right-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/75 text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50"
+            >
+              <XIcon className="size-3" aria-hidden="true" />
+            </button>
+          </li>
+        ))}
+        {isProcessing && (
+          <li className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-white/25" aria-live="polite">
+            <Loader2Icon className="size-4 animate-spin opacity-70" aria-label="Processing image" />
+          </li>
+        )}
+      </ul>
+      {previewIndex !== null && images.length > 0 && (
+        <ImageLightbox
+          images={images.map((img) => ({ src: img.dataUrl, name: img.name }))}
+          index={Math.min(previewIndex, images.length - 1)}
+          onClose={() => setPreviewIndex(null)}
+        />
       )}
-    </ul>
+    </>
   );
 }
 

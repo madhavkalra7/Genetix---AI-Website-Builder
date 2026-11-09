@@ -3,7 +3,8 @@ import { getSessionByToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth-config-simple";
-import { AIQUEST_LIMIT, consumeAiquestIteration } from '@/lib/aiquest';
+import { consumeAiquestIteration } from '@/lib/aiquest';
+import { getAvailableCredits } from "@/lib/credits";
 
 const GENERATION_COST = 1;
 
@@ -31,6 +32,11 @@ async function getCurrentUser() {
   return session?.user || null;
 }
 
+/**
+ * @deprecated Charges immediately from the request's session. Builds no longer use this:
+ * they check affordability with assertCanAffordBuild and are charged on success by the
+ * pipeline (src/lib/credits.ts). Kept for any non-build caller.
+ */
 export async function consumeCredits(amount: number = 1) {
   const user = await getCurrentUser();
 
@@ -95,6 +101,10 @@ export async function consumeCredits(amount: number = 1) {
   };
 }
 
+/**
+ * Balance shown in the UI. Credits are charged when a build succeeds, so builds that are still
+ * running/queued are subtracted here as "reserved" (remainingCredits = what can still be spent).
+ */
 export async function getUsageStatus() {
   const user = await getCurrentUser();
 
@@ -102,36 +112,12 @@ export async function getUsageStatus() {
     throw new Error("User not authenticated");
   }
 
-  if (user.aiquestUserId) {
-    const usage = await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { aiquestIterationsUsed: true } });
-    return {
-      creditsUsed: usage.aiquestIterationsUsed,
-      creditsLimit: AIQUEST_LIMIT,
-      remainingCredits: Math.max(0, AIQUEST_LIMIT - usage.aiquestIterationsUsed),
-      aiquestMode: true,
-    };
-  }
-
-  // Get or create user credits
-  let userCredits = await prisma.userCredits.findUnique({
-    where: { userId: user.id },
-  });
-
-  if (!userCredits) {
-    userCredits = await prisma.userCredits.create({
-      data: {
-        userId: user.id,
-        creditsUsed: 0,
-        creditsLimit: 3,
-        lastReset: new Date(),
-      },
-    });
-  }
-
+  const balance = await getAvailableCredits(user.id);
   return {
-    creditsUsed: userCredits.creditsUsed,
-    creditsLimit: userCredits.creditsLimit,
-    remainingCredits: userCredits.creditsLimit - userCredits.creditsUsed,
-    aiquestMode: false,
+    creditsUsed: balance.used,
+    creditsLimit: balance.limit,
+    remainingCredits: Math.max(0, balance.available),
+    reservedCredits: balance.reserved,
+    aiquestMode: balance.aiquestMode,
   };
 }

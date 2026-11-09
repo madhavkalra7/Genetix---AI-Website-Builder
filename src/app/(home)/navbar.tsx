@@ -10,6 +10,13 @@ import { useSession } from "next-auth/react"
 import { useState } from "react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { usePathname } from "next/navigation"
+import { ChevronDownIcon } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -47,6 +54,12 @@ export const Navbar =()=>{
     const user = customAuthUser || session?.user;
     const isAiquest = !!customAuthUser?.aiquestUserId;
     
+    const navLinks = [
+        ...(!isAiquest ? [{ href: "/prompt-generator", label: t('nav.promptGenerator') }] : []),
+        { href: "/gallery", label: "Gallery" },
+        { href: "/challenges", label: "Challenges" },
+    ];
+
     const selectedLanguage = languages.find(l => l.code === language) || languages[0];
     
     const handleLanguageChange = (lang: typeof languages[0]) => {
@@ -59,43 +72,68 @@ export const Navbar =()=>{
             "p-4 bg-transparent fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent",
             isScrolled && "backdrop-blur-xl bg-black/60 border-b border-white/10 shadow-lg shadow-purple-900/10"
             )}>
-            <div className="max-w-5xl mx-auto w-full flex justify-between items-center">
+            {/* md+: 3-zone grid (logo | links centred | actions right). The side columns are 1fr but never
+                shrink below their content, so the zones can't overlap; the centre stays centred when they fit. */}
+            <div className="max-w-6xl mx-auto w-full flex justify-between items-center md:grid md:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] md:gap-4 lg:gap-6">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 z-10 group">
+                <Link href="/" className="flex items-center gap-2 z-10 group justify-self-start">
                     <Image src="/logo.png" alt="genetix" width={24} height={24} className="transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
                     <span className="font-semibold text-md text-white">Genetix</span>
                 </Link>
 
-                {/* Desktop Prompt Generator + Gallery */}
-                {!authLoading && <div className="hidden md:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
-                    {!isAiquest && <Link
-                        href="/prompt-generator"
-                        className="text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]"
-                    >
-                        {t('nav.promptGenerator')}
-                    </Link>}
-                    <Link
-                        href="/gallery"
-                        className={cn(
-                            "text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]",
-                            pathname === "/gallery" && "border-purple-400/60 bg-white/20"
-                        )}
-                    >
-                        Gallery
-                    </Link>
-                    <Link
-                        href="/challenges"
-                        className={cn(
-                            "text-sm font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]",
-                            pathname === "/challenges" && "border-purple-400/60 bg-white/20"
-                        )}
-                    >
-                        Challenges
-                    </Link>
-                </div>}
+                {/* Desktop centre links (always rendered on md+ so the grid columns stay stable) */}
+                <div className="hidden md:flex items-center justify-center min-w-0">
+                    {!authLoading && (
+                        <>
+                            {/* lg+: inline links */}
+                            <div className="hidden lg:flex items-center gap-1.5 xl:gap-2">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={cn(
+                                            "whitespace-nowrap text-xs xl:text-sm font-[Orbitron] font-semibold text-white px-2 xl:px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]",
+                                            pathname === link.href && "border-purple-400/60 bg-white/20"
+                                        )}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </div>
+                            {/* md–lg: too tight for three links, so they collapse into a "More" menu */}
+                            <div className="lg:hidden">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger
+                                        className={cn(
+                                            "flex items-center gap-1 whitespace-nowrap text-xs font-[Orbitron] font-semibold text-white px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-purple-400/50 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 data-[state=open]:border-purple-400/60",
+                                            navLinks.some((l) => l.href === pathname) && "border-purple-400/60 bg-white/20"
+                                        )}
+                                    >
+                                        More
+                                        <ChevronDownIcon className="size-3.5 opacity-70" aria-hidden />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="center" className="min-w-48 rounded-xl border-white/10 bg-[#0b0b0f]/95 p-1.5 text-white shadow-2xl shadow-black/60 backdrop-blur-xl">
+                                        {navLinks.map((link) => (
+                                            <DropdownMenuItem
+                                                key={link.href}
+                                                asChild
+                                                className={cn(
+                                                    "cursor-pointer rounded-lg px-2.5 py-2 font-[Orbitron] text-xs font-semibold text-white/85 focus:bg-white/[0.07] focus:text-white",
+                                                    pathname === link.href && "bg-purple-500/15 text-white"
+                                                )}
+                                            >
+                                                <Link href={link.href}>{link.label}</Link>
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </>
+                    )}
+                </div>
                 
                 {/* Desktop Auth Buttons + Language Selector */}
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden md:flex items-center justify-self-end gap-2 lg:gap-3">
                     {/* Language Selector */}
                     <div className="relative">
                         <button
@@ -147,13 +185,16 @@ export const Navbar =()=>{
                             </Button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-4">
-                            <UserControl showName />
+                        <div className="flex items-center gap-2 lg:gap-4">
+                            {/* Long names/emails truncate instead of pushing into the centre links */}
+                            <div className="min-w-0 max-w-40 xl:max-w-52 [&_button]:max-w-full [&_button>span:last-child]:truncate">
+                                <UserControl showName />
+                            </div>
                             {!isAiquest && pathname !== "/create-app" && (
                                 <div className="relative group/btn flex items-center">
                                     <Link
                                         href="/create-app"
-                                        className="relative text-xs font-[Orbitron] font-bold text-white px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400/40"
+                                        className="relative whitespace-nowrap text-xs font-[Orbitron] font-bold text-white px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] border border-purple-400/40"
                                     >
                                         Create APP
                                     </Link>

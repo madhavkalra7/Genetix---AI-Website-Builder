@@ -247,11 +247,44 @@ export const fragmentsRouter = createTRPCRouter({
                         id: input.fragmentId,
                         message: { project: { userId: ctx.auth.userId } },
                     },
-                    select: { id: true },
+                    select: { id: true, files: true, title: true, sandboxUrl: true, message: { select: { projectId: true } } },
                 });
 
                 if (!fragment) {
                     throw new TRPCError({ code: "NOT_FOUND", message: "Fragment not found" });
+                }
+
+                // The AI always builds on the NEWEST version. If the user edited an older version,
+                // save the edit as a new latest version so the next build includes it.
+                const projectId = fragment.message.projectId;
+                const newest = await tx.fragment.findFirst({
+                    where: { message: { projectId } },
+                    orderBy: { createdAt: "desc" },
+                    select: { id: true },
+                });
+                if (newest && newest.id !== fragment.id) {
+                    const files = { ...asFileMap(fragment.files), [input.path]: input.content };
+                    const message = await tx.message.create({
+                        data: {
+                            projectId,
+                            role: "ASSISTANT",
+                            type: "RESULT",
+                            content: `Saved your edit to ${truncate(input.path, 120)} as a new version (based on "${truncate(fragment.title, 60)}").`,
+                            fragments: {
+                                create: {
+                                    title: truncate(`Edited ${input.path.split("/").pop() || input.path}`, MAX_TITLE_LENGTH),
+                                    sandboxUrl: fragment.sandboxUrl,
+                                    files: files as Prisma.InputJsonValue,
+                                },
+                            },
+                        },
+                        include: { fragments: true },
+                    });
+                    await tx.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
+                    if (!message.fragments) {
+                        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Could not save the edit" });
+                    }
+                    return message.fragments;
                 }
 
                 // Atomic single-key update inside the jsonb column: two concurrent saves to
@@ -353,7 +386,7 @@ export const fragmentsRouter = createTRPCRouter({
                     id: input.fragmentId,
                     message: { project: { userId: ctx.auth.userId } },
                 },
-                select: { message: { select: { projectId: true } } },
+                select: { files: true, sandboxUrl: true, message: { select: { projectId: true } } },
             });
             if (!source) {
                 throw new TRPCError({ code: "NOT_FOUND", message: "Version not found" });
@@ -367,15 +400,9 @@ export const fragmentsRouter = createTRPCRouter({
                 });
             }
 
-            // Edits always land on top of the newest version
-            const latest = await prisma.fragment.findFirst({
-                where: { message: { projectId, role: "ASSISTANT", type: "RESULT" } },
-                orderBy: { createdAt: "desc" },
-                select: { files: true, sandboxUrl: true },
-            });
-            if (!latest) {
-                throw new TRPCError({ code: "BAD_REQUEST", message: "This project has no version to edit yet" });
-            }
+            // Edits apply to the version the user is looking at (selectors/text come from it);
+            // the result becomes the newest version, so the next AI build includes it.
+            const latest = source;
 
             let files: Record<string, string> = asFileMap(latest.files);
             if (input.styles) {

@@ -3,14 +3,16 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { MessageCard } from "./message-card";
 import { MessageForm } from "./message-form";
-import { Fragment } from "@/generated/prisma";
+import { Fragment as FragmentModel } from "@/generated/prisma";
+import { Fragment } from "react";
 import { MessageLoading } from "./message-loading";
+import { getPendingBuildMessages } from "@/lib/build-queue";
 interface Props {
     projectId: string;
-    activeFragment:Fragment | null;
-    setActiveFragment: (fragment:Fragment | null)=>void;
+    activeFragment:FragmentModel | null;
+    setActiveFragment: (fragment:FragmentModel | null)=>void;
     /** Called when the user explicitly picks a version from the chat */
-    onFragmentSelect?: (fragment: Fragment) => void;
+    onFragmentSelect?: (fragment: FragmentModel) => void;
 }
 export const MessagesContainer = ({ 
     projectId,
@@ -56,11 +58,16 @@ export const MessagesContainer = ({
     },[messages.length]);
 
     const lastMessage=messages[messages.length-1];
-    const isLastMessageUser=lastMessage?.role==="USER";
+    // Build queue: requests after the last build reply. The first is building (live progress
+    // right under it), the rest wait their turn and show a "Queued" badge.
+    const pending=getPendingBuildMessages(messages);
+    const buildingMessage=pending[0] ?? null;
+    const queuedIds=new Set(pending.slice(1).map((message) => message.id));
+    const isBuilding=pending.length>0;
     const latestFragmentId=messages.findLast(
         (message) => message.role==="ASSISTANT" && message.type==="RESULT" && !!message.fragments
     )?.fragments?.id ?? null;
-    const version={ projectId, latestFragmentId, isBuilding: isLastMessageUser };
+    const version={ projectId, latestFragmentId, isBuilding };
     // Plan replies are ASSISTANT/RESULT messages without a fragment; offer "Build this" on the latest one only.
     const buildThisMessageId=
         lastMessage?.role==="ASSISTANT" && lastMessage.type==="RESULT" && !lastMessage.fragments
@@ -72,8 +79,8 @@ export const MessagesContainer = ({
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <div className="pt-2 pr-1 min-w-0">
                     {messages.map((message) => (
+                        <Fragment key={message.id}>
                         <MessageCard
-                            key={message.id}
                             content={message.content}
                             role={message.role}
                             fragment={message.fragments}
@@ -87,16 +94,20 @@ export const MessagesContainer = ({
                             version={version}
                             projectId={projectId}
                             showBuildThis={message.id===buildThisMessageId}
+                            queued={queuedIds.has(message.id)}
                         />
+                        {message.id===buildingMessage?.id && (
+                            <MessageLoading projectId={projectId} since={buildingMessage.createdAt}/>
+                        )}
+                        </Fragment>
                     ))}
-                    {isLastMessageUser && <MessageLoading projectId={projectId} since={lastMessage.createdAt}/>}
                     <div ref={bottomRef}/>
                 </div>
             </div>
             {/* {JSON.stringify(messages)} */}
             <div className="relative p-3 pt-1">
                 <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-background pointer-events-none"/>
-                <MessageForm projectId={projectId}/>
+                <MessageForm projectId={projectId} isBuilding={isBuilding} queuedCount={queuedIds.size}/>
             </div>
         </div>
     )

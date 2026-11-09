@@ -4,8 +4,7 @@ import { protectedProcedure, createTRPCRouter, baseProcedure } from "@/trpc/init
 import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
-import { consumeCredits } from "@/lib/usage";
-import { refundCredit } from "@/lib/credit-refund";
+import { BUILD_COST, assertCanAffordBuildOrThrow } from "@/lib/credits";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
@@ -192,13 +191,13 @@ export const projectsRouter = createTRPCRouter({
                 }
             }
 
+            // Credits are charged when the build succeeds (in the pipeline); here we only check
+            // the user can afford it on top of builds still running/queued.
             try{
-                console.log("Attempting to consume credits...");
-                await consumeCredits();
-                console.log("✅ Credits consumed successfully");
+                await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web);
                 } catch(error){
-                    console.error("❌ Credit consumption failed:", error);
-                    // Give back the advanced-reasoning slot if no credit could be spent
+                    console.error("❌ Credit check failed:", error);
+                    // Give back the advanced-reasoning slot if the build can't be afforded
                     if (claimedAdvancedReasoning) {
                         if (previousAdvancedUse) {
                             await prisma.advancedReasoningUsage.update({ where: { userId: ctx.auth.userId }, data: { lastUsedAt: previousAdvancedUse } }).catch(() => {});
@@ -206,6 +205,7 @@ export const projectsRouter = createTRPCRouter({
                             await prisma.advancedReasoningUsage.deleteMany({ where: { userId: ctx.auth.userId } }).catch(() => {});
                         }
                     }
+                    if (error instanceof TRPCError) throw error;
                     if(error instanceof Error){
                         console.error("Error message:", error.message);
                         throw new TRPCError({
@@ -226,22 +226,28 @@ export const projectsRouter = createTRPCRouter({
             const projectName = await generateProjectName(input.value, "web");
             console.log("📝 Generated project name:", projectName);
             
-            // If anything below fails, the build never starts: give the credit back.
-            try {
-                const createdProject= await prisma.project.create({
-                    data: {
-                        userId: ctx.auth.userId,
-                        name: projectName, // Use meaningful name instead of random slug
-                        techStack,
-                        advancedReasoning,
-                        messages: {
-                            create: {
-                                content: withImageMarker(input.value, imageCount), // Save original prompt for display
-                                role: "USER",
-                                type: "RESULT",
-                            }
+            const createdProject= await prisma.project.create({
+                data: {
+                    userId: ctx.auth.userId,
+                    name: projectName, // Use meaningful name instead of random slug
+                    techStack,
+                    advancedReasoning,
+                    messages: {
+                        create: {
+                            content: withImageMarker(input.value, imageCount), // Save original prompt for display
+                            role: "USER",
+                            type: "RESULT",
                         }
                     }
+                }
+            });
+            // If anything below fails, the build never starts: remove the project (nothing was charged).
+            try {
+                // Re-check now that this request reserves credits (parallel requests can't overspend)
+                await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web, { afterCreate: true });
+                const firstMessage = await prisma.message.findFirst({
+                    where: { projectId: createdProject.id, role: "USER" },
+                    select: { id: true },
                 });
 
                 const template = aiquestMode && input.templateId ? getTemplateById(input.templateId) : null;
@@ -258,12 +264,14 @@ export const projectsRouter = createTRPCRouter({
                         value: buildPrompt,
                         projectId: createdProject.id,
                         templateId: input.templateId, // Pass template ID to inngest
-                        creditCost: 1,
+                        userId: ctx.auth.userId,
+                        messageId: firstMessage?.id,
+                        creditCost: BUILD_COST.web,
                     },
                     });
                 return createdProject;
             } catch (error) {
-                await refundCredit(ctx.auth.userId, 1).catch(() => {});
+                await prisma.project.delete({ where: { id: createdProject.id } }).catch(() => {});
                 throw error;
             }
         }),
@@ -363,40 +371,34 @@ export const appProjectsRouter = createTRPCRouter({
 
             await enforceBuildRateLimit(ctx.auth.userId);
 
-            try {
-                await consumeCredits(5);
-            } catch (error) {
-                if (error instanceof Error) {
-                    throw new TRPCError({
-                        code: "BAD_REQUEST",
-                        message: error.message || "Something went wrong",
-                    });
-                } else {
-                    throw new TRPCError({
-                        code: "TOO_MANY_REQUESTS",
-                        message: "You have run out of credits",
-                    });
-                }
-            }
+            // Charged on success by the pipeline; here we only check affordability.
+            await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app);
 
             const imageCount = input.images?.length ?? 0;
             const imageBriefPromise = resolveImageBrief(input.images, input.value); // never rejects
 
             const projectName = await generateProjectName(input.value, "app");
 
-            try {
-                const createdProject = await prisma.appProject.create({
-                    data: {
-                        userId: ctx.auth.userId,
-                        name: projectName,
-                        messages: {
-                            create: {
-                                content: withImageMarker(input.value, imageCount),
-                                role: "USER",
-                                type: "RESULT",
-                            },
+            const createdProject = await prisma.appProject.create({
+                data: {
+                    userId: ctx.auth.userId,
+                    name: projectName,
+                    messages: {
+                        create: {
+                            content: withImageMarker(input.value, imageCount),
+                            role: "USER",
+                            type: "RESULT",
                         },
                     },
+                },
+            });
+            // If anything below fails, the build never starts: remove the project (nothing was charged).
+            try {
+                // Re-check now that this request reserves credits (parallel requests can't overspend)
+                await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app, { afterCreate: true });
+                const firstMessage = await prisma.appMessage.findFirst({
+                    where: { appProjectId: createdProject.id, role: "USER" },
+                    select: { id: true },
                 });
 
                 const imageBrief = await imageBriefPromise;
@@ -406,13 +408,15 @@ export const appProjectsRouter = createTRPCRouter({
                         value: appendImageBrief(appendDesignTheme(input.enhancedValue || input.value, input.themeId, input.styleDna), imageBrief, imageCount),
                         projectId: createdProject.id,
                         isApp: true,
-                        creditCost: 5,
+                        userId: ctx.auth.userId,
+                        messageId: firstMessage?.id,
+                        creditCost: BUILD_COST.app,
                     },
                 });
 
                 return createdProject;
             } catch (error) {
-                await refundCredit(ctx.auth.userId, 5).catch(() => {});
+                await prisma.appProject.delete({ where: { id: createdProject.id } }).catch(() => {});
                 throw error;
             }
         }),
@@ -452,33 +456,23 @@ export const appProjectsRouter = createTRPCRouter({
 
             await enforceBuildRateLimit(ctx.auth.userId);
 
-            try {
-                await consumeCredits(5);
-            } catch (error) {
-                if (error instanceof Error) {
-                    throw new TRPCError({
-                        code: "BAD_REQUEST",
-                        message: error.message || "Something went wrong",
-                    });
-                } else {
-                    throw new TRPCError({
-                        code: "TOO_MANY_REQUESTS",
-                        message: "You have run out of credits",
-                    });
-                }
-            }
+            // Charged on success by the pipeline; here we only check affordability.
+            await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app);
 
+            const imageCount = input.images?.length ?? 0;
+            const imageBrief = await resolveImageBrief(input.images, input.value); // null on failure
+            const createdMessage = await prisma.appMessage.create({
+                data: {
+                    appProjectId: input.projectId,
+                    content: withImageMarker(input.value, imageCount),
+                    role: "USER",
+                    type: "RESULT",
+                },
+            });
+            // If anything below fails, the build never starts: remove the request (nothing was charged).
             try {
-                const imageCount = input.images?.length ?? 0;
-                const imageBrief = await resolveImageBrief(input.images, input.value); // null on failure
-                const createdMessage = await prisma.appMessage.create({
-                    data: {
-                        appProjectId: input.projectId,
-                        content: withImageMarker(input.value, imageCount),
-                        role: "USER",
-                        type: "RESULT",
-                    },
-                });
+                // Re-check now that this request reserves credits (parallel requests can't overspend)
+                await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app, { afterCreate: true });
 
                 // Touch project updatedAt
                 await prisma.appProject.update({
@@ -492,13 +486,15 @@ export const appProjectsRouter = createTRPCRouter({
                         value: appendImageBrief(appendDesignTheme(input.enhancedValue || input.value, input.themeId, input.styleDna), imageBrief, imageCount),
                         projectId: input.projectId,
                         isApp: true,
-                        creditCost: 5,
+                        userId: ctx.auth.userId,
+                        messageId: createdMessage.id,
+                        creditCost: BUILD_COST.app,
                     },
                 });
 
                 return createdMessage;
             } catch (error) {
-                await refundCredit(ctx.auth.userId, 5).catch(() => {});
+                await prisma.appMessage.delete({ where: { id: createdMessage.id } }).catch(() => {});
                 throw error;
             }
         }),

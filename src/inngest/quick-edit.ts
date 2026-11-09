@@ -6,7 +6,8 @@ import { inngest } from "./client";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma";
 import { createBuild, createBuildTracker, recordBuildUsage } from "@/lib/build-tracker";
-import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
+import { BUILD_COST, commitBuildReply, isBuildRequestPending } from "@/lib/credits";
+import { projectBuildCancelOn, projectBuildConcurrency } from "@/lib/build-queue";
 import { validateStaticProject } from "@/lib/static-validator";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
 
@@ -144,19 +145,29 @@ export const quickEditFunction = inngest.createFunction(
   {
     id: "quick-edit",
     retries: 1,
+    // Same queue as code-agent (identical scope + key): one build per project at a time.
+    concurrency: [projectBuildConcurrency()],
+    // ⏹ Stop button: cancels this run and the project's queued runs.
+    cancelOn: [projectBuildCancelOn()],
+    // Nothing is charged unless the edit is saved, so a failure has nothing to refund.
     onFailure: async ({ event, error, step }) => {
-      const original = event.data.event as { data: { projectId: string; creditCost?: number } };
-      const { projectId } = original.data;
-      await step.run("record-failure-and-refund", async () => {
-        const last = await prisma.message.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { role: true } });
-        if (!last || last.role === "ASSISTANT") return;
-        await prisma.message.create({
-          data: { projectId, content: "Something went wrong while making that edit. Your credit has been refunded — please try again.", role: "ASSISTANT", type: "ERROR" },
-        });
-        const ownerId = await getProjectOwnerId(projectId, false);
-        if (ownerId) await refundCredit(ownerId, original.data.creditCost ?? 1);
+      const original = event.data.event as { data: { projectId: string; messageId?: string } };
+      const { projectId, messageId } = original.data;
+      await step.run("record-failure", async () => {
         const running = await prisma.build.findFirst({ where: { projectId, isApp: false, status: "running" }, orderBy: { startedAt: "desc" }, select: { id: true } });
-        if (running) await createBuildTracker(running.id).finish("failed", { error: error?.message ?? "Quick edit failed" });
+        const outcome = await commitBuildReply({
+          projectId,
+          isApp: false,
+          messageId,
+          buildId: running?.id ?? null,
+          creditCost: 0,
+          outcome: "failed",
+          write: (tx, at) =>
+            tx.message.create({
+              data: { projectId, content: "Something went wrong while making that edit. No credits were used — please try again.", role: "ASSISTANT", type: "ERROR", createdAt: at, updatedAt: at },
+            }),
+        });
+        if (running && outcome.status !== "cancelled") await createBuildTracker(running.id).finish("failed", { error: error?.message ?? "Quick edit failed" });
       });
     },
   },
@@ -164,6 +175,11 @@ export const quickEditFunction = inngest.createFunction(
   async ({ event, step }) => {
     const projectId: string = event.data.projectId;
     const userRequest: string = String(event.data.value || "");
+    const messageId: string | undefined = event.data.messageId;
+
+    // ⏹ Queued runs: skip if the request was answered meanwhile (e.g. the user pressed Stop)
+    const stillPending = await step.run("check-request", () => isBuildRequestPending({ projectId, isApp: false, messageId }));
+    if (!stillPending) return { ok: false, skipped: true };
 
     const latest = await step.run("load-latest-version", async () => {
       const project = await prisma.project.findUnique({ where: { id: projectId }, select: { userId: true } });
@@ -214,34 +230,50 @@ ${userRequest}` : userRequest;
     }
     void tracker.event("saving", ok ? "Saving the new version" : "Nothing could be applied");
 
-    await step.run("save-result", async () => {
-      if (!ok) {
-        await prisma.message.create({
-          data: {
-            projectId,
-            role: "ASSISTANT",
-            type: "ERROR",
-            content: "I couldn't apply that change precisely, so nothing was modified. Your credit has been refunded — try describing it a bit differently, or send it as a normal chat message for a full rebuild.",
-          },
-        });
-        if (latest.ownerId) await refundCredit(latest.ownerId, event.data.creditCost ?? 1);
-        return;
-      }
-      const r = result as { summary: string; title: string };
-      const title = (r.title || "Quick edit").replace(/["'`<>]/g, "").slice(0, 60) || "Quick edit";
-      await prisma.message.create({
-        data: {
-          projectId,
-          role: "ASSISTANT",
-          type: "RESULT",
-          content: r.summary || "Done — I made that change.",
-          fragments: {
-            create: { title, sandboxUrl: latest.sandboxUrl, files: outcome!.files as Prisma.InputJsonValue },
-          },
+    // 💾 Save + charge in one transaction; a stopped build is neither saved nor charged.
+    const saved = await step.run("save-result", async () => {
+      const r = ok ? (result as { summary: string; title: string }) : null;
+      const title = r ? (r.title || "Quick edit").replace(/["'`<>]/g, "").slice(0, 60) || "Quick edit" : "";
+      return commitBuildReply({
+        projectId,
+        isApp: false,
+        messageId,
+        buildId,
+        ownerId: event.data.userId ?? latest.ownerId,
+        creditCost: event.data.creditCost ?? BUILD_COST.web,
+        outcome: ok ? "succeeded" : "failed",
+        write: async (tx, at) => {
+          if (!r) {
+            await tx.message.create({
+              data: {
+                projectId,
+                role: "ASSISTANT",
+                type: "ERROR",
+                createdAt: at,
+                updatedAt: at,
+                content: "I couldn't apply that change precisely, so nothing was modified. No credits were used — try describing it a bit differently, or send it as a normal chat message for a full rebuild.",
+              },
+            });
+            return;
+          }
+          await tx.message.create({
+            data: {
+              projectId,
+              role: "ASSISTANT",
+              type: "RESULT",
+              createdAt: at,
+              updatedAt: at,
+              content: r.summary || "Done — I made that change.",
+              fragments: {
+                create: { title, sandboxUrl: latest.sandboxUrl, files: outcome!.files as Prisma.InputJsonValue },
+              },
+            },
+          });
+          await tx.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
         },
       });
-      await prisma.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
     });
+    if (saved.status === "cancelled") return { ok: false, cancelled: true };
 
     await tracker.event(ok ? "done" : "failed", ok ? "Edit applied" : "Edit could not be applied");
     await tracker.finish(ok ? "succeeded" : "failed", { error: ok ? null : "Quick edit could not be applied" });

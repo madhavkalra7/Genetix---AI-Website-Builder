@@ -253,6 +253,8 @@ model Message {
   project  Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fragments Fragment?
   // @@index([createdAt])
+  // Images the user attached to this message ([{ name, dataUrl }]); copied into the project as real files
+  attachments Json?
 }
 
 model Fragment {
@@ -326,6 +328,8 @@ model AppMessage {
   appProjectId String
   appProject   AppProject  @relation(fields: [appProjectId], references: [id], onDelete: Cascade)
   fragments    AppFragment?
+  // Images the user attached to this message ([{ name, dataUrl }]); copied into the project as real files
+  attachments Json?
 }
 
 model AppFragment {

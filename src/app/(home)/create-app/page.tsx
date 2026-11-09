@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Starfield, AuroraBackground } from "@/components/animations/aurora-background";
 import { HTMLPreview } from "@/components/html-preview";
-import { BuildProgress } from "@/components/build-progress";
+import { BuildProgress, StopBuildButton } from "@/components/build-progress";
 import { EditableProjectName } from "@/components/editable-project-name";
 import { 
   SparklesIcon, 
@@ -234,7 +234,7 @@ function CreateAppContent() {
           if (logIntervalRef.current) clearInterval(logIntervalRef.current);
           if (last.fragments) {
             toast.success("🚀 App generated successfully!");
-          } else {
+          } else if (!last.content.startsWith("Stopped")) {
             toast.error("Generation failed");
           }
         }
@@ -245,6 +245,14 @@ function CreateAppContent() {
       if (pollInterval) clearInterval(pollInterval);
     };
   }, [isGenerating, selectedProjectId, refetchMessages]);
+
+  // ⏹ Stop: the build (and anything queued) is cancelled server-side; nothing is charged
+  const handleBuildStopped = () => {
+    setIsGenerating(false);
+    generationStartedAtRef.current = null;
+    if (logIntervalRef.current) clearInterval(logIntervalRef.current);
+    refetchUsage();
+  };
 
   const simulatedLogs = logs.map((log, idx) => (
     <motion.div
@@ -480,7 +488,17 @@ function CreateAppContent() {
                       <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
                       <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                     </div>
-                    <span className="text-[10px] text-white/40 uppercase font-bold">Genetix App Builder Terminal</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] text-white/40 uppercase font-bold">Genetix App Builder Terminal</span>
+                      {selectedProjectId && (
+                        <StopBuildButton
+                          projectId={selectedProjectId}
+                          isApp
+                          onStopped={handleBuildStopped}
+                          className="font-sans text-red-300 dark:text-red-300"
+                        />
+                      )}
+                    </div>
                   </div>
                   <div className="flex-1 overflow-y-auto space-y-2 pr-1 select-none scrollbar-thin">
                     {selectedProjectId ? (
@@ -494,6 +512,7 @@ function CreateAppContent() {
                             : generationStartedAtRef.current
                         }
                         className="border-white/10 bg-white/5 text-white/90 font-sans"
+                        showStop={false}
                         fallback={
                           <div className="space-y-2">
                             {simulatedLogs}

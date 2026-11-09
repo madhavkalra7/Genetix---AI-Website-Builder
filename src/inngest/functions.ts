@@ -11,8 +11,10 @@ import { getTemplateById } from "@/lib/templates";
 import { searchWeb, isWebSearchEnabled, MAX_WEB_SEARCHES_PER_RUN, WEB_SEARCH_INSTRUCTIONS } from "@/lib/web-search";
 import { getReasoningEffort, getResponsesBridgeBaseUrl } from "@/lib/responses-bridge";
 import { validateStaticProject, formatValidationFeedback } from "@/lib/static-validator";
-import { refundCredit, getProjectOwnerId } from "@/lib/credit-refund";
+import { BUILD_COST, commitBuildReply, isBuildRequestPending } from "@/lib/credits";
+import { projectBuildCancelOn, projectBuildConcurrency } from "@/lib/build-queue";
 import { createBuild, createBuildTracker } from "@/lib/build-tracker";
+import type { Prisma } from "@/generated/prisma";
 import { formatKnowledgeBlock } from "@/lib/knowledge";
 import { runBrowserQa, formatBrowserFindings, type BrowserQaResult } from "@/lib/browser-qa";
 import fs from "fs";
@@ -23,42 +25,82 @@ interface AgentState {
   files: { [path: string]: string };
 }
 
+/** Event data sent by the tRPC procedures (userId/messageId are absent on older events). */
+type CodeAgentEventData = {
+  value: string;
+  projectId: string;
+  isApp?: boolean;
+  templateId?: string;
+  userId?: string;
+  messageId?: string;
+  creditCost?: number;
+};
+
+/** Write a build reply (ASSISTANT message) for a website or app project at a given time. */
+export async function writeBuildReply(
+  tx: Prisma.TransactionClient,
+  opts: {
+    isApp: boolean;
+    projectId: string;
+    at: Date;
+    type: "RESULT" | "ERROR";
+    content: string;
+    fragment?: { sandboxUrl: string; title: string; files: Prisma.InputJsonValue };
+  },
+) {
+  const base = { content: opts.content, role: "ASSISTANT" as const, type: opts.type, createdAt: opts.at, updatedAt: opts.at };
+  if (opts.isApp) {
+    await tx.appMessage.create({
+      data: { ...base, appProjectId: opts.projectId, ...(opts.fragment ? { fragments: { create: opts.fragment } } : {}) },
+    });
+  } else {
+    await tx.message.create({
+      data: { ...base, projectId: opts.projectId, ...(opts.fragment ? { fragments: { create: opts.fragment } } : {}) },
+    });
+  }
+}
+
 export const codeAgentFunction = inngest.createFunction(
   {
     id: "code-agent",
+    // 🧵 One build per project at a time, shared with quick-edit: later prompts wait in the queue
+    // and start automatically (loading the previous result + chat history) when this one ends.
+    concurrency: [projectBuildConcurrency()],
+    // ⏹ Stop button (messages.cancelBuild): cancels the running run and the queued ones.
+    cancelOn: [projectBuildCancelOn()],
     // Runs after the function has failed permanently (all retries exhausted).
-    // Without this the UI waits forever (no ASSISTANT message) and the credit is lost.
+    // Without this the UI waits forever (no ASSISTANT message). Nothing was charged (credits are
+    // only charged after a successful save), so there is nothing to refund.
     onFailure: async ({ event, error, step }) => {
-      const original = event.data.event as { data: { projectId: string; isApp?: boolean; creditCost?: number } };
-      const { projectId } = original.data;
+      const original = event.data.event as { data: CodeAgentEventData };
+      const { projectId, messageId } = original.data;
       const isApp = original.data.isApp === true;
-      const creditCost = original.data.creditCost ?? (isApp ? 5 : 1);
       console.error("❌ code-agent failed permanently:", error?.message);
 
-      await step.run("record-failure-and-refund", async () => {
-        // Skip if a result/error was already saved for the latest request (avoids double refunds)
-        const last = isApp
-          ? await prisma.appMessage.findFirst({ where: { appProjectId: projectId }, orderBy: { createdAt: "desc" }, select: { role: true } })
-          : await prisma.message.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { role: true } });
-        if (!last || last.role === "ASSISTANT") return;
-
-        const content = "Something went wrong while building this. Your credit has been refunded — please try again.";
-        if (isApp) {
-          await prisma.appMessage.create({ data: { appProjectId: projectId, content, role: "ASSISTANT", type: "ERROR" } });
-        } else {
-          await prisma.message.create({ data: { projectId, content, role: "ASSISTANT", type: "ERROR" } });
-        }
-        const ownerId = await getProjectOwnerId(projectId, isApp);
-        if (ownerId) await refundCredit(ownerId, creditCost);
-      });
-
-      await step.run("mark-build-failed", async () => {
+      await step.run("record-failure", async () => {
         const running = await prisma.build.findFirst({
           where: { projectId, isApp, status: "running" },
           orderBy: { startedAt: "desc" },
           select: { id: true },
         });
-        if (running) {
+        // Skips if this request was already answered or the user stopped it
+        const outcome = await commitBuildReply({
+          projectId,
+          isApp,
+          messageId,
+          buildId: running?.id ?? null,
+          creditCost: 0,
+          outcome: "failed",
+          write: (tx, at) =>
+            writeBuildReply(tx, {
+              isApp,
+              projectId,
+              at,
+              type: "ERROR",
+              content: "Something went wrong while building this. No credits were used — please try again.",
+            }),
+        });
+        if (running && outcome.status !== "cancelled") {
           await createBuildTracker(running.id).finish("failed", { error: error?.message ?? "Build failed" });
         }
       });
@@ -66,6 +108,16 @@ export const codeAgentFunction = inngest.createFunction(
   },
   { event: "code-agent/run" },
   async ({ event, step }) => {
+    const eventData = event.data as CodeAgentEventData;
+
+    // ⏹ Queued runs: skip if the request was answered meanwhile (e.g. the user pressed Stop)
+    const stillPending = await step.run("check-request", () =>
+      isBuildRequestPending({ projectId: eventData.projectId, isApp: eventData.isApp === true, messageId: eventData.messageId }),
+    );
+    if (!stillPending) {
+      console.log("⏹ Build request was already answered (stopped?) — skipping run");
+      return { skipped: true };
+    }
 
     // Verify API keys are available
     if (!process.env.OPENAI_API_KEY) {
@@ -87,6 +139,12 @@ export const codeAgentFunction = inngest.createFunction(
     const { previousMessages, projectTechStack, previousFiles, useAdvancedReasoning, ownerId, supabase, knowledge } = await step.run("get-project-data", async () => {
       const formattedMessages:Message[]=[];
       const isApp = event.data.isApp === true;
+      // Chat memory = everything up to THIS request: prompts queued after it are not part of it
+      // (they run next, and will see this run's result).
+      const upToRequest = <T extends { id: string }>(all: T[]): T[] => {
+        const index = eventData.messageId ? all.findIndex((m) => m.id === eventData.messageId) : -1;
+        return index === -1 ? all : all.slice(0, index + 1);
+      };
 
       if (isApp) {
         // AppProject logic
@@ -107,7 +165,7 @@ export const codeAgentFunction = inngest.createFunction(
           select: { files: true }
         });
 
-        for (const message of messages) {
+        for (const message of upToRequest(messages)) {
           formattedMessages.push({
             type: "text",
             role: message.role === "ASSISTANT" ? "assistant" : "user",
@@ -143,7 +201,7 @@ export const codeAgentFunction = inngest.createFunction(
           select: { files: true }
         });
 
-        for (const message of messages) {
+        for (const message of upToRequest(messages)) {
           formattedMessages.push({
             type: "text",
             role: message.role === "ASSISTANT" ? "assistant" : "user",
@@ -1028,75 +1086,53 @@ export const codeAgentFunction = inngest.createFunction(
 
     void tracker.event("saving", "Saving the new version");
 
-     await step.run("save-result", async () => {
-      const isApp = event.data.isApp === true;
-
-      if (isApp) {
-        if (isError) {
-          return await prisma.appMessage.create({
-            data: {
-              appProjectId: event.data.projectId,
-              content: "Something went wrong and nothing was generated. Your credit has been refunded — please try again.",
-              role: "ASSISTANT",
-              type: "ERROR",
-            },
-          });
-        }
-        
-        return prisma.appMessage.create({
-          data: {
-            appProjectId: event.data.projectId,
-            content: generateResponse(),
-            role: "ASSISTANT",
-            type: "RESULT",
-            fragments: {
-              create: {
-                sandboxUrl: sandboxUrl,
-                title: generateFragmentTitle(),
-                files: result.state.data.files as any,
-              },
-            },
-          },
-        });
-      } else {
-        if (isError) {
-          // Only show error if both summary and files are missing
-          return await prisma.message.create({
-            data: {
-              projectId: event.data.projectId,
-              content: "Something went wrong and nothing was generated. Your credit has been refunded — please try again.",
-              role: "ASSISTANT",
-              type: "ERROR",
-            },
-          });
-        }
-        
-        return prisma.message.create({
-          data: {
-            projectId: event.data.projectId,
-            content: generateResponse(),
-            role: "ASSISTANT",
-            type: "RESULT",
-            fragments: {
-              create: {
-                sandboxUrl: sandboxUrl,
-                title: generateFragmentTitle(),
-                files: result.state.data.files,
-              },
-            },
-          },
-        });
-      }
+    // 💾 Save the reply and charge credits — exactly once, in one transaction (commitBuildReply):
+    // claims the Build row first, so a build the user stopped is neither saved nor charged,
+    // and only a successful build is charged (errors/failures cost nothing).
+    const isAppRun = event.data.isApp === true;
+    const saved = await step.run("save-result", async () => {
+      return commitBuildReply({
+        projectId: event.data.projectId,
+        isApp: isAppRun,
+        messageId: eventData.messageId,
+        buildId,
+        ownerId: eventData.userId ?? ownerId,
+        creditCost: eventData.creditCost ?? (isAppRun ? BUILD_COST.app : BUILD_COST.web),
+        outcome: isError ? "failed" : "succeeded",
+        write: (tx, at) =>
+          isError
+            ? writeBuildReply(tx, {
+                isApp: isAppRun,
+                projectId: event.data.projectId,
+                at,
+                type: "ERROR",
+                content: "Something went wrong and nothing was generated. No credits were used — please try again.",
+              })
+            : writeBuildReply(tx, {
+                isApp: isAppRun,
+                projectId: event.data.projectId,
+                at,
+                type: "RESULT",
+                content: generateResponse(),
+                fragment: {
+                  sandboxUrl,
+                  title: generateFragmentTitle(),
+                  files: result.state.data.files as Prisma.InputJsonValue,
+                },
+              }),
+      });
     });
 
-    // Nothing was produced: refund the credit (after the ERROR message is saved, so the
-    // onFailure handler won't refund a second time).
-    if (isError) {
-      await step.run("refund-credit", async () => {
-        const isApp = event.data.isApp === true;
-        const ownerId = await getProjectOwnerId(event.data.projectId, isApp);
-        if (ownerId) await refundCredit(ownerId, event.data.creditCost ?? (isApp ? 5 : 1));
+    if (saved.status === "cancelled") {
+      console.log("⏹ Build was stopped by the user — result discarded, nothing charged");
+      await step.run("shutdown-sandbox", async () => {
+        try {
+          await Sandbox.kill(sandboxId);
+        } catch (e) {
+          console.warn("⚠️ Could not shut down sandbox:", e);
+        }
       });
+      return { cancelled: true };
     }
 
     await tracker.event(isError ? "failed" : "done", isError ? "Nothing was generated" : "Your project is ready");

@@ -210,7 +210,8 @@ export const ProjectView = ({ projectId }: Props) => {
                 {!!activeFragment ? (
                   <FragmentWeb data={activeFragment} projectId={projectId} onEditSent={handleEditSent} />
                 ) : (
-                  <ProjectLoading className="w-full h-full" />
+                  // Full loader only while a build is actually running; otherwise a calm placeholder
+                  <ProjectLoading className="w-full h-full" variant={isBuilding ? "building" : "idle"} />
                 )}
               </TabsContent>
               <TabsContent value="code" className="min-h-0 h-full flex-1">
@@ -233,7 +234,7 @@ export const ProjectView = ({ projectId }: Props) => {
                     />
                   </div>
                 ) : (
-                  <ProjectLoading className="w-full h-full" />
+                  <ProjectLoading className="w-full h-full" variant={isBuilding ? "building" : "idle"} />
                 )}
               </TabsContent>
             </Tabs>

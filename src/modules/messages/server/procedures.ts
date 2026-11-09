@@ -3,8 +3,8 @@ import { z } from "zod";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { inngest } from "@/inngest/client";
 import { TRPCError } from "@trpc/server";
-import { consumeCredits } from "@/lib/usage";
-import { refundCredit } from "@/lib/credit-refund";
+import { BUILD_COST, assertCanAffordBuildOrThrow } from "@/lib/credits";
+import { getPendingBuildMessages, stoppedMessageText } from "@/lib/build-queue";
 import { enforceBuildRateLimit } from "@/lib/rate-limit";
 import { appendImageBrief, imagesInputSchema, resolveImageBrief, withImageMarker } from "@/lib/image-brief";
 export const messagesRouter = createTRPCRouter({
@@ -62,31 +62,23 @@ export const messagesRouter = createTRPCRouter({
 
             await enforceBuildRateLimit(ctx.auth.userId);
 
-            try{
-                await consumeCredits();
-            } catch(error){
-                if(error instanceof Error){
-                    throw new TRPCError({
-                        code:"BAD_REQUEST", message:error.message
-                    });
-                } else{
-                    throw new TRPCError({
-                        code:"TOO_MANY_REQUESTS", message:"You have ran out of credits"
-                    });
-                }
-            }
-            // If anything below fails, the build never starts: give the credit back.
+            // Credits are charged when the build succeeds (in the pipeline). Here we only check
+            // that the user can afford it on top of builds still running/queued.
+            await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web);
+
+            const imageCount = input.images?.length ?? 0;
+            const imageBrief = await resolveImageBrief(input.images, input.value);
+            const createdMessage=await prisma.message.create({
+                data: {
+                    projectId: input.projectId,
+                    content: withImageMarker(input.value, imageCount),
+                    role: "USER",
+                    type: "RESULT",
+                },
+            });
             try {
-                const imageCount = input.images?.length ?? 0;
-                const imageBrief = await resolveImageBrief(input.images, input.value);
-                const createdMessage=await prisma.message.create({
-                    data: {
-                        projectId: input.projectId,
-                        content: withImageMarker(input.value, imageCount),
-                        role: "USER",
-                        type: "RESULT",
-                    },
-                });
+                // Re-check now that this request reserves credits (parallel requests can't overspend)
+                await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web, { afterCreate: true });
                 // Quick edits only for static projects that already have a version to edit
                 const STATIC_STACKS = ["html-css-js", "vue-nuxt", "angular", "svelte-kit"];
                 const canQuickEdit =
@@ -97,19 +89,58 @@ export const messagesRouter = createTRPCRouter({
                         where: { message: { projectId: input.projectId } },
                         select: { id: true },
                     }));
+                // Runs for one project execute one at a time (Inngest concurrency): if a build is
+                // running, this one waits in the queue and starts with its result + chat history.
                 await inngest.send({
                     name: canQuickEdit ? "code-agent/quick-edit" : "code-agent/run",
                     data: {
                         value: appendImageBrief(input.value, imageBrief, imageCount),
                         projectId: input.projectId,
-                        creditCost: 1,
+                        userId: ctx.auth.userId,
+                        messageId: createdMessage.id,
+                        creditCost: BUILD_COST.web,
                     },
                     });
                 return createdMessage;
             } catch (error) {
-                await refundCredit(ctx.auth.userId).catch(() => {});
+                // The build never started: remove the request so it doesn't hang as "Building…"
+                await prisma.message.delete({ where: { id: createdMessage.id } }).catch(() => {});
                 throw error;
             }
+        }),
+    // ⏹ Stop: cancel the running build AND every queued request for this project (website or
+    // app). Nothing is charged for stopped builds (credits are only charged on success).
+    cancelBuild: protectedProcedure
+        .input(z.object({ projectId: z.string().min(1), isApp: z.boolean().optional().default(false) }))
+        .mutation(async ({ input, ctx }) => {
+            const owned = input.isApp
+                ? await prisma.appProject.findFirst({ where: { id: input.projectId, userId: ctx.auth.userId }, select: { id: true } })
+                : await prisma.project.findFirst({ where: { id: input.projectId, userId: ctx.auth.userId }, select: { id: true } });
+            if (!owned) throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+
+            // 1. Cancel the running run and every queued run for this project (cancelOn in both functions)
+            await inngest.send({ name: "code-agent/cancel", data: { projectId: input.projectId, isApp: input.isApp } });
+
+            // 2. Mark running Build rows cancelled. The pipeline's save step claims the row
+            //    (running → succeeded) in the same transaction that saves + charges, so exactly one
+            //    side wins: a build that already finished keeps its result (and its charge).
+            const { count: stoppedBuilds } = await prisma.build.updateMany({
+                where: { projectId: input.projectId, isApp: input.isApp, status: "running" },
+                data: { status: "cancelled", stage: "failed", error: "Stopped by user", finishedAt: new Date() },
+            });
+
+            // 3. Answer every request still waiting with ONE notice (clears "Building…"/"Queued")
+            const select = { id: true, role: true, type: true, fragments: { select: { id: true } } } as const;
+            const messages = input.isApp
+                ? await prisma.appMessage.findMany({ where: { appProjectId: input.projectId }, orderBy: { createdAt: "asc" }, select })
+                : await prisma.message.findMany({ where: { projectId: input.projectId }, orderBy: { createdAt: "asc" }, select });
+            const pending = getPendingBuildMessages(messages);
+            if (pending.length > 0) {
+                const data = { content: stoppedMessageText(pending.length), role: "ASSISTANT" as const, type: "ERROR" as const };
+                if (input.isApp) await prisma.appMessage.create({ data: { ...data, appProjectId: input.projectId } });
+                else await prisma.message.create({ data: { ...data, projectId: input.projectId } });
+            }
+            return { cancelledRequests: pending.length, stoppedBuilds };
         }),
     // ↩️ Revert: delete the latest version AND everything said since the previous version
     // (the prompt that produced it, plan chats, the reply + fragment), returning the project

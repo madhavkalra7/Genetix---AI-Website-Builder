@@ -15,11 +15,16 @@ import { useRouter } from "next/navigation";
 import { IMAGE_ATTACH_HINT, ImageAttachButton, ImageAttachThumbnails, ImageDropOverlay, useImageAttachments } from "@/components/image-attach";
 import { SpeechInputButton, VoiceLanguageSelect } from "@/components/speech-input-button";
 import { VOICE_LANGUAGES, VOICE_LANG_STORAGE_KEY } from "@/lib/feature-prompts";
+import { StopBuildButton } from "@/components/build-progress";
 
 
 
 interface Props {
     projectId: string;
+    /** A build is running: show Stop next to send (the form stays usable to queue more) */
+    isBuilding?: boolean;
+    /** Requests waiting behind the running build */
+    queuedCount?: number;
 };
 
 type ChatMode = "build" | "plan";
@@ -32,7 +37,7 @@ const formSchema=z.object({
                     .max(10000,{ message: "Message is too long"}),
 })
 
-export const MessageForm=({ projectId }: Props) => {
+export const MessageForm=({ projectId, isBuilding=false, queuedCount=0 }: Props) => {
     
 
     const trpc=useTRPC();
@@ -64,6 +69,9 @@ export const MessageForm=({ projectId }: Props) => {
     const createMessage=useMutation(trpc.messages.create.mutationOptions({
         onSuccess:()=>{
             form.reset();
+            if(isBuilding){
+                toast.info("Queued — it starts automatically after the current build.");
+            }
             queryClient.invalidateQueries(
                 trpc.messages.getMany.queryOptions({ projectId }),
             );
@@ -194,7 +202,11 @@ export const MessageForm=({ projectId }: Props) => {
                                 onBlur={() => setIsFocused(false)}
                                 onPaste={isPlanMode ? undefined : attachments.onPaste}
                                 className="pt-4 resize-none border-none w-full outline-none bg-transparent"
-                                placeholder={isPlanMode ? "Chat with Genetix to plan your project…" : `What would you like to build?\n${IMAGE_ATTACH_HINT}`}
+                                placeholder={isPlanMode
+                                    ? "Chat with Genetix to plan your project…"
+                                    : isBuilding
+                                        ? `Building… send another change and it will be queued${queuedCount>0 ? ` (${queuedCount} waiting)` : ""}\n${IMAGE_ATTACH_HINT}`
+                                        : `What would you like to build?\n${IMAGE_ATTACH_HINT}`}
                                 onKeyDown={(e)=>{
                                     if(e.key==="Enter" && (e.ctrlKey || e.metaKey)) {
                                         e.preventDefault();
@@ -271,12 +283,20 @@ export const MessageForm=({ projectId }: Props) => {
                                 ))}
                             </div>
                         )}
+                        {isBuilding && (
+                            <StopBuildButton
+                                projectId={projectId}
+                                variant="icon"
+                                className={cn(!canPlan && "ml-auto")}
+                            />
+                        )}
                         <Button
                             disabled={isButtonDisabled}
-                            aria-label={isPlanMode ? "Send to Genetix" : "Build"}
+                            aria-label={isPlanMode ? "Send to Genetix" : isBuilding ? "Queue this change" : "Build"}
+                            title={!isPlanMode && isBuilding ? "Queue this change (starts after the current build)" : undefined}
                             className={cn(
                                 "size-8 rounded-full shrink-0",
-                                !canPlan && "ml-auto",
+                                !canPlan && !isBuilding && "ml-auto",
                                 isButtonDisabled && "bg-muted-foreground border"
                             )}
                         >

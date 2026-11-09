@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { CheckIcon, Loader2Icon, XIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckIcon, Loader2Icon, SquareIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
 import { cn } from "@/lib/utils";
+import { Hint } from "@/components/ui/hint";
 
 type BuildEvent = { at: string; stage: string; detail?: string };
 
@@ -76,6 +78,73 @@ const offsetLabel = (at: string, start: number) => {
     return `+${formatDuration(t - start)}`;
 };
 
+/**
+ * ⏹ Stop the running build of a project and everything queued behind it (no confirm).
+ * Nothing is charged for stopped builds — credits are only charged when a build succeeds.
+ */
+export function useStopBuild({ projectId, isApp = false, onStopped }: { projectId: string; isApp?: boolean; onStopped?: () => void }) {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+    return useMutation(
+        trpc.messages.cancelBuild.mutationOptions({
+            onSuccess: async () => {
+                toast.success("Stopped — no credits used");
+                onStopped?.();
+                await Promise.all([
+                    isApp
+                        ? queryClient.invalidateQueries(trpc.appProjects.getMessages.queryFilter({ projectId }))
+                        : queryClient.invalidateQueries(trpc.messages.getMany.queryFilter({ projectId })),
+                    queryClient.invalidateQueries(trpc.builds.getLatest.queryFilter({ projectId, isApp })),
+                    queryClient.invalidateQueries(trpc.usage.status.queryFilter()),
+                ]);
+            },
+            onError: (error) => {
+                toast.error(error.message || "Couldn't stop the build. Please try again.");
+            },
+        }),
+    );
+}
+
+interface StopBuildButtonProps {
+    projectId: string;
+    isApp?: boolean;
+    onStopped?: () => void;
+    /** "icon": round button next to send; "inline": small labelled action */
+    variant?: "icon" | "inline";
+    className?: string;
+}
+
+/** Red-tinted Stop control (lucide SquareIcon) with a "Stop building" tooltip. */
+export function StopBuildButton({ projectId, isApp = false, onStopped, variant = "inline", className }: StopBuildButtonProps) {
+    const stop = useStopBuild({ projectId, isApp, onStopped });
+    const pending = stop.isPending;
+    const onClick = () => {
+        if (!pending) stop.mutate({ projectId, isApp });
+    };
+    return (
+        <Hint text="Stop building">
+            <button
+                type="button"
+                onClick={onClick}
+                disabled={pending}
+                aria-label="Stop building"
+                className={cn(
+                    "inline-flex shrink-0 items-center justify-center gap-1 border border-red-500/40 bg-red-500/10 text-red-600 transition-colors hover:bg-red-500/20 disabled:opacity-60 dark:text-red-400",
+                    variant === "icon" ? "size-8 rounded-full" : "h-6 rounded-md px-2 text-xs font-medium",
+                    className,
+                )}
+            >
+                {pending ? (
+                    <Loader2Icon className={cn("animate-spin", variant === "icon" ? "size-4" : "size-3")} aria-hidden />
+                ) : (
+                    <SquareIcon className={cn("fill-current", variant === "icon" ? "size-3.5" : "size-2.5")} aria-hidden />
+                )}
+                {variant === "inline" && <span>Stop</span>}
+            </button>
+        </Hint>
+    );
+}
+
 interface BuildProgressProps {
     projectId: string;
     isApp?: boolean;
@@ -84,9 +153,13 @@ interface BuildProgressProps {
     /** Rendered while no build row for this run exists yet (e.g. the pipeline hasn't started). */
     fallback?: ReactNode;
     className?: string;
+    /** Show a small "Stop" action while the build runs (default true) */
+    showStop?: boolean;
+    /** Called after the build was stopped */
+    onStopped?: () => void;
 }
 
-export function BuildProgress({ projectId, isApp = false, since, fallback, className }: BuildProgressProps) {
+export function BuildProgress({ projectId, isApp = false, since, fallback, className, showStop = true, onStopped }: BuildProgressProps) {
     const trpc = useTRPC();
     const sinceMs = since ? new Date(since).getTime() : null;
 
@@ -149,6 +222,7 @@ export function BuildProgress({ projectId, isApp = false, since, fallback, class
                             {formatDuration(now - sinceMs)}
                         </span>
                     )}
+                    {showStop && <StopBuildButton projectId={projectId} isApp={isApp} onStopped={onStopped} />}
                 </div>
             </div>
         );
@@ -156,12 +230,14 @@ export function BuildProgress({ projectId, isApp = false, since, fallback, class
 
     const start = new Date(build.startedAt).getTime();
     const end = build.finishedAt ? new Date(build.finishedAt).getTime() : now;
-    const failed = view.status === "failed" || view.current.stage === "failed";
+    const failed = view.status === "failed" || view.status === "cancelled" || view.current.stage === "failed";
     const finished = view.status !== "running";
     const hiddenCount = Math.max(0, view.done.length - MAX_VISIBLE_DONE);
     const visibleDone = view.done.slice(hiddenCount);
 
-    const currentLabel = failed
+    const currentLabel = view.status === "cancelled"
+        ? "Stopped — no credits used"
+        : failed
         ? "Build failed"
         : finished
           ? "Finishing up…"
@@ -176,10 +252,15 @@ export function BuildProgress({ projectId, isApp = false, since, fallback, class
         >
             <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border/60">
                 <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {failed ? "Build stopped" : finished ? "Build complete" : "Building"}
+                    {view.status === "cancelled" ? "Stopped" : failed ? "Build stopped" : finished ? "Build complete" : "Building"}
                 </span>
-                <span className="tabular-nums text-xs text-muted-foreground" title="Elapsed time">
-                    {formatDuration(end - start)}
+                <span className="flex items-center gap-2">
+                    <span className="tabular-nums text-xs text-muted-foreground" title="Elapsed time">
+                        {formatDuration(end - start)}
+                    </span>
+                    {showStop && !finished && (
+                        <StopBuildButton projectId={projectId} isApp={isApp} onStopped={onStopped} />
+                    )}
                 </span>
             </div>
 
