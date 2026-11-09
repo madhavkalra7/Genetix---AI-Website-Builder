@@ -8,6 +8,7 @@ import {
   type StyleDna,
 } from "@/lib/style-dna";
 import { StyleDnaFetchError, safeFetchText } from "./safe-fetch";
+import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
 
 export const MAX_HTML_BYTES = 1_500_000;
 export const MAX_CSS_BYTES = 400_000;
@@ -45,7 +46,7 @@ async function callModel(summary: string): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS);
   try {
-    const res = await fetch("https://api.openai.com/v1/responses", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       signal: controller.signal,
@@ -57,7 +58,7 @@ async function callModel(summary: string): Promise<unknown> {
         input: [{ role: "user", content: [{ type: "input_text", text: `CSS signal summary:\n"""\n${summary}\n"""` }] }],
         text: { format: { type: "json_schema", name: "style_dna", strict: true, schema: STYLE_DNA_JSON_SCHEMA } },
       }),
-    });
+    }, TOKEN_ESTIMATES.chat);
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
       throw new Error(`Style DNA model request failed (${res.status}): ${detail.slice(0, 300)}`);

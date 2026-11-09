@@ -36,6 +36,7 @@ export default function AdminBuildsPage() {
   const enabled = !!user && !!isAdmin;
 
   const stats = useQuery(trpc.admin.builds.stats.queryOptions({ days }, { enabled }));
+  const daily = useQuery(trpc.admin.builds.dailyTokens.queryOptions(undefined, { enabled, refetchInterval: 60_000 }));
 
   const builds = useInfiniteQuery(
     trpc.admin.builds.list.infiniteQueryOptions(
@@ -116,6 +117,7 @@ export default function AdminBuildsPage() {
               onClick={() => {
                 stats.refetch();
                 builds.refetch();
+                daily.refetch();
               }}
               className="h-10 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/10 cursor-pointer"
               title="Refresh"
@@ -131,6 +133,27 @@ export default function AdminBuildsPage() {
             </Link>
           </div>
         </header>
+
+        {/* Today's OpenAI key usage vs the daily cap (AI work pauses at the cap until 00:00 UTC) */}
+        {daily.data ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {daily.data.groups.map((g) => {
+              const cap = Math.max(1, g.cap);
+              const pct = Math.min(100, (g.used / cap) * 100);
+              return (
+                <StatCard
+                  key={g.group}
+                  label={`Today's tokens · ${g.group === "large" ? "Sol (large)" : "Terra (small)"}`}
+                  value={`${formatTokens(g.used)} / ${formatTokens(cap)} (${pct.toFixed(0)}%)`}
+                  sub={`${g.requests} calls · ${pct >= 100 ? "PAUSED · " : ""}resets ${daily.data.resetLabel}`}
+                  tone={pct >= 100 ? "bad" : pct >= 80 ? "default" : "good"}
+                />
+              );
+            })}
+          </div>
+        ) : daily.error ? (
+          <p className="text-red-300 text-sm">Daily token meter unavailable: {daily.error.message}</p>
+        ) : null}
 
         {/* Stat cards */}
         {stats.isLoading ? (

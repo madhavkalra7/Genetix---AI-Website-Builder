@@ -977,6 +977,8 @@ export const codeAgentFunction = inngest.createFunction(
       // Short title / reply after each build: Terra with reasoning off (fast, on the free allowance)
       model: openai({
         model: "gpt-6.1-terra",
+        // through the bridge so these calls count toward the build + daily token meter
+        ...(reasoningBridgeUrl ? { baseUrl: reasoningBridgeUrl } : {}),
         defaultParameters: {
           // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
           reasoning_effort: "none",
@@ -991,6 +993,8 @@ export const codeAgentFunction = inngest.createFunction(
       // Short title / reply after each build: Terra with reasoning off (fast, on the free allowance)
       model: openai({
         model: "gpt-6.1-terra",
+        // through the bridge so these calls count toward the build + daily token meter
+        ...(reasoningBridgeUrl ? { baseUrl: reasoningBridgeUrl } : {}),
         defaultParameters: {
           // @ts-ignore - reasoning_effort is not in @inngest/agent-kit types
           reasoning_effort: "none",

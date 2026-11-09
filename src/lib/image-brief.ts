@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
 
 /**
  * Image / screenshot / sketch → app.
@@ -62,7 +63,7 @@ export async function generateImageBrief(images: string[], userText: string): Pr
   const timer = setTimeout(() => controller.abort(), BRIEF_TIMEOUT_MS);
 
   try {
-    const res = await fetch("https://api.openai.com/v1/responses", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +88,7 @@ export async function generateImageBrief(images: string[], userText: string): Pr
           },
         ],
       }),
-    });
+    }, TOKEN_ESTIMATES.vision);
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { assertDailyBudget, recordUsageObject, TOKEN_ESTIMATES } from "@/lib/token-budget";
 import { getRequestUserId } from "@/lib/request-auth";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -62,11 +63,13 @@ async function generateWithGPT(prompt: string, systemPrompt?: string): Promise<s
       content: prompt,
     });
 
+    await assertDailyBudget("o4-mini", TOKEN_ESTIMATES.vision);
     const response = await openai.chat.completions.create({
       model: "o4-mini",
       messages,
       max_completion_tokens: 16000,
     });
+    await recordUsageObject("o4-mini", response.usage);
     return response.choices[0]?.message?.content || null;
   } catch (error) {
     console.error("OpenAI API error:", error);

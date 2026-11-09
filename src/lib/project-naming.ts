@@ -1,3 +1,4 @@
+import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
 // Project naming: an AI-generated, specific name at creation time, with a fast
 // keyword-based fallback. (Naming happens BEFORE the build so users see a good name
 // immediately, and a later automatic rename can never overwrite a name they edited.)
@@ -56,7 +57,7 @@ export async function generateProjectName(prompt: string, kind: "web" | "app" = 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), NAME_TIMEOUT_MS);
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
@@ -76,7 +77,7 @@ export async function generateProjectName(prompt: string, kind: "web" | "app" = 
           { role: "user", content: prompt.slice(0, 2000) },
         ],
       }),
-    });
+    }, TOKEN_ESTIMATES.small);
     if (!res.ok) return fallback;
     const data = await res.json();
     const name = sanitizeProjectName(String(data?.choices?.[0]?.message?.content ?? ""));

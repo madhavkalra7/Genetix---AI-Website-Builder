@@ -458,3 +458,16 @@ model ChallengeEntry {
   @@index([challengeId])
   @@index([userId])
 }
+
+// Daily OpenAI token meter (UTC day, like OpenAI's free allowance). One row per day per model
+// group ("small" = Luna/Terra-class, "large" = Sol-class). Genetix pauses AI work when the limit
+// for a group is reached, until 00:00 UTC.
+model DailyTokenUsage {
+  day       String   // "YYYY-MM-DD" (UTC)
+  group     String   // "small" | "large"
+  tokens    Int      @default(0)
+  requests  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@id([day, group])
+}

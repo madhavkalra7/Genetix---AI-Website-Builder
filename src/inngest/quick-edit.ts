@@ -10,6 +10,7 @@ import { BUILD_COST, commitBuildReply, isBuildRequestPending } from "@/lib/credi
 import { projectBuildCancelOn, projectBuildConcurrency } from "@/lib/build-queue";
 import { validateStaticProject } from "@/lib/static-validator";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
+import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
 
 const QUICK_MODEL = process.env.QUICK_EDIT_MODEL || "gpt-6.1-terra";
 const MAX_CONTEXT_CHARS = 150_000;
@@ -76,7 +77,7 @@ export async function callEditor(request: string, files: Record<string, string>,
     },
   ];
   try {
-    const res = await fetch("https://api.openai.com/v1/responses", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       body: JSON.stringify({
@@ -87,7 +88,7 @@ export async function callEditor(request: string, files: Record<string, string>,
         input,
         text: { format: { type: "json_schema", name: "quick_edits", strict: true, schema: EDIT_SCHEMA } },
       }),
-    });
+    }, TOKEN_ESTIMATES.quickEdit);
     const data = await res.json().catch(() => null);
     if (!res.ok || !data) return { error: `Model request failed (HTTP ${res.status})` };
     if (buildId && data.usage) {

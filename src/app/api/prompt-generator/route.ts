@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionByToken } from '@/lib/auth';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { meteredOpenAIFetch, TOKEN_ESTIMATES, isDailyLimitResponse } from "@/lib/token-budget";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ FORMAT (concise mode): one focused paragraph of 4 to 7 sentences, no lists or he
   const user = `User's request:\n${idea}`;
 
     // Call OpenAI Chat Completions for stability
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,10 +80,13 @@ FORMAT (concise mode): one focused paragraph of 4 to 7 sentences, no lists or he
           : { temperature: isLimitless ? 0.7 : 0.4 }),
         max_completion_tokens: isLimitless ? 4000 : 1500,
       }),
-    });
+    }, TOKEN_ESTIMATES.chat);
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      if (isDailyLimitResponse(res.status, err)) {
+        return NextResponse.json({ error: err.error.message }, { status: 429 });
+      }
       // Log upstream details server-side only; don't leak them to the client
       console.error("Prompt generator upstream error:", res.status, err?.error?.message || err?.message);
       return NextResponse.json({ error: "Couldn't generate a prompt right now. Please try again." }, { status: 502 });

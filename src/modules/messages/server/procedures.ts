@@ -4,6 +4,7 @@ import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { inngest } from "@/inngest/client";
 import { TRPCError } from "@trpc/server";
 import { BUILD_COST, assertCanAffordBuildOrThrow } from "@/lib/credits";
+import { ensureDailyTokenBudget } from "@/lib/token-budget-guard";
 import { getPendingBuildMessages, stoppedMessageText } from "@/lib/build-queue";
 import { enforceBuildRateLimit } from "@/lib/rate-limit";
 import { appendImageBrief, imagesInputSchema, resolveImageBrief, withImageMarker } from "@/lib/image-brief";
@@ -65,6 +66,10 @@ export const messagesRouter = createTRPCRouter({
             // Credits are charged when the build succeeds (in the pipeline). Here we only check
             // that the user can afford it on top of builds still running/queued.
             await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web);
+            // Daily OpenAI token meter: pause new AI work until the 00:00 UTC reset when the key is out of free tokens
+            await ensureDailyTokenBudget(input.mode === "quick" ? "quickEdit" : "build", {
+                advanced: input.mode !== "quick" && existingProject.advancedReasoning,
+            });
 
             const imageCount = input.images?.length ?? 0;
             const imageBrief = await resolveImageBrief(input.images, input.value);

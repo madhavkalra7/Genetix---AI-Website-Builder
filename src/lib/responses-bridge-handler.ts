@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "crypto";
 import { chatToResponsesRequest, responsesToChatResponse } from "@/lib/responses-bridge";
 import { BUILD_TOKEN_BUDGET, getBuildTokenTotal, recordBuildUsage } from "@/lib/build-tracker";
+import { recordDailyTokens, remainingDailyTokens } from "@/lib/token-budget";
 
 function isAuthorized(req: NextRequest): boolean {
   const expected = process.env.OPENAI_API_KEY;
@@ -41,11 +42,13 @@ export async function handleBridgeRequest(req: NextRequest, buildId?: string) {
     responsesBody.prompt_cache_key = "gx-" + createHash("sha256").update(String(responsesBody.model) + systemText).digest("hex").slice(0, 24);
   }
 
-  // Per-build token budget: once exceeded, force the agent to wrap up (no more tool calls).
-  if (buildId) {
-    const used = await getBuildTokenTotal(buildId).catch(() => 0);
-    if (used >= BUILD_TOKEN_BUDGET) {
-      console.warn(`💸 Build ${buildId} hit its token budget (${used}/${BUILD_TOKEN_BUDGET}); forcing wrap-up`);
+  // Per-build token budget OR today's daily OpenAI limit: once exceeded, force the agent to wrap
+  // up (no more tool calls) so the build still saves what it has.
+  const dailyExceeded = (await remainingDailyTokens(String(responsesBody.model))) <= 0;
+  if (buildId || dailyExceeded) {
+    const used = buildId ? await getBuildTokenTotal(buildId).catch(() => 0) : 0;
+    if (used >= BUILD_TOKEN_BUDGET || dailyExceeded) {
+      console.warn(`💸 ${dailyExceeded ? "Daily token limit reached" : `Build ${buildId} hit its token budget (${used}/${BUILD_TOKEN_BUDGET})`}; forcing wrap-up`);
       responsesBody.input = [...(responsesBody.input || []), { role: "developer", content: BUDGET_MESSAGE }];
       if (responsesBody.tools) responsesBody.tool_choice = "none";
     }
@@ -78,6 +81,7 @@ export async function handleBridgeRequest(req: NextRequest, buildId?: string) {
     reasoning: data.usage?.output_tokens_details?.reasoning_tokens ?? 0,
   };
   if (buildId) await recordBuildUsage(buildId, usage);
+  await recordDailyTokens(data.model ?? String(responsesBody.model), usage.input + usage.output);
 
   console.log(
     `🧠 Responses bridge${buildId ? ` [${buildId}]` : ""}: ${data.model} effort=${responsesBody.reasoning?.effort ?? "none"} ` +

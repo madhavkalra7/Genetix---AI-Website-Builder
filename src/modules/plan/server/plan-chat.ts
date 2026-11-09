@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { formatKnowledgeBlock, loadProjectKnowledge } from "@/lib/knowledge";
+import { meteredOpenAIFetch, TOKEN_ESTIMATES, isDailyLimitResponse } from "@/lib/token-budget";
 
 /**
  * "Plan / Chat" mode: one cheap chat completion (no agents, no sandbox, no credits) that helps
@@ -72,7 +73,7 @@ export async function generatePlanReply(opts: {
 
   let reply = "";
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -85,15 +86,19 @@ export async function generatePlanReply(opts: {
         ...(/^(gpt-6|gpt-5|o\d)/.test(model) ? { reasoning_effort: "low" } : { temperature: 0.6 }),
         max_completion_tokens: 1200,
       }),
-    });
+    }, TOKEN_ESTIMATES.chat);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      if (isDailyLimitResponse(res.status, err)) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: err.error.message });
+      }
       console.error("[plan] upstream error:", res.status, err?.error?.message || err?.message);
     } else {
       const data = await res.json();
       reply = String(data?.choices?.[0]?.message?.content || "").trim();
     }
   } catch (e) {
+    if (e instanceof TRPCError) throw e; // e.g. daily AI limit reached — show that message
     console.error("[plan] request failed:", e instanceof Error ? e.message : e);
   }
 

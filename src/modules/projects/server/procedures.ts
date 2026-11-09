@@ -5,6 +5,7 @@ import { inngest } from "@/inngest/client";
 import { generateSlug} from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 import { BUILD_COST, assertCanAffordBuildOrThrow } from "@/lib/credits";
+import { ensureDailyTokenBudget } from "@/lib/token-budget-guard";
 import { isAiquestUser } from '@/lib/aiquest';
 import { getTemplateById } from '@/lib/templates';
 import { generateProjectName, sanitizeProjectName } from '@/lib/project-naming';
@@ -123,6 +124,7 @@ export const projectsRouter = createTRPCRouter({
                 if (aiquestMode) {
                     throw new TRPCError({ code: "FORBIDDEN", message: "Plan mode is unavailable in World 6." });
                 }
+                await ensureDailyTokenBudget("chat");
                 if (input.value.length > 4000) {
                     throw new TRPCError({ code: "BAD_REQUEST", message: "Message is too long for planning (max 4000 characters)" });
                 }
@@ -195,6 +197,7 @@ export const projectsRouter = createTRPCRouter({
             // the user can afford it on top of builds still running/queued.
             try{
                 await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.web);
+                await ensureDailyTokenBudget("build", { advanced: advancedReasoning });
                 } catch(error){
                     console.error("❌ Credit check failed:", error);
                     // Give back the advanced-reasoning slot if the build can't be afforded
@@ -373,6 +376,7 @@ export const appProjectsRouter = createTRPCRouter({
 
             // Charged on success by the pipeline; here we only check affordability.
             await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app);
+            await ensureDailyTokenBudget("build");
 
             const imageCount = input.images?.length ?? 0;
             const imageBriefPromise = resolveImageBrief(input.images, input.value); // never rejects
@@ -458,6 +462,7 @@ export const appProjectsRouter = createTRPCRouter({
 
             // Charged on success by the pipeline; here we only check affordability.
             await assertCanAffordBuildOrThrow(ctx.auth.userId, BUILD_COST.app);
+            await ensureDailyTokenBudget("build");
 
             const imageCount = input.images?.length ?? 0;
             const imageBrief = await resolveImageBrief(input.images, input.value); // null on failure

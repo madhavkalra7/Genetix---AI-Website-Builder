@@ -9,6 +9,7 @@
 
 import type { Sandbox } from "@e2b/code-interpreter";
 import { recordBuildUsage } from "@/lib/build-tracker";
+import { meteredOpenAIFetch, TOKEN_ESTIMATES } from "@/lib/token-budget";
 
 const QA_DIR = "/opt/genetix-qa";
 const RESULT_MARKER = "__GX_QA__";
@@ -164,7 +165,7 @@ async function critiqueDesign(
   try {
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), 90_000);
-    const res = await fetch("https://api.openai.com/v1/responses", {
+    const res = await meteredOpenAIFetch("https://api.openai.com/v1/responses", {
       method: "POST",
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
@@ -175,7 +176,7 @@ async function critiqueDesign(
         store: false,
         input: [{ role: "user", content }],
       }),
-    }).finally(() => clearTimeout(t));
+    }, TOKEN_ESTIMATES.vision).finally(() => clearTimeout(t));
     const data = await res.json().catch(() => null);
     if (!res.ok || !data) return null;
     if (buildId && data.usage) {

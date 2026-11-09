@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@/generated/prisma";
+import { describeReset, getDailyLimits, getTodayUsage, nextResetAt, usableDailyCap, utcDay } from "@/lib/token-budget";
 
 // Utility to verify if current user has admin access
 async function checkAdminAccess(userId: string) {
@@ -53,6 +54,25 @@ function normalizeBuildEvents(raw: unknown): AdminBuildEvent[] {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const adminBuildsRouter = createTRPCRouter({
+  // Today's OpenAI token usage per model group vs the daily cap (src/lib/token-budget.ts)
+  dailyTokens: protectedProcedure.query(async ({ ctx }) => {
+    await checkAdminAccess(ctx.auth.userId);
+    const usage = await getTodayUsage();
+    const limits = getDailyLimits();
+    return {
+      day: utcDay(),
+      resetAt: nextResetAt().toISOString(),
+      resetLabel: describeReset(),
+      groups: (["small", "large"] as const).map((group) => ({
+        group,
+        used: usage[group]?.tokens ?? 0,
+        requests: usage[group]?.requests ?? 0,
+        limit: limits[group],
+        cap: usableDailyCap(group),
+      })),
+    };
+  }),
+
   // Recent builds, newest first, cursor-paginated by build id
   list: protectedProcedure
     .input(
